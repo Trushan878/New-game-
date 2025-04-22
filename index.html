@@ -3,13 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard</title>
+  <title>KGF Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
+    /* General Styles for the KGF Theme */
     body {
       font-family: 'Arial', sans-serif;
+      background-color: #1a1a1a;
+      color: #e4e4e4;
+      margin: 0;
+      padding: 0;
+    }
+
+    h1, h2, p {
+      color: #f3d342; /* Gold Accent color */
     }
 
     /* Welcome page */
@@ -18,20 +27,48 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-color: #1e40af;
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8__3RCIaRJ2JHwAYmDjmoxf9wrjYrOXrQbBdUemStZILXwmGW0S3WOM&s=10');
+      background-size: cover;
+      background-position: center;
       color: white;
       text-align: center;
-      font-size: 1.5rem;
+      font-size: 1.8rem;
       padding: 2rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     /* Game board */
     .game-board {
       display: none;
       padding: 20px;
-      background-color: #fff;
+      background-color: #2b2b2b;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
+    }
+
+    /* Buttons */
+    .button {
+      background-color: #f3d342;
+      color: black;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      font-size: 1.2rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    .button:hover {
+      background-color: #c7a007;
+    }
+
+    /* Game section style */
+    .avatar {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-right: 8px;
     }
 
     /* Congratulations popup animation */
@@ -40,13 +77,13 @@
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      background: #22c55e;
-      color: white;
+      background: #c7a007; /* KGF Gold Color */
+      color: black;
       padding: 1.5rem 2rem;
       border-radius: 0.75rem;
       font-size: 1.5rem;
       font-weight: 600;
-      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
+      box-shadow: 0 10px 15px rgba(199, 160, 7, 0.7);
       z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
@@ -58,48 +95,56 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
 
-    .avatar {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      margin-right: 8px;
-    }
-
-    /* Hide and show based on stages */
     .hidden {
       display: none;
+    }
+
+    /* Game History & Points History */
+    .history-container {
+      background: #333;
+      border-radius: 8px;
+      padding: 15px;
+      margin-top: 10px;
+      overflow-y: scroll;
+      max-height: 200px;
+      color: #f3d342;
     }
   </style>
 </head>
 <body>
+
+  <!-- Welcome Page -->
   <div id="welcomePage" class="welcome-page">
     <div>
-      <h1>Welcome to the Game!</h1>
+      <h1>KGF Game Scoreboard</h1>
       <p>This game has financial risk. Play carefully.</p>
-      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
+      <button id="startGameBtn" class="button">Start Game</button>
     </div>
   </div>
 
+  <!-- Game Board -->
   <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
     <div class="mb-4 flex gap-2">
-      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+      <input type="text" id="newPlayerName" placeholder="Enter Player Name" class="flex-grow border rounded px-3 py-2 text-black" />
+      <button id="addPlayerBtn" class="button">Add</button>
     </div>
 
     <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
     <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+      <button id="clearBtn" class="flex-1 button">Clear</button>
+      <button id="submitBtn" class="flex-1 button">Submit</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="clearAllBtn" class="w-full button">Clear All Data</button>
 
-    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+    <!-- Game History Section -->
+    <div id="gameHistory" class="history-container"></div>
+    <div id="pointsHistory" class="history-container"></div>
   </section>
 
+  <!-- Firebase Setup -->
   <script>
     // Initialize Firebase
     const firebaseConfig = {
@@ -111,7 +156,6 @@
       messagingSenderId: "340216728284",
       appId: "1:340216728284:web:f2e61485d29068fbf5c219"
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const playersRef = db.ref("players");
@@ -126,11 +170,11 @@
 
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
-      welcomePage.style.display = 'none';  // Hide welcome page
-      gameBoard.style.display = 'block';   // Show game board
+      welcomePage.style.display = 'none';
+      gameBoard.style.display = 'block';
     };
 
-    // Add player with random avatar
+    // Add Player with Random Avatar
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
       if (!name) return;
@@ -139,15 +183,7 @@
       newPlayerInput.value = '';
     };
 
-    // Clear all points
-    document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure you want to clear points and game history?")) {
-        playersRef.set({});
-        historyRef.remove();
-      }
-    };
-
-    // Submit Points
+    // Submit Player Points
     document.getElementById('submitBtn').onclick = async () => {
       const selected = [];
       document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
@@ -168,7 +204,7 @@
       }
     };
 
-    // Show congratulations popup with sound
+    // Show Congratulations
     let congratsCount = 0;
     function showCongrats(names) {
       if (congratsCount >= 5) return;
@@ -179,16 +215,11 @@
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
 
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-        speechSynthesis.speak(msg);
-      }
-
       const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
       audio.play();
     }
 
-    // Display players and points
+    // Display Players and Points
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
@@ -197,7 +228,6 @@
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
-
         div.innerHTML = `
           <label class="flex items-center gap-2">
             <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
@@ -205,7 +235,7 @@
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
-          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+          <button class="removePlayerBtn button bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
       }
@@ -224,6 +254,7 @@
       }
     });
 
+    // Display Game History
     historyRef.on('value', snap => {
       const data = snap.val() || {};
       const entries = Object.values(data);
