@@ -9,13 +9,14 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
-      background: linear-gradient(to right, #c6ffdd, #fbd786, #f7797d);
+      background: linear-gradient(135deg, #93c5fd, #e0f2fe);
     }
+
     .congrats-popup {
       position: fixed;
       top: 20%;
       left: 50%;
-      transform: translate(-50%, 0);
+      transform: translate(-50%, -50%);
       background: #22c55e;
       color: white;
       padding: 1.5rem 2rem;
@@ -28,51 +29,66 @@
       animation: fadeInOut 3s forwards;
       white-space: nowrap;
     }
+
     @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -20px); }
-      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, -20px); }
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -30%);
+      }
+      10%, 90% {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -30%);
+      }
     }
-    #mainApp {
+
+    #mainGame {
       display: none;
     }
   </style>
 </head>
-<body class="min-h-screen flex justify-center items-center">
+<body class="min-h-screen flex justify-center items-center py-6 px-4">
 
   <!-- Welcome Page -->
   <div id="welcomePage" class="text-center bg-white p-6 rounded-xl shadow-xl w-80">
     <h1 class="text-2xl font-bold mb-4">Welcome to the Game</h1>
-    <p class="text-sm text-red-600 mb-4 font-semibold">Warning: This game involves financial risk. Play carefully.</p>
+    <p class="text-sm text-red-600 font-semibold mb-2">Warning: This game involves financial risk.</p>
+    <p class="text-sm text-red-600 font-semibold mb-4">Play carefully.</p>
     <button onclick="startGame()" class="bg-blue-600 text-white py-2 px-6 rounded hover:bg-blue-700">Start</button>
   </div>
 
-  <!-- Main App -->
-  <section id="mainApp" class="w-full max-w-md bg-white rounded-lg p-6 shadow-xl">
-    <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+  <!-- Main Game Section -->
+  <section id="mainGame" class="w-full max-w-md bg-white rounded-lg p-6 shadow-lg space-y-4 overflow-y-auto max-h-[90vh]">
+    <h2 class="text-2xl font-semibold text-center mb-4">Game Point</h2>
 
-    <div class="mb-4 flex gap-2">
+    <div class="flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
       <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
     </div>
 
-    <div id="playersList" class="space-y-4 max-h-48 overflow-auto mb-4 pr-2"></div>
+    <div id="playersList" class="space-y-4 max-h-52 overflow-y-auto"></div>
 
-    <div class="flex justify-between gap-2 mb-4">
+    <div class="flex justify-between gap-2">
       <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
       <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600">Send Points on WhatsApp</button>
 
-    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-32 overflow-auto pr-2"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-32 overflow-auto pr-2"></div>
+    <div>
+      <h3 class="text-lg font-semibold mt-4 mb-2">Player Points</h3>
+      <div id="pointsHistory" class="bg-gray-100 p-3 rounded text-sm max-h-32 overflow-auto"></div>
+    </div>
+
+    <div>
+      <h3 class="text-lg font-semibold mt-4 mb-2">Game History</h3>
+      <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-32 overflow-auto"></div>
+    </div>
   </section>
-
-  <!-- Audio -->
-  <audio id="clickSound" src="https://www.soundjay.com/buttons/sounds/button-29.mp3" preload="auto"></audio>
-  <audio id="congratsSound" src="https://www.soundjay.com/misc/sounds/bell-ringing-01.mp3" preload="auto"></audio>
 
   <script>
     const firebaseConfig = {
@@ -94,28 +110,11 @@
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
     const newPlayerInput = document.getElementById('newPlayerName');
-    const clickSound = document.getElementById('clickSound');
-    const congratsSound = document.getElementById('congratsSound');
-
-    function playClick() {
-      clickSound.currentTime = 0;
-      clickSound.play();
-    }
-
-    function playCongrats() {
-      congratsSound.currentTime = 0;
-      congratsSound.play();
-    }
 
     function startGame() {
       document.getElementById('welcomePage').style.display = 'none';
-      document.getElementById('mainApp').style.display = 'block';
-      playClick();
+      document.getElementById('mainGame').style.display = 'block';
     }
-
-    document.querySelectorAll('button').forEach(btn => {
-      btn.addEventListener('click', playClick);
-    });
 
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
@@ -130,14 +129,14 @@
 
     document.getElementById('clearAllBtn').onclick = () => {
       if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
-        const players = {};
         playersRef.once('value', snap => {
+          const resetData = {};
           snap.forEach(child => {
-            players[child.key] = 0;
+            resetData[child.key] = 0;
           });
-          playersRef.set(players);
+          playersRef.set(resetData);
+          historyRef.remove();
         });
-        historyRef.remove();
       }
     };
 
@@ -168,12 +167,13 @@
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
 
-      playCongrats();
-
       if ('speechSynthesis' in window) {
         const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
         speechSynthesis.speak(msg);
       }
+
+      const audio = new Audio('https://actions.google.com/sounds/v1/alarms/digital_watch_alarm_long.ogg');
+      audio.play();
     }
 
     playersRef.on('value', snap => {
