@@ -127,7 +127,7 @@
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
 
     <!-- WhatsApp Button -->
-    <div id="whatsappContainer" class="hidden">
+    <div id="whatsappContainer" class="whatsapp-button hidden">
       <a id="whatsappBtn" class="whatsapp-button" href="#" target="_blank">Send Points to WhatsApp</a>
     </div>
   </section>
@@ -170,6 +170,7 @@
       kgfAudio.play(); // Play KGF sound immediately
       welcomePage.style.display = 'none';  // Hide welcome page
       gameBoard.style.display = 'block';   // Show game board
+      document.getElementById('whatsappContainer').classList.remove('hidden');  // Show WhatsApp button
     };
 
     // Add player
