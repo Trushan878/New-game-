@@ -12,22 +12,33 @@
       font-family: 'Arial', sans-serif;
     }
 
-.welcome-page {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-  background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
-  background-size: cover;
-  color: white;
-  text-align: center;
-  font-size: 1.5rem;
-  padding: 2rem;
-  position: relative;
-}
+    .welcome-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      color: white;
+      text-align: center;
+      font-size: 1.5rem;
+      padding: 2rem;
+    }
+
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 0;
+    }
 
     .warning-box {
-      background-color: rgba(0, 0, 0, 0.3);
+      background-color: transparent;
       border: 2px solid red;
       padding: 10px;
       border-radius: 10px;
@@ -69,20 +80,16 @@
 </head>
 <body>
   <div id="welcomePage" class="welcome-page">
-  <div>
-    <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
+    <div class="overlay"></div>
+    <div style="z-index: 1; position: relative;">
+      <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
 
-    <div class="warning-box mb-2">
-      ⚠️ This Game has Financial Risk ⚠️
-    </div>
-    <div class="warning-box">
-      ⚠️ Play Carefully ⚠️
-    </div>
+      <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
+      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
 
-    <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
+      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
+    </div>
   </div>
-</div>
-
 
   <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
@@ -130,7 +137,6 @@
     const newPlayerInput = document.getElementById('newPlayerName');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
-    
 
     startGameBtn.onclick = () => {
       welcomePage.style.display = 'none';
@@ -182,31 +188,27 @@
     };
 
     let congratsCount = 0;
-function showCongrats(names) {
-  if (congratsCount >= 5) return;
-  congratsCount++;
+    function showCongrats(names) {
+      if (congratsCount >= 5) return;
+      congratsCount++;
 
-  // Show popup
-  const popup = document.createElement('div');
-  popup.className = 'congrats-popup';
-  popup.textContent = `Congratulations ${names.join(', ')}!`;
-  document.body.appendChild(popup);
-  setTimeout(() => popup.remove(), 3000);
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
 
-  // Play sound
-  const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
-  audio.play();
+      const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
+      audio.play();
 
-  // Speak names out loud
-  if ('speechSynthesis' in window) {
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = `Congratulations ${names.join(', ')}!`;
-    msg.lang = 'en-US';
-    msg.pitch = 1;
-    msg.rate = 1;
-    speechSynthesis.speak(msg);
-  }
-}  
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = `Congratulations ${names.join(', ')}!`;
+        msg.lang = 'en-US';
+        speechSynthesis.speak(msg);
+      }
+    }
+
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
@@ -215,7 +217,6 @@ function showCongrats(names) {
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
-
         div.innerHTML = `
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
