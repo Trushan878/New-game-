@@ -82,7 +82,7 @@
     <div>
       <h1>Welcome to the Game!</h1>
       <p>This game has financial risk. Play carefully.</p>
-      <div class="warning-box">
+      <div id="warningBox" class="warning-box hidden">
         ⚠️ This Game has financial Risk ⚠️
         <br />
         ⚠️ Play Carefully ⚠️
@@ -138,6 +138,12 @@
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
     const kgfAudio = document.getElementById('kgfAudio');
+    const warningBox = document.getElementById('warningBox');
+
+    // Display warning box only once
+    if (warningBox) {
+      warningBox.classList.remove('hidden');
+    }
 
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
