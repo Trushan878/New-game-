@@ -88,9 +88,17 @@
     };
 
     document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure you want to delete all players and history?")) {
-        playersRef.remove();
-        historyRef.remove();
+      if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
+        // Remove points and game history, but keep players
+        const players = {};
+        playersRef.once('value', snap => {
+          snap.forEach(child => {
+            players[child.key] = 0;
+          });
+          playersRef.set(players); // Reset points for all players
+        });
+
+        historyRef.remove(); // Clear game history
       }
     };
 
