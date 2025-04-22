@@ -13,26 +13,31 @@
     }
     .welcome-page {
       display: flex;
-      flex-direction: column;
       justify-content: center;
       align-items: center;
+      flex-direction: column;
       height: 100vh;
-      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzLVOIfMK-RaddgQI2AtGJCTXeDxcVo3d9Tcs3NAvYuPR_0gVNewMWV0wG&s=10') center/cover no-repeat;
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzLVOIfMK-RaddgQI2AtGJCTXeDxcVo3d9Tcs3NAvYuPR_0gVNewMWV0wG&s=10');
+      background-size: cover;
+      background-position: center;
       color: white;
       text-align: center;
       padding: 2rem;
     }
     .warning-box {
-      background: rgba(255, 0, 0, 0.7);
+      background-color: rgba(0, 0, 0, 0.6);
+      border: 2px solid red;
+      border-radius: 1rem;
       padding: 1rem 2rem;
-      margin-top: 1rem;
-      border-radius: 10px;
-      font-weight: bold;
-      box-shadow: 0 0 10px black;
+      margin-bottom: 1.5rem;
+      font-size: 1.2rem;
     }
     .game-board {
       display: none;
       padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .congrats-popup {
       position: fixed;
@@ -65,16 +70,15 @@
 </head>
 <body>
   <div id="welcomePage" class="welcome-page">
-    <div>
-      <h1 class="text-3xl font-bold">Welcome to the Game!</h1>
-      <div class="warning-box mt-4">
-        ⚠️ This Game has financial Risk. Play Carefully. ⚠️
-      </div>
-      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
+    <div class="warning-box">
+      ⚠️ This Game has financial Risk ⚠️ <br />
+      ⚠️ Play Carefully ⚠️
     </div>
+    <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
+    <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700">Start Game</button>
   </div>
 
-  <section id="gameBoard" class="game-board max-w-xl mx-auto">
+  <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
     <div class="mb-4 flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
@@ -89,7 +93,6 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-    <button id="shareBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
@@ -130,10 +133,14 @@
       newPlayerInput.value = '';
     };
 
+    document.getElementById('clearBtn').onclick = () => {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    };
+
     document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure? This will reset scores and game history (not names).")) {
-        playersRef.once('value', snap => {
-          const data = snap.val() || {};
+      if (confirm("⚠️ This will clear all player points and history (but keep names). Continue?")) {
+        playersRef.once('value', snapshot => {
+          const data = snapshot.val() || {};
           for (const name in data) {
             playersRef.child(name).update({ points: 0 });
           }
@@ -173,23 +180,9 @@
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
 
-      const gunSounds = [
-        'https://www.soundjay.com/mechanical/sounds/gun-cocking-01.mp3',
-        'https://www.soundjay.com/mechanical/sounds/gun-cocking-02.mp3',
-        'https://www.soundjay.com/mechanical/sounds/gun-cocking-03.mp3'
-      ];
-      const sound = new Audio(gunSounds[Math.floor(Math.random() * gunSounds.length)]);
+      const sound = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
       sound.play();
     }
-
-    document.getElementById('shareBtn').onclick = () => {
-      playersRef.once('value', snap => {
-        const data = snap.val() || {};
-        const scores = Object.entries(data).map(([name, info]) => `${name}: ${info.points}`).join(', ');
-        const url = `https://wa.me/?text=Game Results: ${encodeURIComponent(scores)}`;
-        window.open(url, '_blank');
-      });
-    };
 
     playersRef.on('value', snap => {
       const data = snap.val() || {};
@@ -199,30 +192,40 @@
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
+
         div.innerHTML = `
           <label class="flex items-center gap-2">
-            <img src="${data[name].avatar}" class="avatar" />
+            <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
             <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
       }
 
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();
+        };
+      });
+
       for (const name in data) {
-        const entry = document.createElement('div');
-        entry.textContent = `${name}: ${data[name].points} points`;
-        pointsHistory.appendChild(entry);
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        pointsHistory.appendChild(historyEntry);
       }
     });
 
     historyRef.on('value', snap => {
       const data = snap.val() || {};
+      const entries = Object.values(data);
       gameHistory.innerHTML = '';
-      Object.values(data).forEach((entry, i) => {
+      entries.forEach((entry, i) => {
         const div = document.createElement('div');
-        div.textContent = entry;
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
         gameHistory.appendChild(div);
       });
     });
