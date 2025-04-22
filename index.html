@@ -130,8 +130,7 @@
     const newPlayerInput = document.getElementById('newPlayerName');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
-
-    let congratsCount = 0;
+    
 
     startGameBtn.onclick = () => {
       welcomePage.style.display = 'none';
@@ -182,19 +181,32 @@
       }
     };
 
-    function showCongrats(names) {
-      if (congratsCount >= 5) return;
-      congratsCount++;
-      const popup = document.createElement('div');
-      popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations ${names.join(', ')}!`;
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 3000);
+    let congratsCount = 0;
+function showCongrats(names) {
+  if (congratsCount >= 5) return;
+  congratsCount++;
 
-      const audio = new Audio("https://www.soundjay.com/button/beep-07.wav");
-      audio.play();
-    }
+  // Show popup
+  const popup = document.createElement('div');
+  popup.className = 'congrats-popup';
+  popup.textContent = `Congratulations ${names.join(', ')}!`;
+  document.body.appendChild(popup);
+  setTimeout(() => popup.remove(), 3000);
 
+  // Play sound
+  const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
+  audio.play();
+
+  // Speak names out loud
+  if ('speechSynthesis' in window) {
+    const msg = new SpeechSynthesisUtterance();
+    msg.text = `Congratulations ${names.join(', ')}!`;
+    msg.lang = 'en-US';
+    msg.pitch = 1;
+    msg.rate = 1;
+    speechSynthesis.speak(msg);
+  }
+}  
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
