@@ -72,8 +72,7 @@
 
       if ('speechSynthesis' in window) {
         const msg = new SpeechSynthesisUtterance(warningText);
-        msg.rate = 0.9; // You can adjust the rate here for speed (default is 1.0)
-        msg.volume = 1.0; // Set volume to the maximum (1.0)
+        msg.rate = 0.9;
         speechSynthesis.speak(msg);
       }
 
@@ -141,7 +140,7 @@
       if (selected.length > 0) {
         const snap = await historyRef.once('value');
         const gameNumber = snap.numChildren() + 1;
-        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        const entry = Game ${gameNumber}: ${selected.join(', ')};
         historyRef.push(entry);
         showCongrats(selected);
       }
@@ -150,12 +149,12 @@
     function showCongrats(names) {
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      popup.textContent = Congratulations ${names.join(', ')}!;
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
 
       if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        const msg = new SpeechSynthesisUtterance(Congratulations ${names.join(', ')}!);
         speechSynthesis.speak(msg);
       }
     }
@@ -169,14 +168,14 @@
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
 
-        div.innerHTML = `
+        div.innerHTML = 
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name]}</span>
           <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
-        `;
+        ;
         playersList.appendChild(div);
       }
 
@@ -189,7 +188,7 @@
 
       for (const name in data) {
         const historyEntry = document.createElement('div');
-        historyEntry.textContent = `${name}: ${data[name]} points`;
+        historyEntry.textContent = ${name}: ${data[name]} points;
         pointsHistory.appendChild(historyEntry);
       }
     });
@@ -199,8 +198,9 @@
       const entries = Object.values(data);
       gameHistory.innerHTML = '';
       entries.forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        const 
+div = document.createElement('div');
+        div.textContent = Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')};
         gameHistory.appendChild(div);
       });
     });
