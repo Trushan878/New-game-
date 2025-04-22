@@ -178,26 +178,14 @@
       });
     });
 
-    // WhatsApp share
+    // WhatsApp button: only player points
     document.getElementById('sendWhatsAppBtn').onclick = async () => {
       const playersSnap = await playersRef.once('value');
-      const historySnap = await historyRef.once('value');
-
       const playersData = playersSnap.val() || {};
-      const historyData = historySnap.val() || {};
 
-      let message = '*Game Points Summary*\n\n';
-
-      message += '*Points:*\n';
+      let message = '*Game Points*\n\n';
       for (const name in playersData) {
         message += `${name}: ${playersData[name]} points\n`;
-      }
-
-      message += '\n*Game History:*\n';
-      let i = 1;
-      for (const key in historyData) {
-        const line = historyData[key].replace(/^Game \d+: /, '');
-        message += `Game ${i++}: ${line}\n`;
       }
 
       const encodedMessage = encodeURIComponent(message);
