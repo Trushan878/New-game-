@@ -23,6 +23,17 @@
       text-align: center;
       font-size: 1.5rem;
       padding: 2rem;
+      flex-direction: column;
+    }
+
+    /* Warning box style */
+    .warning-box {
+      background-color: #ffcc00;
+      color: #e74c3c;
+      padding: 1rem;
+      border-radius: 8px;
+      font-weight: bold;
+      margin-bottom: 20px;
     }
 
     /* Game board */
@@ -75,7 +86,10 @@
   <div id="welcomePage" class="welcome-page">
     <div>
       <h1>Welcome to the Game!</h1>
-      <p>This game has financial risk. Play carefully.</p>
+      <div class="warning-box">
+        ⚠️This Game has financial Risk⚠️<br />
+        ⚠️Play Carefully⚠️
+      </div>
       <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
     </div>
   </div>
