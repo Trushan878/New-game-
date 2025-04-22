@@ -76,6 +76,50 @@
       10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
+
+    /* Animated Button */
+    .animated-button {
+      position: relative;
+      overflow: hidden;
+      padding: 10px 20px;
+      font-size: 1.25rem;
+      color: white;
+      background-color: #22c55e;
+      border: 2px solid #22c55e;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .animated-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: all 0.4s ease;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+    }
+
+    .animated-button:hover::before {
+      width: 0;
+      height: 0;
+      opacity: 1;
+    }
+
+    .animated-button:hover {
+      background-color: white;
+      color: #22c55e;
+    }
+
+    .animated-button:focus {
+      outline: none;
+    }
+
   </style>
 </head>
 <body>
@@ -87,7 +131,7 @@
       <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
       <div class="warning-box">⚠️ Play Carefully ⚠️</div>
 
-      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
+      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
     </div>
   </div>
 
