@@ -143,15 +143,29 @@
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
+
         div.innerHTML = `
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name]}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
+      }
 
+      // Add remove player functionality
+      const removeBtns = document.querySelectorAll('.removePlayerBtn');
+      removeBtns.forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();  // Remove player from Firebase
+        };
+      });
+
+      // Render points history
+      for (const name in data) {
         const historyEntry = document.createElement('div');
         historyEntry.textContent = `${name}: ${data[name]} points`;
         pointsHistory.appendChild(historyEntry);
