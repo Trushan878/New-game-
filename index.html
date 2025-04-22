@@ -80,7 +80,7 @@
     </div>
   </div>
 
-  <section id="gameBoard" class="game-board hidden">
+  <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
     <div class="mb-4 flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
@@ -126,8 +126,8 @@
 
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
-      welcomePage.classList.add('hidden');
-      gameBoard.classList.remove('hidden');
+      welcomePage.style.display = 'none';  // Hide welcome page
+      gameBoard.style.display = 'block';   // Show game board
     };
 
     // Add player with random avatar
