@@ -49,6 +49,8 @@
       <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
     </div>
 
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
@@ -85,7 +87,14 @@
       document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     };
 
-    document.getElementById('submitBtn').onclick = () => {
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Are you sure you want to delete all players and history?")) {
+        playersRef.remove();
+        historyRef.remove();
+      }
+    };
+
+    document.getElementById('submitBtn').onclick = async () => {
       const selected = [];
       document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
         const name = cb.value;
@@ -97,11 +106,10 @@
       });
 
       if (selected.length > 0) {
-        historyRef.once('value').then(snap => {
-          const gameNumber = snap.numChildren() + 1;
-          const entry = `Game ${gameNumber}: ${selected.join(', ')} scored.`;
-          historyRef.push(entry);
-        });
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
         showCongrats(selected);
       }
     };
@@ -127,7 +135,6 @@
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
-
         div.innerHTML = `
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
