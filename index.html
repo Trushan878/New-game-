@@ -91,6 +91,10 @@
     .whatsapp-button:hover {
       background-color: #128c7e;
     }
+
+    .whatsapp-container {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -127,13 +131,16 @@
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
 
     <!-- WhatsApp Button -->
-    <div id="whatsappContainer" class="whatsapp-button hidden">
+    <div id="whatsappContainer" class="whatsapp-container">
       <a id="whatsappBtn" class="whatsapp-button" href="#" target="_blank">Send Points to WhatsApp</a>
     </div>
   </section>
 
   <!-- KGF Sound -->
   <audio id="kgfAudio" src="https://raw.githubusercontent.com/Trushan878/New-game-/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3" preload="auto"></audio>
+
+  <!-- AWM Shot Sound -->
+  <audio id="awmShotAudio" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
 
   <script>
     // Initialize Firebase
@@ -159,7 +166,7 @@
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
     const kgfAudio = document.getElementById('kgfAudio');
-    const warningBox = document.getElementById('warningBox');
+    const awmShotAudio = document.getElementById('awmShotAudio');
 
     // Display warning box only once
     document.getElementById('warningBoxRisk').classList.remove('hidden');
@@ -170,7 +177,7 @@
       kgfAudio.play(); // Play KGF sound immediately
       welcomePage.style.display = 'none';  // Hide welcome page
       gameBoard.style.display = 'block';   // Show game board
-      document.getElementById('whatsappContainer').classList.remove('hidden');  // Show WhatsApp button
+      document.getElementById('whatsappContainer').style.display = 'block';  // Show WhatsApp button
     };
 
     // Add player
@@ -286,13 +293,12 @@
       const playerPoints = [];
       document.querySelectorAll('#playersList input:checked').forEach((checkbox) => {
         const playerName = checkbox.value;
-        playerPoints.push(playerName);
+        const points = checkbox.nextElementSibling.textContent.replace('Points: ', '');
+        playerPoints.push(`*${playerName}*: ${points} points`);
       });
-      if (playerPoints.length > 0) {
-        const date = new Date().toLocaleDateString();
-        const message = `*Game Points on ${date}*\n\n*${playerPoints.join('\n')}*\n\nPlease see the updated scores!`;
-        const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-        window.open(url, '_blank');
+      if (playerPoints.length) {
+        const message = `*Game Points*\n\n${playerPoints.join('\n')}`;
+        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
       }
     };
   </script>
