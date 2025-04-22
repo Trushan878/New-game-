@@ -2,8 +2,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Point Section with Total Game History</title>
+  <title>Game Point Section with Speech and Congratulations</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
     @keyframes confetti-fall {
       0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
@@ -21,7 +22,6 @@
     .confetti.color1 { background-color: #f59e0b; }
     .confetti.color2 { background-color: #10b981; }
     .confetti.color3 { background-color: #3b82f6; }
-
     .congrats-popup {
       position: fixed;
       top: 20%;
@@ -50,42 +50,20 @@
   <section class="w-[360px] max-w-full bg-white rounded-lg p-6 shadow-lg z-0">
     <form id="gamePointForm" autocomplete="off" onsubmit="return false;">
       <h2 class="text-[20px] font-normal mb-6 text-gray-900">Game Point?</h2>
-
       <div class="mb-6 flex gap-2">
         <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border border-gray-400 rounded-md px-3 py-2 text-[18px]" />
         <button type="button" id="addPlayerBtn" class="px-4 py-2 bg-green-600 text-white rounded-md text-[18px] font-normal hover:bg-green-700 transition">Add</button>
       </div>
-
-      <div id="playersList" class="flex flex-col gap-6 mb-8 max-h-[300px] overflow-auto">
-        <!-- Player items will be here -->
-      </div>
-
+      <div id="playersList" class="flex flex-col gap-6 mb-8 max-h-[300px] overflow-auto"></div>
       <div class="flex justify-between items-center mb-4">
-        <button type="button" id="clearBtn" class="px-6 py-3 bg-gray-300 text-gray-900 rounded-md text-[18px] font-normal hover:bg-gray-400 transition">
-          Clear Selection
-        </button>
-        <button type="submit" id="submitBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md text-[18px] font-normal hover:bg-blue-700 transition">
-          Submit
-        </button>
+        <button type="button" id="clearBtn" class="px-6 py-3 bg-gray-300 text-gray-900 rounded-md text-[18px] font-normal hover:bg-gray-400 transition">Clear Selection</button>
+        <button type="submit" id="submitBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md text-[18px] font-normal hover:bg-blue-700 transition">Submit</button>
       </div>
       <div class="flex justify-between mb-4 space-x-2">
-        <button type="button" id="clearHistoryBtn" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-md text-[16px] font-normal hover:bg-red-600 transition">
-          Clear Points History
-        </button>
-        <button type="button" id="whatsappBtn" class="flex-1 px-4 py-2 bg-[#25D366] text-white rounded-md text-[16px] font-normal hover:bg-[#1ebe57] transition">
-          Send to WhatsApp
-        </button>
+        <button type="button" id="clearHistoryBtn" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-md text-[16px] font-normal hover:bg-red-600 transition">Clear Points History</button>
+        <button type="button" id="whatsappBtn" class="flex-1 px-4 py-2 bg-[#25D366] text-white rounded-md text-[16px] font-normal hover:bg-[#1ebe57] transition">Send to WhatsApp</button>
       </div>
-
-      <div class="mb-4">
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Points History</h3>
-        <div id="pointsHistory" class="text-gray-900 text-[16px] font-normal space-y-1 max-h-48 overflow-auto"></div>
-      </div>
-
-      <div>
-        <h3 class="text-lg font-semibold text-gray-900 mb-2">Total Game History</h3>
-        <div id="totalGameHistory" class="text-gray-900 text-[16px] font-normal space-y-1 max-h-48 overflow-auto"></div>
-      </div>
+      <div id="pointsHistory" class="text-gray-900 text-[16px] font-normal space-y-1 max-h-48 overflow-auto"></div>
     </form>
   </section>
 
@@ -95,13 +73,14 @@
     const clearBtn = document.getElementById('clearBtn');
     const clearHistoryBtn = document.getElementById('clearHistoryBtn');
     const pointsHistory = document.getElementById('pointsHistory');
-    const totalGameHistory = document.getElementById('totalGameHistory');
     const addPlayerBtn = document.getElementById('addPlayerBtn');
     const newPlayerNameInput = document.getElementById('newPlayerName');
     const submitBtn = document.getElementById('submitBtn');
     const whatsappBtn = document.getElementById('whatsappBtn');
 
-    // Load players and points from localStorage or initialize default
+    const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    const topic = 'game/points-tracker';
+
     let players = JSON.parse(localStorage.getItem('players')) || {
       Ankit: 0,
       Nd: 0,
@@ -111,15 +90,27 @@
       Other: 0
     };
 
-    // Load total game history from localStorage or initialize
-    let totalHistory = JSON.parse(localStorage.getItem('totalHistory')) || [];
+    client.on('connect', () => {
+      console.log('Connected to MQTT broker');
+      client.subscribe(topic);
+    });
+
+    client.on('message', (topic, message) => {
+      try {
+        const incoming = JSON.parse(message.toString());
+        if (typeof incoming === 'object') {
+          players = incoming;
+          savePlayers();
+          renderPlayers();
+          renderHistory();
+        }
+      } catch (err) {
+        console.error('MQTT message error:', err);
+      }
+    });
 
     function savePlayers() {
       localStorage.setItem('players', JSON.stringify(players));
-    }
-
-    function saveTotalHistory() {
-      localStorage.setItem('totalHistory', JSON.stringify(totalHistory));
     }
 
     function renderPlayers() {
@@ -128,7 +119,6 @@
         const playerId = player.replace(/\s+/g, '-');
         const div = document.createElement('div');
         div.className = 'flex items-center gap-4';
-
         div.innerHTML = `
           <label class="flex items-center gap-4 text-gray-900 text-[20px] font-normal cursor-pointer flex-grow">
             <input type="checkbox" name="gamePoint" value="${player}" class="w-7 h-7 border border-gray-400 rounded-sm" id="checkbox-${playerId}" />
@@ -152,7 +142,6 @@
           savePlayers();
           renderPlayers();
           renderHistory();
-          renderTotalHistory();
         };
       });
     }
@@ -184,11 +173,9 @@
       for (const player in players) {
         players[player] = 0;
       }
-      totalHistory = [];
       savePlayers();
-      saveTotalHistory();
+      client.publish(topic, JSON.stringify(players));
       renderHistory();
-      renderTotalHistory();
       updatePoints();
     });
 
@@ -199,19 +186,6 @@
         div.textContent = `${player} Points History: ${players[player]}`;
         pointsHistory.appendChild(div);
       }
-    }
-
-    function renderTotalHistory() {
-      totalGameHistory.innerHTML = '';
-      if (totalHistory.length === 0) {
-        totalGameHistory.textContent = 'No games played yet.';
-        return;
-      }
-      totalHistory.forEach((game, index) => {
-        const div = document.createElement('div');
-        div.textContent = `Game ${index + 1}: ` + Object.entries(game).map(([player, points]) => `${player}: ${points}`).join(', ');
-        totalGameHistory.appendChild(div);
-      });
     }
 
     addPlayerBtn.addEventListener('click', () => {
@@ -227,9 +201,9 @@
       players[newName] = 0;
       newPlayerNameInput.value = '';
       savePlayers();
+      client.publish(topic, JSON.stringify(players));
       renderPlayers();
       renderHistory();
-      renderTotalHistory();
     });
 
     function createConfetti() {
@@ -249,7 +223,6 @@
       popup.textContent = `🎉 Congratulations ${names.join(', ')}! 🎉`;
       document.body.appendChild(popup);
 
-      // Speech synthesis
       if ('speechSynthesis' in window) {
         const msg = new SpeechSynthesisUtterance();
         msg.text = `Congratulations ${names.join(', ')}! You got 1 point!`;
@@ -258,7 +231,6 @@
         window.speechSynthesis.speak(msg);
       }
 
-      // Create confetti particles
       for (let i = 0; i < 50; i++) {
         createConfetti();
       }
@@ -272,30 +244,25 @@
       const checkboxes = document.querySelectorAll('input[name="gamePoint"]');
       let anyChecked = false;
       let winners = [];
-      let currentGamePoints = {};
-      for (const player in players) {
-        currentGamePoints[player] = 0;
-      }
+
       checkboxes.forEach(cb => {
         if (cb.checked) {
           players[cb.value] += 1;
-          currentGamePoints[cb.value] = 1;
           winners.push(cb.value);
           anyChecked = true;
         }
       });
+
       if (!anyChecked) {
         alert('Please select at least one player.');
         return;
       }
-      totalHistory.push(currentGamePoints);
+
       savePlayers();
-      saveTotalHistory();
+      client.publish(topic, JSON.stringify(players));
       renderHistory();
-      renderTotalHistory();
       form.reset();
       updatePoints();
-
       showCongrats(winners);
     });
 
@@ -309,10 +276,8 @@
       window.open(whatsappUrl, '_blank');
     });
 
-    // Initial render
     renderPlayers();
     renderHistory();
-    renderTotalHistory();
   </script>
 </body>
 </html>
