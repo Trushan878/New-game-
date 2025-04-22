@@ -56,13 +56,6 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
 
-    .avatar {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      margin-right: 8px;
-    }
-
     .hidden {
       display: none;
     }
@@ -179,14 +172,12 @@
       gameBoard.style.display = 'block';   // Show game board
     };
 
-    // Add player with random avatar using DiceBear API
+    // Add player
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
       if (!name) return;
 
-      // Using DiceBear API to create random avatars for players
-      const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // DiceBear random avatar API
-      playersRef.child(name).set({ points: 0, avatar: avatarUrl });
+      playersRef.child(name).set({ points: 0 });
       newPlayerInput.value = '';
     };
 
@@ -256,7 +247,6 @@
 
         div.innerHTML = `
           <label class="flex items-center gap-2">
-            <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
             <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
@@ -278,6 +268,16 @@
         historyEntry.textContent = `${name}: ${data[name].points} points`;
         pointsHistory.appendChild(historyEntry);
       }
+
+      // Update Game History
+      historyRef.on('value', snap => {
+        gameHistory.innerHTML = '';
+        snap.forEach(entry => {
+          const historyItem = document.createElement('div');
+          historyItem.textContent = entry.val();
+          gameHistory.appendChild(historyItem);
+        });
+      });
     });
 
     // WhatsApp share button
