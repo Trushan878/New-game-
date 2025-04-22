@@ -75,17 +75,21 @@
       margin-top: 1rem;
       font-weight: bold;
     }
+
+    .warning-box-playcare {
+      background-color: #ffbb33;
+    }
   </style>
 </head>
 <body>
   <div id="welcomePage" class="welcome-page">
     <div>
       <h1>Welcome to the Game!</h1>
-      <p>This game has financial risk. Play carefully.</p>
-      <div id="warningBox" class="warning-box hidden">
-        ⚠️ This Game has financial Risk ⚠️
-        <br />
-        ⚠️ Play Carefully ⚠️
+      <div id="warningBoxRisk" class="warning-box">
+        ⚠️ This game has financial risk ⚠️
+      </div>
+      <div id="warningBoxPlayCare" class="warning-box warning-box-playcare">
+        ⚠️ Play carefully ⚠️
       </div>
       <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
     </div>
@@ -141,9 +145,8 @@
     const warningBox = document.getElementById('warningBox');
 
     // Display warning box only once
-    if (warningBox) {
-      warningBox.classList.remove('hidden');
-    }
+    document.getElementById('warningBoxRisk').classList.remove('hidden');
+    document.getElementById('warningBoxPlayCare').classList.remove('hidden');
 
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
