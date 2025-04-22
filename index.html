@@ -12,33 +12,30 @@
       font-family: 'Arial', sans-serif;
     }
 
+    /* Welcome page */
     .welcome-page {
       display: flex;
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzLVOIfMK-RaddgQI2AtGJCTXeDxcVo3d9Tcs3NAvYuPR_0gVNewMWV0wG&s=10') no-repeat center center;
+      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzLVOIfMK-RaddgQI2AtGJCTXeDxcVo3d9Tcs3NAvYuPR_0gVNewMWV0wG&s=10');
       background-size: cover;
       color: white;
       text-align: center;
+      font-size: 1.5rem;
       padding: 2rem;
     }
 
-    .warning-box {
-      background: rgba(0, 0, 0, 0.6);
-      border: 2px solid yellow;
-      border-radius: 10px;
-      padding: 1rem 2rem;
-      margin-top: 1rem;
-      font-size: 1.2rem;
-    }
-
+    /* Game board */
     .game-board {
       display: none;
       padding: 20px;
       background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
+    /* Congratulations popup animation */
     .congrats-popup {
       position: fixed;
       top: 20%;
@@ -68,175 +65,198 @@
       height: 40px;
       margin-right: 8px;
     }
+
+    /* Hide and show based on stages */
+    .hidden {
+      display: none;
+    }
+
+    /* Warning Box */
+    .warning-box {
+      background-color: #ff4d4d;
+      color: white;
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
-
-<!-- Welcome Page -->
-<div id="welcomePage" class="welcome-page">
-  <div>
-    <h1 class="text-3xl font-bold">Welcome to the Game!</h1>
-    <div class="warning-box mt-4">
-      ⚠️ This Game has Financial Risk<br>⚠️ Play Carefully
+  <div id="welcomePage" class="welcome-page">
+    <div>
+      <h1>Welcome to the Game!</h1>
+      <p>This game has financial risk. Play carefully.</p>
+      <div class="warning-box">
+        ⚠️ This Game has financial Risk ⚠️
+        <br />
+        ⚠️ Play Carefully ⚠️
+      </div>
+      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
     </div>
-    <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
-  </div>
-</div>
-
-<!-- Game Board -->
-<section id="gameBoard" class="game-board">
-  <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
-  <div class="mb-4 flex gap-2">
-    <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-    <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
   </div>
 
-  <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+  <section id="gameBoard" class="game-board">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    </div>
 
-  <div class="flex justify-between gap-2 mb-4">
-    <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-    <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
-  </div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
-  <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
 
-  <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-  <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-</section>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
 
-<audio id="kgfAudio" src="https://docs.google.com/uc?export=download&id=1Qff4EZgL5J_c7hdmCgyJdIocYtxAGGGE"></audio>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+  </section>
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-    authDomain: "index-e95d1.firebaseapp.com",
-    databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "index-e95d1",
-    storageBucket: "index-e95d1.appspot.com",
-    messagingSenderId: "340216728284",
-    appId: "1:340216728284:web:f2e61485d29068fbf5c219"
-  };
+  <!-- KGF Sound -->
+  <audio id="kgfAudio" src="https://drive.google.com/uc?export=download&id=1Qff4EZgL5J_c7hdmCgyJdIocYtxAGGGE" preload="auto"></audio>
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
+  <script>
+    // Initialize Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.appspot.com",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+    };
 
-  const playersList = document.getElementById('playersList');
-  const pointsHistory = document.getElementById('pointsHistory');
-  const gameHistory = document.getElementById('gameHistory');
-  const newPlayerInput = document.getElementById('newPlayerName');
-  const welcomePage = document.getElementById('welcomePage');
-  const gameBoard = document.getElementById('gameBoard');
-  const kgfAudio = document.getElementById('kgfAudio');
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-  document.getElementById('startGameBtn').onclick = () => {
-    welcomePage.style.display = 'none';
-    gameBoard.style.display = 'block';
-    kgfAudio.currentTime = 10;
-    kgfAudio.play();
-    setTimeout(() => kgfAudio.pause(), 6000);
-  };
+    const playersList = document.getElementById('playersList');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
+    const newPlayerInput = document.getElementById('newPlayerName');
+    const welcomePage = document.getElementById('welcomePage');
+    const gameBoard = document.getElementById('gameBoard');
+    const kgfAudio = document.getElementById('kgfAudio');
 
-  document.getElementById('addPlayerBtn').onclick = () => {
-    const name = newPlayerInput.value.trim();
-    if (!name) return;
-    const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`;
-    playersRef.child(name).set({ points: 0, avatar: avatarUrl });
-    newPlayerInput.value = '';
-  };
+    // Start Game Button
+    document.getElementById('startGameBtn').onclick = () => {
+      kgfAudio.play(); // Play KGF sound for 4 seconds
+      setTimeout(() => {
+        welcomePage.style.display = 'none';  // Hide welcome page
+        gameBoard.style.display = 'block';   // Show game board
+      }, 4000); // Wait 4 seconds for sound to finish
+    };
 
-  document.getElementById('clearAllBtn').onclick = () => {
-    if (confirm("Are you sure you want to clear points and game history?")) {
-      playersRef.set({});
-      historyRef.remove();
+    // Add player with random avatar
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // Random Avatar
+      playersRef.child(name).set({ points: 0, avatar: avatarUrl });
+      newPlayerInput.value = '';
+    };
+
+    // Clear all points
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Are you sure you want to clear points and game history?")) {
+        playersRef.set({});
+        historyRef.remove();
+      }
+    };
+
+    // Submit Points
+    document.getElementById('submitBtn').onclick = async () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        playersRef.child(name).get().then(snap => {
+          const current = snap.exists() ? snap.val().points : 0;
+          playersRef.child(name).update({ points: current + 1 });
+        });
+      });
+
+      if (selected.length > 0) {
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
+        showCongrats(selected);
+      }
+    };
+
+    // Show congratulations popup with sound
+    let congratsCount = 0;
+    function showCongrats(names) {
+      if (congratsCount >= 5) return;
+      congratsCount++;
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        speechSynthesis.speak(msg);
+      }
+
+      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+      audio.play();
     }
-  };
 
-  document.getElementById('submitBtn').onclick = async () => {
-    const selected = [];
-    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-      const name = cb.value;
-      selected.push(name);
-      playersRef.child(name).get().then(snap => {
-        const current = snap.exists() ? snap.val().points : 0;
-        playersRef.child(name).update({ points: current + 1 });
+    // Display players and points
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
+
+      for (const name in data) {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
+
+        div.innerHTML = `
+          <label class="flex items-center gap-2">
+            <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <span class="text-lg">${name}</span>
+          </label>
+          <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+        `;
+        playersList.appendChild(div);
+      }
+
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();
+        };
+      });
+
+      for (const name in data) {
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        pointsHistory.appendChild(historyEntry);
+      }
+    });
+
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      const entries = Object.values(data);
+      gameHistory.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        gameHistory.appendChild(div);
       });
     });
-
-    if (selected.length > 0) {
-      const snap = await historyRef.once('value');
-      const gameNumber = snap.numChildren() + 1;
-      const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-      historyRef.push(entry);
-      showCongrats(selected);
-    }
-  };
-
-  let congratsCount = 0;
-  function showCongrats(names) {
-    if (congratsCount >= 5) return;
-    congratsCount++;
-    const popup = document.createElement('div');
-    popup.className = 'congrats-popup';
-    popup.textContent = `Congratulations ${names.join(', ')}!`;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 3000);
-
-    if ('speechSynthesis' in window) {
-      const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-      speechSynthesis.speak(msg);
-    }
-
-    const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-    audio.play();
-  }
-
-  playersRef.on('value', snap => {
-    const data = snap.val() || {};
-    playersList.innerHTML = '';
-    pointsHistory.innerHTML = '';
-
-    for (const name in data) {
-      const div = document.createElement('div');
-      div.className = 'flex items-center justify-between';
-
-      div.innerHTML = `
-        <label class="flex items-center gap-2">
-          <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
-          <input type="checkbox" value="${name}" class="w-5 h-5" />
-          <span class="text-lg">${name}</span>
-        </label>
-        <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
-        <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
-      `;
-      playersList.appendChild(div);
-    }
-
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        playersRef.child(playerToRemove).remove();
-      };
-    });
-
-    for (const name in data) {
-      const historyEntry = document.createElement('div');
-      historyEntry.textContent = `${name}: ${data[name].points} points`;
-      pointsHistory.appendChild(historyEntry);
-    }
-  });
-
-  historyRef.on('value', snap => {
-    const data = snap.val() || {};
-    const entries = Object.values(data);
-    gameHistory.innerHTML = '';
-    entries.forEach((entry, i) => {
-      const div = document.createElement('div');
-      div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-      gameHistory.appendChild(div);
-    });
-  });
-</script>
+  </script>
 </body>
 </html>
