@@ -8,89 +8,154 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    .congrats-popup {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #22c55e;
-      color: white;
-      padding: 1.5rem 2rem;
-      border-radius: 0.75rem;
-      font-size: 1.5rem;
-      font-weight: 600;
-      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
-      z-index: 10000;
-      opacity: 0;
-      animation: fadeInOut 3s forwards;
-      white-space: nowrap;
+    /* Background Gradient and Shadows */
+    body {
+      background: linear-gradient(135deg, #ff007f, #ff6a00);
+      font-family: 'Inter', sans-serif;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 0;
     }
 
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    .fade-in {
-      animation: fadeIn 1s ease-out;
-    }
-
-    @keyframes fadeIn {
-      0% { opacity: 0; }
-      100% { opacity: 1; }
-    }
-
-    .btn-hover:hover {
-      transform: scale(1.05);
-      transition: transform 0.3s;
-    }
-
-    .game-card {
-      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    /* Modern Card Styling */
+    .card {
+      background: #1e1e1e;
+      color: #fff;
+      border-radius: 15px;
+      padding: 30px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 100%;
       transition: all 0.3s ease-in-out;
     }
 
-    .game-card:hover {
-      transform: translateY(-10px);
-      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    .card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 6px 30px rgba(0, 0, 0, 0.15);
     }
 
+    /* Text Styling */
+    h1, h2 {
+      font-family: 'Roboto', sans-serif;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: bold;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    /* Buttons Styling */
+    .btn {
+      padding: 12px 24px;
+      border-radius: 25px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s;
+      width: 100%;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .btn-blue {
+      background: #007bff;
+      color: white;
+    }
+
+    .btn-blue:hover {
+      background: #0056b3;
+    }
+
+    .btn-green {
+      background: #28a745;
+      color: white;
+    }
+
+    .btn-green:hover {
+      background: #218838;
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-secondary {
+      background: #6c757d;
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #5a6268;
+    }
+
+    /* Input Fields */
+    input, textarea {
+      background-color: #2d2d2d;
+      color: white;
+      padding: 12px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 15px;
+      width: 100%;
+      font-size: 1rem;
+    }
+
+    input:focus, textarea:focus {
+      outline: none;
+      border: 2px solid #007bff;
+      box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+    }
+
+    /* Responsive Layout */
+    @media (max-width: 768px) {
+      .card {
+        padding: 20px;
+      }
+    }
   </style>
 </head>
-<body class="bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 min-h-screen flex justify-center items-center p-6">
+<body>
   <!-- Welcome Page -->
-  <div id="welcomePage" class="w-[360px] bg-white rounded-lg p-8 shadow-xl game-card text-center transition transform scale-100 hover:scale-105">
-    <h1 class="text-3xl font-bold mb-4 text-gray-800">Welcome to the Game</h1>
-    <p class="text-lg mb-6 text-gray-600">⚠️ This game has financial risks. Play carefully! ⚠️</p>
-    <button id="startGameBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg btn-hover transition-all duration-200">Start Game</button>
+  <div id="welcomePage" class="card text-center">
+    <h1>Welcome to the Game</h1>
+    <p class="text-lg mb-6">⚠️ This game has financial risks. Play carefully! ⚠️</p>
+    <button id="startGameBtn" class="btn btn-blue">Start Game</button>
   </div>
 
   <!-- Game Page (hidden initially) -->
-  <section id="gamePage" class="w-[360px] bg-white rounded-lg p-6 shadow-xl hidden fade-in">
-    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-800">Game Point</h2>
+  <section id="gamePage" class="card hidden">
+    <h2>Game Point</h2>
 
-    <div class="mb-4 flex gap-2">
-      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded-lg px-4 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
-      <button id="addPlayerBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg btn-hover transition-all duration-200">Add</button>
+    <input type="text" id="newPlayerName" placeholder="Add player name" class="mb-4" />
+    <button id="addPlayerBtn" class="btn btn-green">Add</button>
+
+    <div id="playersList" class="space-y-4 mt-6 max-h-60 overflow-auto"></div>
+
+    <div class="flex gap-4 mt-6">
+      <button id="clearBtn" class="btn btn-secondary">Clear</button>
+      <button id="submitBtn" class="btn btn-blue">Submit</button>
     </div>
 
-    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+    <button id="clearAllBtn" class="btn btn-danger mt-4">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="btn btn-green mt-4">Send Points on WhatsApp</button>
 
-    <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded-lg btn-hover hover:bg-gray-400 transition-all duration-200">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg btn-hover hover:bg-blue-700 transition-all duration-200">Submit</button>
-    </div>
-
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded-lg mb-4 btn-hover hover:bg-red-700 transition-all duration-200">Clear All Data</button>
-    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded-lg mb-4 btn-hover hover:bg-green-600 transition-all duration-200">Send Points on WhatsApp</button>
-
-    <div id="pointsHistory" class="bg-gray-100 p-3 rounded-lg mb-4 text-sm max-h-40 overflow-auto"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded-lg text-sm max-h-40 overflow-auto"></div>
+    <div id="pointsHistory" class="bg-gray-800 p-4 mt-4 rounded-lg text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-gray-800 p-4 mt-4 rounded-lg text-sm max-h-40 overflow-auto"></div>
   </section>
 
   <script>
@@ -194,7 +259,7 @@
             <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
-          <span class="text-sm text-gray-600">Points: ${data[name]}</span>
+          <span class="text-sm text-gray-400">Points: ${data[name]}</span>
           <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded-lg btn-hover hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
