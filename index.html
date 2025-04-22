@@ -31,10 +31,22 @@
       10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
+
+    .hidden {
+      display: none;
+    }
   </style>
 </head>
-<body class="bg-blue-100 min-h-screen flex justify-center py-6">
-  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
+<body class="bg-blue-100 min-h-screen flex justify-center items-center">
+  <!-- Welcome Page -->
+  <div id="welcomePage" class="w-[360px] bg-white rounded-lg p-6 shadow-lg text-center">
+    <h1 class="text-3xl font-bold mb-4">Welcome to the Game</h1>
+    <p class="text-lg mb-6">⚠️ This game has financial risks. Play carefully! ⚠️</p>
+    <button id="startGameBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Start Game</button>
+  </div>
+
+  <!-- Game Page (hidden initially) -->
+  <section id="gamePage" class="w-[360px] bg-white rounded-lg p-6 shadow-lg hidden">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
 
     <div class="mb-4 flex gap-2">
@@ -76,6 +88,15 @@
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
     const newPlayerInput = document.getElementById('newPlayerName');
+    const welcomePage = document.getElementById('welcomePage');
+    const gamePage = document.getElementById('gamePage');
+    const startGameBtn = document.getElementById('startGameBtn');
+
+    // Show game page after starting
+    startGameBtn.onclick = () => {
+      welcomePage.classList.add('hidden');
+      gamePage.classList.remove('hidden');
+    };
 
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
