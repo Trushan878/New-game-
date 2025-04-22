@@ -3,28 +3,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Multiplayer Game Points</title>
+  <title>Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
-</head>
-<body class="bg-gray-100 p-4">
-  <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
-    <h2 class="text-2xl font-bold mb-4">Multiplayer Game Points</h2>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    .congrats-popup {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
+      z-index: 10000;
+      opacity: 0;
+      animation: fadeInOut 3s forwards;
+      white-space: nowrap;
+    }
 
-    <div class="flex mb-4">
-      <input type="text" id="playerName" placeholder="Player name" class="flex-1 border px-2 py-1 rounded-l" />
-      <button onclick="addPlayer()" class="bg-green-500 text-white px-4 py-1 rounded-r">Add</button>
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body class="bg-blue-100 min-h-screen flex justify-center py-6">
+  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
+
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
     </div>
 
-    <div id="playerList" class="space-y-2 mb-4"></div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
-    <button onclick="submitPoints()" class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2">Submit Points</button>
-    <button onclick="clearPoints()" class="bg-red-500 text-white px-4 py-2 rounded w-full mb-4">Clear All Points</button>
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
 
-    <h3 class="text-lg font-bold mb-2">Game History</h3>
-    <ul id="historyList" class="text-sm bg-gray-50 p-2 rounded max-h-40 overflow-y-auto"></ul>
-  </div>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+  </section>
 
   <script>
     const firebaseConfig = {
@@ -40,89 +67,88 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const playersRef = db.ref("players");
-    const historyRef = db.ref("history");
+    const historyRef = db.ref("gameHistory");
 
-    const playerListDiv = document.getElementById("playerList");
-    const historyList = document.getElementById("historyList");
+    const playersList = document.getElementById('playersList');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
+    const newPlayerInput = document.getElementById('newPlayerName');
 
-    function renderPlayers(players) {
-      playerListDiv.innerHTML = "";
-      for (const [name, points] of Object.entries(players || {})) {
-        const id = name.replace(/\s+/g, "-");
-        const div = document.createElement("div");
-        div.className = "flex items-center justify-between bg-gray-200 px-3 py-2 rounded";
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      playersRef.child(name).set(0);
+      newPlayerInput.value = '';
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    };
+
+    document.getElementById('submitBtn').onclick = () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        playersRef.child(name).get().then(snap => {
+          const current = snap.exists() ? snap.val() : 0;
+          playersRef.child(name).set(current + 1);
+        });
+      });
+
+      if (selected.length > 0) {
+        const entry = `${new Date().toLocaleTimeString()}: ${selected.join(', ')} scored.`;
+        historyRef.push(entry);
+        showCongrats(selected);
+      }
+    };
+
+    function showCongrats(names) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        speechSynthesis.speak(msg);
+      }
+    }
+
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
+
+      for (const name in data) {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
 
         div.innerHTML = `
           <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="point-checkbox" />
-            <span class="font-medium">${name}</span>
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <span class="text-lg">${name}</span>
           </label>
-          <span class="text-right">Total: <b>${points}</b></span>
+          <span class="text-sm text-gray-600">Points: ${data[name]}</span>
         `;
-        playerListDiv.appendChild(div);
-      }
-    }
+        playersList.appendChild(div);
 
-    function renderHistory(history) {
-      historyList.innerHTML = "";
-      if (history) {
-        Object.values(history).reverse().forEach(item => {
-          const li = document.createElement("li");
-          li.textContent = `${item.time} → ${item.players.join(", ")}`;
-          historyList.appendChild(li);
-        });
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name]} points`;
+        pointsHistory.appendChild(historyEntry);
       }
-    }
-
-    playersRef.on("value", snapshot => {
-      renderPlayers(snapshot.val());
     });
 
-    historyRef.on("value", snapshot => {
-      renderHistory(snapshot.val());
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      gameHistory.innerHTML = '';
+      for (const key in data) {
+        const div = document.createElement('div');
+        div.textContent = data[key];
+        gameHistory.appendChild(div);
+      }
     });
-
-    function addPlayer() {
-      const name = document.getElementById("playerName").value.trim();
-      if (!name) return alert("Enter a player name");
-      playersRef.child(name).get().then(snapshot => {
-        if (!snapshot.exists()) {
-          playersRef.child(name).set(0);
-        } else {
-          alert("Player already exists");
-        }
-        document.getElementById("playerName").value = "";
-      });
-    }
-
-    function submitPoints() {
-      const checkboxes = document.querySelectorAll(".point-checkbox");
-      const updated = [];
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          const name = cb.value;
-          updated.push(name);
-          playersRef.child(name).get().then(snapshot => {
-            const current = snapshot.val() || 0;
-            playersRef.child(name).set(current + 1);
-          });
-        }
-      });
-
-      if (updated.length > 0) {
-        const now = new Date();
-        const time = now.toLocaleString();
-        const log = { time, players: updated };
-        historyRef.push(log);
-      }
-    }
-
-    function clearPoints() {
-      if (confirm("Are you sure you want to reset all points and history?")) {
-        playersRef.set({});
-        historyRef.set({});
-      }
-    }
   </script>
 </body>
 </html>
