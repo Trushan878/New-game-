@@ -19,18 +19,25 @@
       height: 100vh;
       background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRzLVOIfMK-RaddgQI2AtGJCTXeDxcVo3d9Tcs3NAvYuPR_0gVNewMWV0wG&s=10');
       background-size: cover;
+      background-position: center;
       color: white;
       text-align: center;
-      font-size: 1.5rem;
       padding: 2rem;
+    }
+
+    .transparent-warning {
+      backdrop-filter: blur(10px);
+      border: 2px solid white;
+      border-radius: 10px;
+      padding: 1rem;
+      margin-top: 1rem;
+      font-weight: bold;
+      font-size: 1.2rem;
     }
 
     .game-board {
       display: none;
       padding: 20px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .congrats-popup {
@@ -44,7 +51,6 @@
       border-radius: 0.75rem;
       font-size: 1.5rem;
       font-weight: 600;
-      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
       z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
@@ -55,57 +61,15 @@
       10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
-
-    .hidden {
-      display: none;
-    }
-
-    .warning-box {
-      color: white;
-      padding: 1rem;
-      border-radius: 8px;
-      margin-top: 1rem;
-      font-weight: bold;
-      border: 1px solid red;
-      background-color: transparent;
-    }
-
-    .warning-box-playcare {
-      border: 1px solid yellow;
-      background-color: transparent;
-    }
-
-    .whatsapp-button {
-      background-color: #25d366;
-      color: white;
-      padding: 10px 20px;
-      border-radius: 5px;
-      text-align: center;
-      cursor: pointer;
-      width: 100%;
-      font-weight: bold;
-      margin-top: 10px;
-      text-decoration: none;
-    }
-
-    .whatsapp-button:hover {
-      background-color: #128c7e;
-    }
-
-    .whatsapp-container {
-      display: none;
-    }
   </style>
 </head>
 <body>
   <div id="welcomePage" class="welcome-page">
     <div>
-      <h1>Welcome to the Game!</h1>
-      <div id="warningBoxRisk" class="warning-box">
-        ⚠️ This game has financial risk ⚠️
-      </div>
-      <div id="warningBoxPlayCare" class="warning-box warning-box-playcare">
-        ⚠️ Play carefully ⚠️
+      <h1 class="text-3xl font-bold">Welcome to the Game!</h1>
+      <div class="transparent-warning">
+        ⚠️ This Game has financial risk.<br>
+        ⚠️ Play carefully.
       </div>
       <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
     </div>
@@ -126,24 +90,13 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-
-    <!-- WhatsApp Button -->
-    <div id="whatsappContainer" class="whatsapp-container">
-      <a id="whatsappBtn" class="whatsapp-button" href="#" target="_blank">Send Points to WhatsApp</a>
-    </div>
   </section>
 
-  <!-- KGF Sound -->
-  <audio id="kgfAudio" src="https://raw.githubusercontent.com/Trushan878/New-game-/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3" preload="auto"></audio>
-
-  <!-- AWM Shot Sound -->
-  <audio id="awmShotAudio" src="https://www.soundjay.com/button/beep-07.wav" preload="auto"></audio>
-
   <script>
-    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
       authDomain: "index-e95d1.firebaseapp.com",
@@ -165,44 +118,35 @@
     const newPlayerInput = document.getElementById('newPlayerName');
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
-    const kgfAudio = document.getElementById('kgfAudio');
-    const awmShotAudio = document.getElementById('awmShotAudio');
 
-    // Display warning box only once
-    document.getElementById('warningBoxRisk').classList.remove('hidden');
-    document.getElementById('warningBoxPlayCare').classList.remove('hidden');
-
-    // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
-      kgfAudio.play(); // Play KGF sound immediately
-      welcomePage.style.display = 'none';  // Hide welcome page
-      gameBoard.style.display = 'block';   // Show game board
-      document.getElementById('whatsappContainer').style.display = 'block';  // Show WhatsApp button
+      welcomePage.style.display = 'none';
+      gameBoard.style.display = 'block';
+      const audio = new Audio('https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3');
+      audio.currentTime = 10;
+      audio.play();
+      setTimeout(() => audio.pause(), 4000);
     };
 
-    // Add player
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
       if (!name) return;
-
       playersRef.child(name).set({ points: 0 });
       newPlayerInput.value = '';
     };
 
-    // Clear all points (keep player names)
     document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure you want to clear points and game history?")) {
-        // Only clear points and history, leave player names intact
-        playersRef.once('value', (snap) => {
-          snap.forEach((child) => {
-            playersRef.child(child.key).update({ points: 0 }); // Reset points
-          });
+      if (confirm("Are you sure you want to clear all points and history?")) {
+        playersRef.once("value", snap => {
+          const players = snap.val() || {};
+          for (const name in players) {
+            playersRef.child(name).update({ points: 0 });
+          }
         });
-        historyRef.remove(); // Remove game history
+        historyRef.remove();
       }
     };
 
-    // Submit Points
     document.getElementById('submitBtn').onclick = async () => {
       const selected = [];
       document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
@@ -223,7 +167,6 @@
       }
     };
 
-    // Show congratulations popup with sound
     let congratsCount = 0;
     function showCongrats(names) {
       if (congratsCount >= 5) return;
@@ -234,16 +177,10 @@
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
 
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-        speechSynthesis.speak(msg);
-      }
-
       const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
       audio.play();
     }
 
-    // Display players and points
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
@@ -255,7 +192,7 @@
 
         div.innerHTML = `
           <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <input type="checkbox" value="${name}" class="w-5 h-5 player-check" />
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
@@ -271,35 +208,43 @@
         };
       });
 
+      document.querySelectorAll('.player-check').forEach(cb => {
+        cb.onchange = () => {
+          if (cb.checked) {
+            const sound = new Audio("https://cdn.freesound.org/previews/459/459829_838627-lq.mp3");
+            sound.play();
+          }
+        };
+      });
+
       for (const name in data) {
         const historyEntry = document.createElement('div');
         historyEntry.textContent = `${name}: ${data[name].points} points`;
         pointsHistory.appendChild(historyEntry);
       }
+    });
 
-      // Update Game History
-      historyRef.on('value', snap => {
-        gameHistory.innerHTML = '';
-        snap.forEach(entry => {
-          const historyItem = document.createElement('div');
-          historyItem.textContent = entry.val();
-          gameHistory.appendChild(historyItem);
-        });
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      const entries = Object.values(data);
+      gameHistory.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = entry;
+        gameHistory.appendChild(div);
       });
     });
 
-    // WhatsApp share button
-    document.getElementById('whatsappBtn').onclick = function () {
-      const playerPoints = [];
-      document.querySelectorAll('#playersList input:checked').forEach((checkbox) => {
-        const playerName = checkbox.value;
-        const points = checkbox.nextElementSibling.textContent.replace('Points: ', '');
-        playerPoints.push(`*${playerName}*: ${points} points`);
-      });
-      if (playerPoints.length) {
-        const message = `*Game Points*\n\n${playerPoints.join('\n')}`;
-        window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, '_blank');
+    document.getElementById('whatsappBtn').onclick = async () => {
+      const snap = await playersRef.once('value');
+      const players = snap.val() || {};
+      let message = `*Game Points - ${new Date().toLocaleDateString()}*\n\n`;
+      for (const name in players) {
+        message += `*${name}*: ${players[name].points} points\n`;
       }
+
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
     };
   </script>
 </body>
