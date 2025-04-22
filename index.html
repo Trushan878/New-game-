@@ -183,12 +183,12 @@
     }
 
     // Start Game Button
-    document.getElementById('startGameBtn').onclick = () => {
+    document.getElementById('startGameBtn').addEventListener('click', () => {
       // Hide welcome page and show game board
       welcomePage.style.display = 'none';
       gameBoard.style.display = 'block';
       playRandomGunshot(); // Play gunshot when game starts
-    };
+    });
 
     // Add Player with Random Avatar
     document.getElementById('addPlayerBtn').onclick = () => {
