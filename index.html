@@ -19,26 +19,15 @@
       height: 100vh;
       background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
       background-size: cover;
-      background-position: center;
-      position: relative;
       color: white;
       text-align: center;
       font-size: 1.5rem;
       padding: 2rem;
-    }
-
-    .overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.5);
-      z-index: 0;
+      position: relative;
     }
 
     .warning-box {
-      background-color: transparent;
+      background-color: rgba(0, 0, 0, 0.3);
       border: 2px solid red;
       padding: 10px;
       border-radius: 10px;
@@ -77,72 +66,70 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
 
-    /* Animated Button */
-    .animated-button {
-      position: relative;
-      overflow: hidden;
-      padding: 10px 20px;
-      font-size: 1.25rem;
+    .fade-in {
+      animation: fadeIn 0.5s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-out {
+      animation: fadeOut 0.5s ease-in;
+    }
+
+    @keyframes fadeOut {
+      from { opacity: 1; transform: translateY(0); }
+      to { opacity: 0; transform: translateY(-10px); }
+    }
+
+    #pointNotification {
+      position: fixed;
+      bottom: 4%;
+      left: 4%;
+      background-color: #28a745;
       color: white;
-      background-color: #22c55e;
-      border: 2px solid #22c55e;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.4s ease;
-    }
-
-    .animated-button::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      width: 300%;
-      height: 300%;
-      background-color: rgba(255, 255, 255, 0.15);
-      transition: all 0.4s ease;
-      border-radius: 50%;
-      transform: translate(-50%, -50%);
-      opacity: 0;
-    }
-
-    .animated-button:hover::before {
-      width: 0;
-      height: 0;
-      opacity: 1;
-    }
-
-    .animated-button:hover {
-      background-color: white;
-      color: #22c55e;
-    }
-
-    .animated-button:focus {
-      outline: none;
+      padding: 10px;
+      border-radius: 8px;
+      font-weight: bold;
+      display: none;
+      z-index: 1000;
     }
 
   </style>
 </head>
 <body>
+  <!-- Welcome Page -->
   <div id="welcomePage" class="welcome-page">
-    <div class="overlay"></div>
-    <div style="z-index: 1; position: relative;">
+    <div>
       <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
-
-      <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
-      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
-
-      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
+      <div class="warning-box mb-2">
+        ⚠️ This Game has Financial Risk ⚠️
+      </div>
+      <div class="warning-box">
+        ⚠️ Play Carefully ⚠️
+      </div>
+      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-6">Start Game</button>
+      <button id="darkModeToggle" class="absolute top-4 right-4 p-2 bg-gray-800 text-white rounded-lg">Dark Mode</button>
     </div>
   </div>
 
+  <!-- Game Board -->
   <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+
     <div class="mb-4 flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
       <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
     </div>
 
     <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+
+    <div id="leaderboard" class="mt-6 p-4 bg-blue-100 rounded-lg">
+      <h3 class="text-xl font-semibold">Leaderboard</h3>
+      <div id="leaderboardList" class="mt-2"></div>
+    </div>
 
     <div class="flex justify-between gap-2 mb-4">
       <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
@@ -155,6 +142,11 @@
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
+
+  <!-- Notification Popup -->
+  <div id="pointNotification">
+    <span id="notificationText">Points Updated!</span>
+  </div>
 
   <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
 
@@ -178,9 +170,14 @@
     const startGameBtn = document.getElementById('startGameBtn');
     const startSound = document.getElementById('startSound');
     const playersList = document.getElementById('playersList');
+    const leaderboardList = document.getElementById('leaderboardList');
     const newPlayerInput = document.getElementById('newPlayerName');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
+    const pointNotification = document.getElementById('pointNotification');
+    const notificationText = document.getElementById('notificationText');
+
+    let isDarkMode = false;
 
     startGameBtn.onclick = () => {
       welcomePage.style.display = 'none';
@@ -190,124 +187,85 @@
       setTimeout(() => startSound.pause(), 4000);
     };
 
+    document.getElementById('darkModeToggle').onclick = () => {
+      isDarkMode = !isDarkMode;
+      if (isDarkMode) {
+        document.body.classList.add('bg-gray-800', 'text-white');
+      } else {
+        document.body.classList.remove('bg-gray-800', 'text-white');
+      }
+    };
+
+    // Add Player
     document.getElementById('addPlayerBtn').onclick = () => {
-      const name = newPlayerInput.value.trim();
-      if (!name) return;
-      playersRef.child(name).set({ points: 0 });
-      newPlayerInput.value = '';
-    };
-
-    document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure you want to clear all player points and game history?")) {
-        playersRef.once('value', snapshot => {
-          const data = snapshot.val() || {};
-          for (const name in data) {
-            playersRef.child(name).update({ points: 0 });
-          }
+      const playerName = newPlayerInput.value.trim();
+      if (playerName) {
+        const playerRef = playersRef.push();
+        playerRef.set({
+          name: playerName,
+          points: 0,
         });
-        historyRef.remove();
+
+        newPlayerInput.value = '';  // Clear input after adding
+
+        showPointNotification(playerName);
       }
     };
 
-    document.getElementById('submitBtn').onclick = async () => {
-      const selected = [];
-      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-        const name = cb.value;
-        selected.push(name);
-        const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
-        awm.play();
-        playersRef.child(name).get().then(snap => {
-          const current = snap.exists() ? snap.val().points : 0;
-          playersRef.child(name).update({ points: current + 1 });
-        });
-      });
-
-      if (selected.length > 0) {
-        const snap = await historyRef.once('value');
-        const gameNumber = snap.numChildren() + 1;
-        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-        historyRef.push(entry);
-        showCongrats(selected);
-      }
-    };
-
-    let congratsCount = 0;
-    function showCongrats(names) {
-      if (congratsCount >= 5) return;
-      congratsCount++;
-
-      const popup = document.createElement('div');
-      popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations ${names.join(', ')}!`;
-      document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 3000);
-
-      const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
-      audio.play();
-
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = `Congratulations ${names.join(', ')}!`;
-        msg.lang = 'en-US';
-        speechSynthesis.speak(msg);
-      }
+    // Show point update notification
+    function showPointNotification(playerName) {
+      notificationText.textContent = `${playerName} gained a point!`;
+      pointNotification.classList.remove('hidden');
+      setTimeout(() => {
+        pointNotification.classList.add('hidden');
+      }, 2000);
     }
 
+    playersRef.on('child_added', snapshot => {
+      const player = snapshot.val();
+      const playerName = player.name;
+      const playerPoints = player.points;
+
+      const playerDiv = document.createElement('div');
+      playerDiv.className = 'fade-in p-4 bg-blue-50 rounded-lg';
+      playerDiv.innerHTML = `
+        <span class="text-lg font-semibold">${playerName}</span> - 
+        <span class="text-lg" id="playerPoints-${snapshot.key}">${playerPoints}</span>
+        <button onclick="incrementPoints('${snapshot.key}')" class="ml-4 text-green-600">+1 Point</button>
+      `;
+      playersList.appendChild(playerDiv);
+    });
+
+    // Update Points
+    function incrementPoints(playerId) {
+      const playerRef = playersRef.child(playerId);
+      playerRef.once('value').then(snapshot => {
+        const playerPoints = snapshot.val().points;
+        playerRef.update({
+          points: playerPoints + 1
+        });
+        showPointNotification(snapshot.val().name);
+      });
+    }
+
+    // Update leaderboard
     playersRef.on('value', snap => {
       const data = snap.val() || {};
-      playersList.innerHTML = '';
-      pointsHistory.innerHTML = '';
+      const leaderboard = Object.keys(data)
+        .map(name => ({ name, points: data[name].points }))
+        .sort((a, b) => b.points - a.points);
 
-      for (const name in data) {
+      leaderboardList.innerHTML = '';
+      leaderboard.forEach(player => {
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between';
+        div.className = 'flex justify-between items-center mb-2 p-2 bg-white rounded-lg';
         div.innerHTML = `
-          <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="w-5 h-5" />
-            <span class="text-lg">${name}</span>
-          </label>
-          <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
-          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+          <span class="text-lg font-medium">${player.name}</span>
+          <span class="text-lg">${player.points} Points</span>
         `;
-        playersList.appendChild(div);
-      }
-
-      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-        btn.onclick = () => {
-          const playerToRemove = btn.getAttribute('data-player');
-          playersRef.child(playerToRemove).remove();
-        };
-      });
-
-      for (const name in data) {
-        const historyEntry = document.createElement('div');
-        historyEntry.textContent = `${name}: ${data[name].points} points`;
-        pointsHistory.appendChild(historyEntry);
-      }
-    });
-
-    historyRef.on('value', snap => {
-      const data = snap.val() || {};
-      gameHistory.innerHTML = '';
-      Object.values(data).forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-        gameHistory.appendChild(div);
+        leaderboardList.appendChild(div);
       });
     });
-
-    document.getElementById('whatsappBtn').onclick = async () => {
-      const snap = await playersRef.once('value');
-      const data = snap.val() || {};
-      let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
-
-      for (const name in data) {
-        message += `*${name}* — ${data[name].points} point(s)\n`;
-      }
-
-      const encoded = encodeURIComponent(message);
-      window.open(`https://wa.me/?text=${encoded}`, '_blank');
-    };
   </script>
 </body>
 </html>
