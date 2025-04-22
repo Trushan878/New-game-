@@ -5,9 +5,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database-compat.js"></script>
   <style>
+    body {
+      background-image: url('1000032064.jpg');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      min-height: 100vh;
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      opacity: 0.9;
+      animation: confetti-fall 3s linear forwards;
+      z-index: 9999;
+      border-radius: 2px;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .confetti.color1 { background-color: #f59e0b; }
+    .confetti.color2 { background-color: #10b981; }
+    .confetti.color3 { background-color: #3b82f6; }
+
     .congrats-popup {
       position: fixed;
       top: 20%;
@@ -25,7 +49,6 @@
       animation: fadeInOut 3s forwards;
       white-space: nowrap;
     }
-
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
       10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
@@ -33,154 +56,137 @@
     }
   </style>
 </head>
-<body class="bg-blue-100 min-h-screen flex justify-center py-6">
-  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
-    <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
+<body class="flex justify-center items-start py-6 overflow-x-hidden">
+  <section class="w-[360px] max-w-full bg-white bg-opacity-90 rounded-lg p-6 shadow-lg z-0">
+    <h1 class="text-2xl font-bold text-center mb-4">Game Scoreboard</h1>
 
-    <div class="mb-4 flex gap-2">
-      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    <div class="flex gap-2 mb-4">
+      <input id="playerName" class="flex-1 border p-2 rounded" placeholder="Enter player name" />
+      <button onclick="addPlayer()" class="bg-blue-500 text-white px-4 py-2 rounded">Add</button>
     </div>
 
-    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+    <ul id="playersList" class="mb-4 space-y-2"></ul>
 
-    <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    <div class="mb-4">
+      <button onclick="nextGame()" class="bg-green-500 text-white px-4 py-2 rounded w-full">Next Game</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <div class="mb-4">
+      <button onclick="clearData()" class="bg-red-500 text-white px-4 py-2 rounded w-full">Clear All Data</button>
+    </div>
 
-    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+    <div>
+      <h2 class="text-lg font-semibold mb-2">Game History</h2>
+      <ul id="gameHistory" class="space-y-1 text-sm"></ul>
+    </div>
   </section>
 
   <script>
     const firebaseConfig = {
-      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-      authDomain: "index-e95d1.firebaseapp.com",
-      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-      projectId: "index-e95d1",
-      storageBucket: "index-e95d1.appspot.com",
-      messagingSenderId: "340216728284",
-      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+      databaseURL: "https://your-project.firebaseio.com/" // Replace with your database URL
     };
-
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
-    const playersRef = db.ref("players");
-    const historyRef = db.ref("gameHistory");
 
+    const playerInput = document.getElementById('playerName');
     const playersList = document.getElementById('playersList');
-    const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
-    const newPlayerInput = document.getElementById('newPlayerName');
 
-    document.getElementById('addPlayerBtn').onclick = () => {
-      const name = newPlayerInput.value.trim();
+    function renderPlayers(players) {
+      playersList.innerHTML = '';
+      Object.entries(players || {}).forEach(([id, data]) => {
+        const li = document.createElement('li');
+        li.className = "bg-gray-100 p-2 rounded flex justify-between items-center";
+        li.innerHTML = `
+          <span>${data.name}: ${data.points || 0}</span>
+          <div class="space-x-1">
+            <button onclick="addPoint('${id}')" class="bg-green-500 text-white px-2 py-1 rounded">+1</button>
+            <button onclick="removePlayer('${id}')" class="bg-red-500 text-white px-2 py-1 rounded">X</button>
+          </div>
+        `;
+        playersList.appendChild(li);
+      });
+    }
+
+    function renderHistory(history) {
+      gameHistory.innerHTML = '';
+      history.forEach((game, i) => {
+        const li = document.createElement('li');
+        li.textContent = `Game ${i + 1}: ${game}`;
+        gameHistory.appendChild(li);
+      });
+    }
+
+    function addPlayer() {
+      const name = playerInput.value.trim();
       if (!name) return;
-      playersRef.child(name).set(0);
-      newPlayerInput.value = '';
-    };
+      const newRef = db.ref('players').push();
+      newRef.set({ name, points: 0 });
+      playerInput.value = '';
+    }
 
-    document.getElementById('clearBtn').onclick = () => {
-      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    };
-
-    document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
-        // Remove points and game history, but keep players
-        const players = {};
-        playersRef.once('value', snap => {
-          snap.forEach(child => {
-            players[child.key] = 0;
-          });
-          playersRef.set(players); // Reset points for all players
+    function addPoint(id) {
+      const ref = db.ref(`players/${id}`);
+      ref.once('value', snap => {
+        const player = snap.val();
+        const newPoints = (player.points || 0) + 1;
+        ref.update({ points: newPoints });
+        db.ref('history').once('value', snap => {
+          const games = snap.val() || [];
+          games.push(`${player.name} scored`);
+          db.ref('history').set(games);
         });
+        showCongrats(`${player.name} scored!`);
+        triggerConfetti();
+      });
+    }
 
-        historyRef.remove(); // Clear game history
-      }
-    };
+    function nextGame() {
+      db.ref('history').once('value', snap => {
+        const games = snap.val() || [];
+        games.push(`Game ${games.length + 1} started`);
+        db.ref('history').set(games);
+      });
+    }
 
-    document.getElementById('submitBtn').onclick = async () => {
-      const selected = [];
-      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-        const name = cb.value;
-        selected.push(name);
-        playersRef.child(name).get().then(snap => {
-          const current = snap.exists() ? snap.val() : 0;
-          playersRef.child(name).set(current + 1);
+    function clearData() {
+      db.ref('players').once('value', snap => {
+        const players = snap.val() || {};
+        Object.entries(players).forEach(([id, data]) => {
+          db.ref(`players/${id}/points`).set(0);
         });
       });
+      db.ref('history').set([]);
+    }
 
-      if (selected.length > 0) {
-        const snap = await historyRef.once('value');
-        const gameNumber = snap.numChildren() + 1;
-        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-        historyRef.push(entry);
-        showCongrats(selected);
-      }
-    };
+    function removePlayer(id) {
+      db.ref(`players/${id}`).remove();
+    }
 
-    function showCongrats(names) {
+    function showCongrats(text) {
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      popup.textContent = text;
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
+    }
 
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-        speechSynthesis.speak(msg);
+    function triggerConfetti() {
+      for (let i = 0; i < 20; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti color' + (1 + (i % 3));
+        confetti.style.left = Math.random() * 100 + 'vw';
+        document.body.appendChild(confetti);
+        setTimeout(() => confetti.remove(), 3000);
       }
     }
 
-    playersRef.on('value', snap => {
-      const data = snap.val() || {};
-      playersList.innerHTML = '';
-      pointsHistory.innerHTML = '';
-
-      for (const name in data) {
-        const div = document.createElement('div');
-        div.className = 'flex items-center justify-between';
-
-        div.innerHTML = `
-          <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="w-5 h-5" />
-            <span class="text-lg">${name}</span>
-          </label>
-          <span class="text-sm text-gray-600">Points: ${data[name]}</span>
-          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
-        `;
-        playersList.appendChild(div);
-      }
-
-      // Add remove player functionality
-      const removeBtns = document.querySelectorAll('.removePlayerBtn');
-      removeBtns.forEach(btn => {
-        btn.onclick = () => {
-          const playerToRemove = btn.getAttribute('data-player');
-          playersRef.child(playerToRemove).remove();  // Remove player from Firebase
-        };
-      });
-
-      // Render points history
-      for (const name in data) {
-        const historyEntry = document.createElement('div');
-        historyEntry.textContent = `${name}: ${data[name]} points`;
-        pointsHistory.appendChild(historyEntry);
-      }
+    db.ref('players').on('value', snap => {
+      renderPlayers(snap.val());
     });
 
-    historyRef.on('value', snap => {
-      const data = snap.val() || {};
-      const entries = Object.values(data);
-      gameHistory.innerHTML = '';
-      entries.forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-        gameHistory.appendChild(div);
-      });
+    db.ref('history').on('value', snap => {
+      renderHistory(snap.val() || []);
     });
   </script>
 </body>
