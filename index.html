@@ -68,16 +68,18 @@
     }
 
     .warning-box {
-      background-color: #ff4d4d;
       color: white;
       padding: 1rem;
       border-radius: 8px;
       margin-top: 1rem;
       font-weight: bold;
+      border: 1px solid red; /* Border remains for visibility */
+      background-color: transparent; /* Transparent background */
     }
 
     .warning-box-playcare {
-      background-color: #ffbb33;
+      border: 1px solid yellow; /* Different border color for playcare warning */
+      background-color: transparent; /* Transparent background */
     }
   </style>
 </head>
@@ -166,11 +168,16 @@
       newPlayerInput.value = '';
     };
 
-    // Clear all points
+    // Clear all points (keep player names)
     document.getElementById('clearAllBtn').onclick = () => {
       if (confirm("Are you sure you want to clear points and game history?")) {
-        playersRef.set({});
-        historyRef.remove();
+        // Only clear points and history, leave player names intact
+        playersRef.once('value', (snap) => {
+          snap.forEach((child) => {
+            playersRef.child(child.key).update({ points: 0 }); // Reset points
+          });
+        });
+        historyRef.remove(); // Remove game history
       }
     };
 
