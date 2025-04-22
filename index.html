@@ -34,16 +34,7 @@
   </style>
 </head>
 <body class="bg-blue-100 min-h-screen flex justify-center py-6">
-
-  <!-- Welcome overlay with warning -->
-  <div id="welcomeOverlay" class="fixed inset-0 bg-blue-700 text-white flex flex-col items-center justify-center z-50 px-4 text-center">
-    <h1 class="text-4xl font-bold animate-bounce mb-4">Welcome to the Game!</h1>
-    <p class="text-lg font-medium bg-yellow-400 text-black px-4 py-2 rounded-lg shadow-md">
-      This game has financial risk. Play carefully.
-    </p>
-  </div>
-
-  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg relative z-10">
+  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
 
     <div class="mb-4 flex gap-2">
@@ -59,37 +50,13 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
 
   <script>
-    // Welcome overlay removal with speech
-    window.addEventListener('load', () => {
-      const welcome = document.getElementById('welcomeOverlay');
-      const warningText = "This game has financial risk. Play carefully.";
-
-      // Speech synthesis
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(warningText);
-        msg.rate = 1.0; // Set speech rate
-        speechSynthesis.speak(msg);
-
-        // Wait for the speech to end before removing the overlay
-        msg.onend = function() {
-          welcome.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
-          setTimeout(() => welcome.remove(), 1000);
-        };
-      } else {
-        // If speech synthesis is not supported, remove overlay after a delay
-        setTimeout(() => {
-          welcome.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
-          setTimeout(() => welcome.remove(), 1000);
-        }, 3000);
-      }
-    });
-
     const firebaseConfig = {
       apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
       authDomain: "index-e95d1.firebaseapp.com",
@@ -211,6 +178,21 @@
         gameHistory.appendChild(div);
       });
     });
+
+    document.getElementById('sendWhatsAppBtn').onclick = async () => {
+      const playersSnap = await playersRef.once('value');
+      const playersData = playersSnap.val() || {};
+
+      let message = '🏆 *Game Points Summary* 🏆\n\n';
+      for (const name in playersData) {
+        message += `• ${name} — ${playersData[name]} pts\n`;
+      }
+      message += '\nKeep it up, players!';
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+    };
   </script>
 </body>
 </html>
