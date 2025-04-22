@@ -35,9 +35,12 @@
 </head>
 <body class="bg-blue-100 min-h-screen flex justify-center py-6">
 
-  <!-- Welcome animation overlay -->
-  <div id="welcomeOverlay" class="fixed inset-0 bg-blue-600 flex items-center justify-center z-50">
-    <h1 class="text-4xl font-bold text-white animate-bounce">Welcome to the Game!</h1>
+  <!-- Welcome overlay with warning -->
+  <div id="welcomeOverlay" class="fixed inset-0 bg-blue-700 text-white flex flex-col items-center justify-center z-50 px-4 text-center">
+    <h1 class="text-4xl font-bold animate-bounce mb-4">Welcome to the Game!</h1>
+    <p class="text-lg font-medium bg-yellow-400 text-black px-4 py-2 rounded-lg shadow-md">
+      This game has financial risk. Play carefully.
+    </p>
   </div>
 
   <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg relative z-10">
@@ -62,13 +65,21 @@
   </section>
 
   <script>
-    // Welcome overlay removal
+    // Welcome overlay removal with speech
     window.addEventListener('load', () => {
       const welcome = document.getElementById('welcomeOverlay');
+      const warningText = "This game has financial risk. Play carefully.";
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(warningText);
+        msg.rate = 0.9;
+        speechSynthesis.speak(msg);
+      }
+
       setTimeout(() => {
         welcome.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
         setTimeout(() => welcome.remove(), 1000);
-      }, 2000);
+      }, 3000);
     });
 
     const firebaseConfig = {
