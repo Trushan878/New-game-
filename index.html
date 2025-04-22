@@ -3,21 +3,21 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>KGF Game Scoreboard</title>
+  <title>Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
       font-family: 'Arial', sans-serif;
-      background-color: #1a1a1a;
-      color: #e4e4e4;
+      background-color: #f4f4f4;
+      color: #333;
       margin: 0;
       padding: 0;
     }
 
     h1, h2, p {
-      color: #f3d342;
+      color: #333;
     }
 
     /* Welcome Page */
@@ -26,29 +26,25 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTe8__3RCIaRJ2JHwAYmDjmoxf9wrjYrOXrQbBdUemStZILXwmGW0S3WOM&s=10');
-      background-size: cover;
-      background-position: center;
-      color: white;
+      background-color: #e0e0e0;
+      color: #333;
       text-align: center;
-      font-size: 1.8rem;
       padding: 2rem;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     /* Game Board */
     .game-board {
       display: none;
       padding: 20px;
-      background-color: #2b2b2b;
+      background-color: #ffffff;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.7);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     /* Buttons */
     .button {
-      background-color: #f3d342;
-      color: black;
+      background-color: #4caf50;
+      color: white;
       border: none;
       border-radius: 5px;
       padding: 10px 20px;
@@ -59,7 +55,7 @@
     }
 
     .button:hover {
-      background-color: #c7a007;
+      background-color: #45a049;
     }
 
     /* Avatar */
@@ -76,13 +72,13 @@
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      background: #c7a007;
-      color: black;
+      background: #4caf50;
+      color: white;
       padding: 1.5rem 2rem;
       border-radius: 0.75rem;
       font-size: 1.5rem;
       font-weight: 600;
-      box-shadow: 0 10px 15px rgba(199, 160, 7, 0.7);
+      box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
       z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
@@ -96,13 +92,13 @@
 
     /* History Section */
     .history-container {
-      background: #333;
+      background: #f9f9f9;
       border-radius: 8px;
       padding: 15px;
       margin-top: 10px;
       overflow-y: scroll;
       max-height: 200px;
-      color: #f3d342;
+      color: #333;
     }
 
   </style>
@@ -112,7 +108,7 @@
   <!-- Welcome Page -->
   <div id="welcomePage" class="welcome-page">
     <div>
-      <h1>KGF Game Scoreboard</h1>
+      <h1>Game Scoreboard</h1>
       <p>This game has financial risk. Play carefully.</p>
       <button id="startGameBtn" class="button">Start Game</button>
     </div>
@@ -167,16 +163,14 @@
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
 
-    // List of Gunshot Sound Effects
-    const gunshotSounds = [
-      'https://www.soundjay.com/button/beep-07.wav', // Gunshot Sound 1
-      'https://www.soundjay.com/button/beep-09.wav', // Gunshot Sound 2
-      'https://www.soundjay.com/button/beep-10.wav', // Gunshot Sound 3
-      'https://www.soundjay.com/button/beep-11.wav'  // Gunshot Sound 4
-    ];
-
     // Function to play a random gunshot sound
     function playRandomGunshot() {
+      const gunshotSounds = [
+        'https://www.soundjay.com/button/beep-07.wav',
+        'https://www.soundjay.com/button/beep-09.wav',
+        'https://www.soundjay.com/button/beep-10.wav',
+        'https://www.soundjay.com/button/beep-11.wav'
+      ];
       const randomSound = gunshotSounds[Math.floor(Math.random() * gunshotSounds.length)];
       const audio = new Audio(randomSound);
       audio.play();
@@ -184,7 +178,6 @@
 
     // Start Game Button
     document.getElementById('startGameBtn').addEventListener('click', () => {
-      // Hide welcome page and show game board
       welcomePage.style.display = 'none';
       gameBoard.style.display = 'block';
       playRandomGunshot(); // Play gunshot when game starts
