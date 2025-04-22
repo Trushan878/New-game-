@@ -1,78 +1,135 @@
-<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Game Point Section with Speech and Congratulations</title>
-  <script src="https://cdn.jsdelivr.net/npm/mqtt/dist/mqtt.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+  <style>
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+    }
+    .confetti {
+      position: fixed;
+      width: 10px;
+      height: 10px;
+      opacity: 0.9;
+      animation: confetti-fall 3s linear forwards;
+      z-index: 9999;
+      border-radius: 2px;
+    }
+    .confetti.color1 { background-color: #f59e0b; }
+    .confetti.color2 { background-color: #10b981; }
+    .confetti.color3 { background-color: #3b82f6; }
+
+    .congrats-popup {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
+      z-index: 10000;
+      opacity: 0;
+      animation: fadeInOut 3s forwards;
+      white-space: nowrap;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body class="bg-[#e0e7ff] min-h-screen flex justify-center items-start py-6 relative overflow-x-hidden">
+  <section class="w-[360px] max-w-full bg-white rounded-lg p-6 shadow-lg z-0">
+    <form id="gamePointForm" autocomplete="off" onsubmit="return false;">
+      <h2 class="text-[20px] font-normal mb-6 text-gray-900">Game Point?</h2>
+
+      <div class="mb-6 flex gap-2">
+        <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border border-gray-400 rounded-md px-3 py-2 text-[18px]" />
+        <button type="button" id="addPlayerBtn" class="px-4 py-2 bg-green-600 text-white rounded-md text-[18px] font-normal hover:bg-green-700 transition">Add</button>
+      </div>
+
+      <div id="playersList" class="flex flex-col gap-6 mb-8 max-h-[300px] overflow-auto">
+        <!-- Player items will be here -->
+      </div>
+
+      <div class="flex justify-between items-center mb-4">
+        <button type="button" id="clearBtn" class="px-6 py-3 bg-gray-300 text-gray-900 rounded-md text-[18px] font-normal hover:bg-gray-400 transition">
+          Clear Selection
+        </button>
+        <button type="submit" id="submitBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md text-[18px] font-normal hover:bg-blue-700 transition">
+          Submit
+        </button>
+      </div>
+      <div class="flex justify-between mb-4 space-x-2">
+        <button type="button" id="clearHistoryBtn" class="flex-1 px-4 py-2 bg-red-500 text-white rounded-md text-[16px] font-normal hover:bg-red-600 transition">
+          Clear Points History
+        </button>
+        <button type="button" id="whatsappBtn" class="flex-1 px-4 py-2 bg-[#25D366] text-white rounded-md text-[16px] font-normal hover:bg-[#1ebe57] transition">
+          Send to WhatsApp
+        </button>
+      </div>
+      <div id="pointsHistory" class="text-gray-900 text-[16px] font-normal space-y-1 max-h-48 overflow-auto"></div>
+    </form>
+  </section>
+
   <script>
-    // Initialize MQTT client
-    const client = mqtt.connect("wss://broker.hivemq.com:8000/mqtt"); // WebSocket connection to HiveMQ
-
-    const topic = "game/points"; // Topic to publish and subscribe to
-
-    client.on("connect", () => {
-      console.log("Connected to MQTT broker");
-
-      // Subscribe to the topic to receive updates
-      client.subscribe(topic, (err) => {
-        if (err) {
-          console.error("Subscription failed", err);
-        }
-      });
-    });
-
-    // Handle incoming messages
-    client.on("message", (topic, message) => {
-      const msg = message.toString();
-      displayMessage(msg); // Display received message
-    });
-
-    // Publish data (game points update)
-    function publishMessage(message) {
-      client.publish(topic, message);
-    }
-
-    // Function to update the game points display
-    function displayMessage(msg) {
-      const pointsHistory = document.getElementById('pointsHistory');
-      const div = document.createElement('div');
-      div.textContent = `Game Update: ${msg}`;
-      pointsHistory.appendChild(div);
-    }
-
-    // Sending points data when button is clicked
-    function sendGamePoints() {
-      const playerName = document.getElementById('playerName').value.trim();
-      if (playerName) {
-        const message = `${playerName} got 1 point!`;
-        publishMessage(message); // Publish message to MQTT
-      } else {
-        alert('Please enter a player name.');
-      }
-    }
-
-    // Save players to localStorage
-    let players = JSON.parse(localStorage.getItem('players')) || {
-      Ankit: 0,
-      Nd: 0,
-      Vismay: 0,
-      Trushan: 0,
-      Shaunak: 0,
-      Other: 0
+    // Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.firebasestorage.app",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
     };
 
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.database(app);
+
+    const playersRef = db.ref('game/players');
+
+    // Initialize players object and fetch data from Firebase
+    let players = {};
+
+    playersRef.on('value', (snapshot) => {
+      players = snapshot.val() || {};
+      renderPlayers();
+      renderHistory();
+    });
+
+    const form = document.getElementById('gamePointForm');
+    const playersList = document.getElementById('playersList');
+    const clearBtn = document.getElementById('clearBtn');
+    const clearHistoryBtn = document.getElementById('clearHistoryBtn');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+    const newPlayerNameInput = document.getElementById('newPlayerName');
+    const submitBtn = document.getElementById('submitBtn');
+    const whatsappBtn = document.getElementById('whatsappBtn');
+
     function savePlayers() {
-      localStorage.setItem('players', JSON.stringify(players));
+      playersRef.set(players);
     }
 
     function renderPlayers() {
-      const playersList = document.getElementById('playersList');
       playersList.innerHTML = '';
       for (const player in players) {
         const playerId = player.replace(/\s+/g, '-');
         const div = document.createElement('div');
         div.className = 'flex items-center gap-4';
+
         div.innerHTML = `
           <label class="flex items-center gap-4 text-gray-900 text-[20px] font-normal cursor-pointer flex-grow">
             <input type="checkbox" name="gamePoint" value="${player}" class="w-7 h-7 border border-gray-400 rounded-sm" id="checkbox-${playerId}" />
@@ -95,6 +152,7 @@
           delete players[player];
           savePlayers();
           renderPlayers();
+          renderHistory();
         };
       });
     }
@@ -114,6 +172,48 @@
         pointSpan.textContent = cb.checked ? '1' : '0';
       });
     }
+
+    clearBtn.addEventListener('click', () => {
+      form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.checked = false;
+      });
+      updatePoints();
+    });
+
+    clearHistoryBtn.addEventListener('click', () => {
+      for (const player in players) {
+        players[player] = 0;
+      }
+      savePlayers();
+      renderHistory();
+      updatePoints();
+    });
+
+    function renderHistory() {
+      pointsHistory.innerHTML = '';
+      for (const player in players) {
+        const div = document.createElement('div');
+        div.textContent = `${player} Points History: ${players[player]}`;
+        pointsHistory.appendChild(div);
+      }
+    }
+
+    addPlayerBtn.addEventListener('click', () => {
+      const newName = newPlayerNameInput.value.trim();
+      if (!newName) {
+        alert('Please enter a player name.');
+        return;
+      }
+      if (players.hasOwnProperty(newName)) {
+        alert('Player already exists.');
+        return;
+      }
+      players[newName] = 0;
+      newPlayerNameInput.value = '';
+      savePlayers();
+      renderPlayers();
+      renderHistory();
+    });
 
     function createConfetti() {
       const confetti = document.createElement('div');
@@ -151,8 +251,7 @@
       }, 3000);
     }
 
-    // Submit button to update points
-    function submitGamePoints() {
+    submitBtn.addEventListener('click', () => {
       const checkboxes = document.querySelectorAll('input[name="gamePoint"]');
       let anyChecked = false;
       let winners = [];
@@ -168,31 +267,14 @@
         return;
       }
       savePlayers();
-      renderPlayers();
+      renderHistory();
+      form.reset();
+      updatePoints();
+
       showCongrats(winners);
-      // Publish the update to MQTT
-      const message = `${winners.join(", ")} got 1 point!`;
-      publishMessage(message);
-    }
+    });
 
-    // Add player to the list
-    function addPlayer() {
-      const newName = document.getElementById('newPlayerName').value.trim();
-      if (!newName) {
-        alert('Please enter a player name.');
-        return;
-      }
-      if (players.hasOwnProperty(newName)) {
-        alert('Player already exists.');
-        return;
-      }
-      players[newName] = 0;
-      savePlayers();
-      renderPlayers();
-    }
-
-    // Send game points to WhatsApp
-    function sendToWhatsApp() {
+    whatsappBtn.addEventListener('click', () => {
       let message = 'Game Points History:\n';
       for (const player in players) {
         message += `${player}: ${players[player]}\n`;
@@ -200,75 +282,7 @@
       const encodedMessage = encodeURIComponent(message.trim());
       const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
       window.open(whatsappUrl, '_blank');
-    }
-
-    // Initial render
-    renderPlayers();
-
+    });
   </script>
-
-  <style>
-    @keyframes confetti-fall {
-      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
-      100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-    }
-    .confetti {
-      position: fixed;
-      width: 10px;
-      height: 10px;
-      opacity: 0.9;
-      animation: confetti-fall 3s linear forwards;
-      z-index: 9999;
-      border-radius: 2px;
-    }
-    .confetti.color1 { background-color: #f59e0b; }
-    .confetti.color2 { background-color: #10b981; }
-    .confetti.color3 { background-color: #3b82f6; }
-    .congrats-popup {
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #22c55e;
-      color: white;
-      padding: 1.5rem 2rem;
-      border-radius: 0.75rem;
-      font-size: 1.5rem;
-      font-weight: 600;
-      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
-      z-index: 10000;
-      opacity: 0;
-      animation: fadeInOut 3s forwards;
-      white-space: nowrap;
-    }
-    @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-    }
-  </style>
-</head>
-<body class="bg-[#e0e7ff] min-h-screen flex justify-center items-start py-6 relative overflow-x-hidden">
-  <section class="w-[360px] max-w-full bg-white rounded-lg p-6 shadow-lg z-0">
-    <form id="gamePointForm" autocomplete="off" onsubmit="return false;">
-      <h2 class="text-[20px] font-normal mb-6 text-gray-900">Game Point?</h2>
-
-      <div class="mb-6 flex gap-2">
-        <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border border-gray-400 rounded-md px-3 py-2 text-[18px]" />
-        <button type="button" onclick="addPlayer()" class="px-4 py-2 bg-green-600 text-white rounded-md text-[18px] font-normal hover:bg-green-700 transition">Add</button>
-      </div>
-
-      <div id="playersList" class="flex flex-col gap-6 mb-8 max-h-[300px] overflow-auto">
-        <!-- Player items will be here -->
-      </div>
-
-      <div class="flex justify-between items-center mb-4">
-        <button type="button" onclick="submitGamePoints()" class="px-6 py-3 bg-blue-600 text-white rounded-md text-[18px] font-normal hover:bg-blue-700 transition">
-          Submit
-        </button>
-      </div>
-      <div id="pointsHistory" class="text-gray-900 text-[16px] font-normal space-y-1 max-h-48 overflow-auto"></div>
-    </form>
-  </section>
 </body>
 </html>
