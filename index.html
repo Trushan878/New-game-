@@ -34,7 +34,13 @@
   </style>
 </head>
 <body class="bg-blue-100 min-h-screen flex justify-center py-6">
-  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
+
+  <!-- Welcome animation overlay -->
+  <div id="welcomeOverlay" class="fixed inset-0 bg-blue-600 flex items-center justify-center z-50">
+    <h1 class="text-4xl font-bold text-white animate-bounce">Welcome to the Game!</h1>
+  </div>
+
+  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg relative z-10">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
 
     <div class="mb-4 flex gap-2">
@@ -50,13 +56,21 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
 
   <script>
+    // Welcome overlay removal
+    window.addEventListener('load', () => {
+      const welcome = document.getElementById('welcomeOverlay');
+      setTimeout(() => {
+        welcome.classList.add('opacity-0', 'transition-opacity', 'duration-1000');
+        setTimeout(() => welcome.remove(), 1000);
+      }, 2000);
+    });
+
     const firebaseConfig = {
       apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
       authDomain: "index-e95d1.firebaseapp.com",
@@ -178,21 +192,6 @@
         gameHistory.appendChild(div);
       });
     });
-
-    document.getElementById('sendWhatsAppBtn').onclick = async () => {
-      const playersSnap = await playersRef.once('value');
-      const playersData = playersSnap.val() || {};
-
-      let message = '🏆 *Game Points Summary* 🏆\n\n';
-      for (const name in playersData) {
-        message += `• ${name} — ${playersData[name]} pts\n`;
-      }
-      message += '\nKeep it up, players!';
-
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-      window.open(whatsappUrl, '_blank');
-    };
   </script>
 </body>
 </html>
