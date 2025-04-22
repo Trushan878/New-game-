@@ -152,11 +152,9 @@
 
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
-      kgfAudio.play(); // Play KGF sound for 4 seconds
-      setTimeout(() => {
-        welcomePage.style.display = 'none';  // Hide welcome page
-        gameBoard.style.display = 'block';   // Show game board
-      }, 4000); // Wait 4 seconds for sound to finish
+      kgfAudio.play(); // Play KGF sound immediately
+      welcomePage.style.display = 'none';  // Hide welcome page
+      gameBoard.style.display = 'block';   // Show game board
     };
 
     // Add player with random avatar
