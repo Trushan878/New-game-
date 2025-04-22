@@ -9,7 +9,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-100 p-4">
-
   <div class="max-w-md mx-auto bg-white shadow-lg rounded-lg p-6">
     <h2 class="text-2xl font-bold mb-4">Multiplayer Game Points</h2>
 
@@ -21,7 +20,10 @@
     <div id="playerList" class="space-y-2 mb-4"></div>
 
     <button onclick="submitPoints()" class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-2">Submit Points</button>
-    <button onclick="clearPoints()" class="bg-red-500 text-white px-4 py-2 rounded w-full">Clear All Points</button>
+    <button onclick="clearPoints()" class="bg-red-500 text-white px-4 py-2 rounded w-full mb-4">Clear All Points</button>
+
+    <h3 class="text-lg font-bold mb-2">Game History</h3>
+    <ul id="historyList" class="text-sm bg-gray-50 p-2 rounded max-h-40 overflow-y-auto"></ul>
   </div>
 
   <script>
@@ -30,7 +32,7 @@
       authDomain: "index-e95d1.firebaseapp.com",
       databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
       projectId: "index-e95d1",
-      storageBucket: "index-e95d1.firebasestorage.app",
+      storageBucket: "index-e95d1.appspot.com",
       messagingSenderId: "340216728284",
       appId: "1:340216728284:web:f2e61485d29068fbf5c219"
     };
@@ -38,8 +40,10 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const playersRef = db.ref("players");
+    const historyRef = db.ref("history");
 
     const playerListDiv = document.getElementById("playerList");
+    const historyList = document.getElementById("historyList");
 
     function renderPlayers(players) {
       playerListDiv.innerHTML = "";
@@ -53,24 +57,37 @@
             <input type="checkbox" value="${name}" class="point-checkbox" />
             <span class="font-medium">${name}</span>
           </label>
-          <span>Points: ${points}</span>
+          <span class="text-right">Total: <b>${points}</b></span>
         `;
         playerListDiv.appendChild(div);
       }
     }
 
-    playersRef.on("value", (snapshot) => {
+    function renderHistory(history) {
+      historyList.innerHTML = "";
+      if (history) {
+        Object.values(history).reverse().forEach(item => {
+          const li = document.createElement("li");
+          li.textContent = `${item.time} → ${item.players.join(", ")}`;
+          historyList.appendChild(li);
+        });
+      }
+    }
+
+    playersRef.on("value", snapshot => {
       renderPlayers(snapshot.val());
+    });
+
+    historyRef.on("value", snapshot => {
+      renderHistory(snapshot.val());
     });
 
     function addPlayer() {
       const name = document.getElementById("playerName").value.trim();
       if (!name) return alert("Enter a player name");
-      const playerKey = name;
-
-      playersRef.child(playerKey).get().then((snapshot) => {
+      playersRef.child(name).get().then(snapshot => {
         if (!snapshot.exists()) {
-          playersRef.child(playerKey).set(0);
+          playersRef.child(name).set(0);
         } else {
           alert("Player already exists");
         }
@@ -80,21 +97,32 @@
 
     function submitPoints() {
       const checkboxes = document.querySelectorAll(".point-checkbox");
+      const updated = [];
       checkboxes.forEach(cb => {
         if (cb.checked) {
           const name = cb.value;
+          updated.push(name);
           playersRef.child(name).get().then(snapshot => {
             const current = snapshot.val() || 0;
             playersRef.child(name).set(current + 1);
           });
         }
       });
+
+      if (updated.length > 0) {
+        const now = new Date();
+        const time = now.toLocaleString();
+        const log = { time, players: updated };
+        historyRef.push(log);
+      }
     }
 
     function clearPoints() {
-      playersRef.set({});
+      if (confirm("Are you sure you want to reset all points and history?")) {
+        playersRef.set({});
+        historyRef.set({});
+      }
     }
   </script>
-
 </body>
 </html>
