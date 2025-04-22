@@ -8,11 +8,38 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
+    body {
+      font-family: 'Arial', sans-serif;
+    }
+
+    /* Welcome page */
+    .welcome-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #1e40af;
+      color: white;
+      text-align: center;
+      font-size: 1.5rem;
+      padding: 2rem;
+    }
+
+    /* Game board */
+    .game-board {
+      display: none;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Congratulations popup animation */
     .congrats-popup {
       position: fixed;
       top: 20%;
       left: 50%;
-      transform: translate(-50%, -50%);
+      transform: translateX(-50%);
       background: #22c55e;
       color: white;
       padding: 1.5rem 2rem;
@@ -23,24 +50,38 @@
       z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
-      white-space: nowrap;
     }
 
     @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -70%); }
-      10%, 90% { opacity: 1; transform: translate(-50%, -50%); }
-      100% { opacity: 0; transform: translate(-50%, -70%); }
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+
+    .avatar {
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-right: 8px;
+    }
+
+    /* Hide and show based on stages */
+    .hidden {
+      display: none;
     }
   </style>
 </head>
-<body class="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 min-h-screen flex justify-center py-6">
-  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg overflow-auto">
-    <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Game Point</h2>
-
-    <div class="bg-yellow-100 text-yellow-900 font-semibold p-3 rounded text-sm mb-4 border-l-4 border-yellow-400">
-      This game has financial risk.<br>Play carefully.
+<body>
+  <div id="welcomePage" class="welcome-page">
+    <div>
+      <h1>Welcome to the Game!</h1>
+      <p>This game has financial risk. Play carefully.</p>
+      <button id="startGameBtn" class="bg-green-600 text-white py-2 px-4 rounded hover:bg-green-700 mt-4">Start Game</button>
     </div>
+  </div>
 
+  <section id="gameBoard" class="game-board">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
     <div class="mb-4 flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
       <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
@@ -54,15 +95,13 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-
-    <audio id="tutuSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
   </section>
 
   <script>
+    // Initialize Firebase
     const firebaseConfig = {
       apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
       authDomain: "index-e95d1.firebaseapp.com",
@@ -78,57 +117,62 @@
     const playersRef = db.ref("players");
     const historyRef = db.ref("gameHistory");
 
-    const newPlayerInput = document.getElementById('newPlayerName');
     const playersList = document.getElementById('playersList');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
-    const sound = document.getElementById('tutuSound');
+    const newPlayerInput = document.getElementById('newPlayerName');
+    const welcomePage = document.getElementById('welcomePage');
+    const gameBoard = document.getElementById('gameBoard');
 
-    const avatars = ['🐱','🦊','🐼','🐵','🐸','🐯','🦁','🐶','🐰','🦄'];
+    // Start Game Button
+    document.getElementById('startGameBtn').onclick = () => {
+      welcomePage.classList.add('hidden');
+      gameBoard.classList.remove('hidden');
+    };
 
+    // Add player with random avatar
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
       if (!name) return;
-      const avatar = avatars[Math.floor(Math.random() * avatars.length)];
-      playersRef.child(name).set({ points: 0, avatar });
+      const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // Random Avatar
+      playersRef.child(name).set({ points: 0, avatar: avatarUrl });
       newPlayerInput.value = '';
     };
 
-    document.getElementById('clearBtn').onclick = () => {
-      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    };
-
+    // Clear all points
     document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Clear points and game history? Player names stay.")) {
-        playersRef.once('value', snap => {
-          snap.forEach(child => {
-            playersRef.child(child.key).update({ points: 0 });
-          });
-        });
+      if (confirm("Are you sure you want to clear points and game history?")) {
+        playersRef.set({});
         historyRef.remove();
       }
     };
 
+    // Submit Points
     document.getElementById('submitBtn').onclick = async () => {
       const selected = [];
       document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
         const name = cb.value;
         selected.push(name);
         playersRef.child(name).get().then(snap => {
-          const data = snap.val();
-          playersRef.child(name).update({ points: (data?.points || 0) + 1 });
+          const current = snap.exists() ? snap.val().points : 0;
+          playersRef.child(name).update({ points: current + 1 });
         });
       });
 
       if (selected.length > 0) {
         const snap = await historyRef.once('value');
         const gameNumber = snap.numChildren() + 1;
-        historyRef.push(`Game ${gameNumber}: ${selected.join(', ')}`);
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
         showCongrats(selected);
       }
     };
 
+    // Show congratulations popup with sound
+    let congratsCount = 0;
     function showCongrats(names) {
+      if (congratsCount >= 5) return;
+      congratsCount++;
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
       popup.textContent = `Congratulations ${names.join(', ')}!`;
@@ -140,34 +184,27 @@
         speechSynthesis.speak(msg);
       }
 
-      // Play sound 5 times
-      let count = 0;
-      const playSound = () => {
-        if (count < 5) {
-          sound.play();
-          count++;
-          setTimeout(playSound, 500);
-        }
-      };
-      playSound();
+      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
+      audio.play();
     }
 
+    // Display players and points
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
       pointsHistory.innerHTML = '';
 
       for (const name in data) {
-        const player = data[name];
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
 
         div.innerHTML = `
           <label class="flex items-center gap-2">
+            <img src="${data[name].avatar}" alt="${name} avatar" class="avatar" />
             <input type="checkbox" value="${name}" class="w-5 h-5" />
-            <span class="text-lg">${player.avatar || ''} ${name}</span>
+            <span class="text-lg">${name}</span>
           </label>
-          <span class="text-sm text-gray-600">Points: ${player.points || 0}</span>
+          <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
           <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
@@ -181,9 +218,9 @@
       });
 
       for (const name in data) {
-        const entry = document.createElement('div');
-        entry.textContent = `${name}: ${data[name].points || 0} points`;
-        pointsHistory.appendChild(entry);
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        pointsHistory.appendChild(historyEntry);
       }
     });
 
@@ -197,21 +234,6 @@
         gameHistory.appendChild(div);
       });
     });
-
-    document.getElementById('sendWhatsAppBtn').onclick = async () => {
-      const playersSnap = await playersRef.once('value');
-      const playersData = playersSnap.val() || {};
-
-      let message = '🏆 *Game Points Summary* 🏆\n\n';
-      for (const name in playersData) {
-        message += `• ${name} — ${playersData[name].points || 0} pts\n`;
-      }
-      message += '\nKeep it up, players!';
-
-      const encodedMessage = encodeURIComponent(message);
-      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-      window.open(whatsappUrl, '_blank');
-    };
   </script>
 </body>
 </html>
