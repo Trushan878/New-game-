@@ -157,11 +157,11 @@
       gameBoard.style.display = 'block';   // Show game board
     };
 
-    // Add player with random avatar
+    // Add player with random avatar using DiceBear API
     document.getElementById('addPlayerBtn').onclick = () => {
       const name = newPlayerInput.value.trim();
       if (!name) return;
-      const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // Random Avatar
+      const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // DiceBear random avatar API
       playersRef.child(name).set({ points: 0, avatar: avatarUrl });
       newPlayerInput.value = '';
     };
