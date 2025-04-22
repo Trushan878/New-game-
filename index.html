@@ -35,37 +35,46 @@
     .hidden {
       display: none;
     }
+
+    .fade-in {
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      0% { opacity: 0; }
+      100% { opacity: 1; }
+    }
   </style>
 </head>
-<body class="bg-blue-100 min-h-screen flex justify-center items-center">
+<body class="bg-gradient-to-r from-blue-300 via-purple-300 to-pink-300 min-h-screen flex justify-center items-center p-6">
   <!-- Welcome Page -->
-  <div id="welcomePage" class="w-[360px] bg-white rounded-lg p-6 shadow-lg text-center">
-    <h1 class="text-3xl font-bold mb-4">Welcome to the Game</h1>
-    <p class="text-lg mb-6">⚠️ This game has financial risks. Play carefully! ⚠️</p>
-    <button id="startGameBtn" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Start Game</button>
+  <div id="welcomePage" class="w-[360px] bg-white rounded-lg p-8 shadow-2xl text-center transition transform scale-100 hover:scale-105">
+    <h1 class="text-3xl font-bold mb-4 text-gray-800">Welcome to the Game</h1>
+    <p class="text-lg mb-6 text-gray-600">⚠️ This game has financial risks. Play carefully! ⚠️</p>
+    <button id="startGameBtn" class="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-200">Start Game</button>
   </div>
 
   <!-- Game Page (hidden initially) -->
-  <section id="gamePage" class="w-[360px] bg-white rounded-lg p-6 shadow-lg hidden">
-    <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
+  <section id="gamePage" class="w-[360px] bg-white rounded-lg p-6 shadow-xl hidden fade-in">
+    <h2 class="text-2xl font-semibold text-center mb-6 text-gray-800">Game Point</h2>
 
     <div class="mb-4 flex gap-2">
-      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded-lg px-4 py-2 text-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-all duration-200">Add</button>
     </div>
 
     <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
     <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded-lg hover:bg-gray-400 transition-all duration-200">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-all duration-200">Submit</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded-lg mb-4 hover:bg-red-700 transition-all duration-200">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded-lg mb-4 hover:bg-green-600 transition-all duration-200">Send Points on WhatsApp</button>
 
-    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded-lg mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded-lg text-sm max-h-40 overflow-auto"></div>
   </section>
 
   <script>
@@ -170,7 +179,7 @@
             <span class="text-lg">${name}</span>
           </label>
           <span class="text-sm text-gray-600">Points: ${data[name]}</span>
-          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded-lg hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
       }
