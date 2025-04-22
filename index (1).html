@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Scoreboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    .congrats-popup {
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
+      z-index: 10000;
+      opacity: 0;
+      animation: fadeInOut 3s forwards;
+      white-space: nowrap;
+    }
+
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+  </style>
+</head>
+<body class="bg-blue-100 min-h-screen flex justify-center py-6">
+  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
+
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    </div>
+
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
+
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+  </section>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.appspot.com",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
+
+    const playersList = document.getElementById('playersList');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
+    const newPlayerInput = document.getElementById('newPlayerName');
+
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      playersRef.child(name).set(0);
+      newPlayerInput.value = '';
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    };
+
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
+        // Remove points and game history, but keep players
+        const players = {};
+        playersRef.once('value', snap => {
+          snap.forEach(child => {
+            players[child.key] = 0;
+          });
+          playersRef.set(players); // Reset points for all players
+        });
+
+        historyRef.remove(); // Clear game history
+      }
+    };
+
+    document.getElementById('submitBtn').onclick = async () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        playersRef.child(name).get().then(snap => {
+          const current = snap.exists() ? snap.val() : 0;
+          playersRef.child(name).set(current + 1);
+        });
+      });
+
+      if (selected.length > 0) {
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
+        showCongrats(selected);
+      }
+    };
+
+    function showCongrats(names) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        speechSynthesis.speak(msg);
+      }
+    }
+
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
+
+      for (const name in data) {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
+
+        div.innerHTML = `
+          <label class="flex items-center gap-2">
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <span class="text-lg">${name}</span>
+          </label>
+          <span class="text-sm text-gray-600">Points: ${data[name]}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+        `;
+        playersList.appendChild(div);
+      }
+
+      // Add remove player functionality
+      const removeBtns = document.querySelectorAll('.removePlayerBtn');
+      removeBtns.forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();  // Remove player from Firebase
+        };
+      });
+
+      // Render points history
+      for (const name in data) {
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name]} points`;
+        pointsHistory.appendChild(historyEntry);
+      }
+    });
+
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      const entries = Object.values(data);
+      gameHistory.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        gameHistory.appendChild(div);
+      });
+    });
+  </script>
+</body>
+</html>
