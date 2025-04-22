@@ -1,8 +1,9 @@
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Point Section with Speech and Congratulations</title>
+  <title>Game Point Section with MQTT</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
   <style>
@@ -22,6 +23,7 @@
     .confetti.color1 { background-color: #f59e0b; }
     .confetti.color2 { background-color: #10b981; }
     .confetti.color3 { background-color: #3b82f6; }
+
     .congrats-popup {
       position: fixed;
       top: 20%;
@@ -50,11 +52,14 @@
   <section class="w-[360px] max-w-full bg-white rounded-lg p-6 shadow-lg z-0">
     <form id="gamePointForm" autocomplete="off" onsubmit="return false;">
       <h2 class="text-[20px] font-normal mb-6 text-gray-900">Game Point?</h2>
+
       <div class="mb-6 flex gap-2">
         <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border border-gray-400 rounded-md px-3 py-2 text-[18px]" />
         <button type="button" id="addPlayerBtn" class="px-4 py-2 bg-green-600 text-white rounded-md text-[18px] font-normal hover:bg-green-700 transition">Add</button>
       </div>
+
       <div id="playersList" class="flex flex-col gap-6 mb-8 max-h-[300px] overflow-auto"></div>
+
       <div class="flex justify-between items-center mb-4">
         <button type="button" id="clearBtn" class="px-6 py-3 bg-gray-300 text-gray-900 rounded-md text-[18px] font-normal hover:bg-gray-400 transition">Clear Selection</button>
         <button type="submit" id="submitBtn" class="px-6 py-3 bg-blue-600 text-white rounded-md text-[18px] font-normal hover:bg-blue-700 transition">Submit</button>
@@ -78,9 +83,6 @@
     const submitBtn = document.getElementById('submitBtn');
     const whatsappBtn = document.getElementById('whatsappBtn');
 
-    const client = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
-    const topic = 'game/points-tracker';
-
     let players = JSON.parse(localStorage.getItem('players')) || {
       Ankit: 0,
       Nd: 0,
@@ -89,25 +91,6 @@
       Shaunak: 0,
       Other: 0
     };
-
-    client.on('connect', () => {
-      console.log('Connected to MQTT broker');
-      client.subscribe(topic);
-    });
-
-    client.on('message', (topic, message) => {
-      try {
-        const incoming = JSON.parse(message.toString());
-        if (typeof incoming === 'object') {
-          players = incoming;
-          savePlayers();
-          renderPlayers();
-          renderHistory();
-        }
-      } catch (err) {
-        console.error('MQTT message error:', err);
-      }
-    });
 
     function savePlayers() {
       localStorage.setItem('players', JSON.stringify(players));
@@ -134,8 +117,7 @@
     }
 
     function attachRemoveListeners() {
-      const removeButtons = document.querySelectorAll('.removePlayerBtn');
-      removeButtons.forEach(btn => {
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
         btn.onclick = () => {
           const player = btn.getAttribute('data-player');
           delete players[player];
@@ -147,34 +129,26 @@
     }
 
     function attachCheckboxListeners() {
-      const checkboxes = document.querySelectorAll('input[name="gamePoint"]');
-      checkboxes.forEach(cb => {
+      document.querySelectorAll('input[name="gamePoint"]').forEach(cb => {
         cb.onchange = updatePoints;
       });
     }
 
     function updatePoints() {
-      const checkboxes = document.querySelectorAll('input[name="gamePoint"]');
-      checkboxes.forEach(cb => {
+      document.querySelectorAll('input[name="gamePoint"]').forEach(cb => {
         const playerId = cb.value.replace(/\s+/g, '-');
-        const pointSpan = document.getElementById('point-' + playerId);
-        pointSpan.textContent = cb.checked ? '1' : '0';
+        document.getElementById('point-' + playerId).textContent = cb.checked ? '1' : '0';
       });
     }
 
     clearBtn.addEventListener('click', () => {
-      form.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.checked = false;
-      });
+      form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
       updatePoints();
     });
 
     clearHistoryBtn.addEventListener('click', () => {
-      for (const player in players) {
-        players[player] = 0;
-      }
+      for (const player in players) players[player] = 0;
       savePlayers();
-      client.publish(topic, JSON.stringify(players));
       renderHistory();
       updatePoints();
     });
@@ -190,18 +164,13 @@
 
     addPlayerBtn.addEventListener('click', () => {
       const newName = newPlayerNameInput.value.trim();
-      if (!newName) {
-        alert('Please enter a player name.');
-        return;
-      }
-      if (players.hasOwnProperty(newName)) {
-        alert('Player already exists.');
+      if (!newName || players.hasOwnProperty(newName)) {
+        alert('Please enter a unique player name.');
         return;
       }
       players[newName] = 0;
       newPlayerNameInput.value = '';
       savePlayers();
-      client.publish(topic, JSON.stringify(players));
       renderPlayers();
       renderHistory();
     });
@@ -220,31 +189,51 @@
       if (names.length === 0) return;
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
-      popup.textContent = `🎉 Congratulations ${names.join(', ')}! 🎉`;
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
       document.body.appendChild(popup);
-
       if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = `Congratulations ${names.join(', ')}! You got 1 point!`;
-        msg.lang = 'en-US';
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}! You got 1 point!`);
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(msg);
       }
-
-      for (let i = 0; i < 50; i++) {
-        createConfetti();
-      }
-
-      setTimeout(() => {
-        popup.remove();
-      }, 3000);
+      for (let i = 0; i < 50; i++) createConfetti();
+      setTimeout(() => popup.remove(), 3000);
     }
+
+    whatsappBtn.addEventListener('click', () => {
+      let message = 'Game Points History:\n';
+      for (const player in players) {
+        message += `${player}: ${players[player]}\n`;
+      }
+      const encoded = encodeURIComponent(message.trim());
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    });
+
+    // MQTT Setup
+    const mqttClient = mqtt.connect('wss://broker.hivemq.com:8884/mqtt');
+    const topic = 'game/points/share';
+
+    mqttClient.on('connect', () => {
+      console.log('Connected to MQTT broker');
+      mqttClient.subscribe(topic);
+    });
+
+    mqttClient.on('message', (receivedTopic, message) => {
+      if (receivedTopic === topic) {
+        const data = JSON.parse(message.toString());
+        if (data.type === 'UPDATE_POINTS') {
+          players = data.players;
+          savePlayers();
+          renderPlayers();
+          renderHistory();
+        }
+      }
+    });
 
     submitBtn.addEventListener('click', () => {
       const checkboxes = document.querySelectorAll('input[name="gamePoint"]');
       let anyChecked = false;
       let winners = [];
-
       checkboxes.forEach(cb => {
         if (cb.checked) {
           players[cb.value] += 1;
@@ -252,30 +241,23 @@
           anyChecked = true;
         }
       });
-
       if (!anyChecked) {
         alert('Please select at least one player.');
         return;
       }
-
       savePlayers();
-      client.publish(topic, JSON.stringify(players));
       renderHistory();
       form.reset();
       updatePoints();
       showCongrats(winners);
+
+      mqttClient.publish(topic, JSON.stringify({
+        type: 'UPDATE_POINTS',
+        players
+      }));
     });
 
-    whatsappBtn.addEventListener('click', () => {
-      let message = 'Game Points History:\n';
-      for (const player in players) {
-        message += `${player}: ${players[player]}\n`;
-      }
-      const encodedMessage = encodeURIComponent(message.trim());
-      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-      window.open(whatsappUrl, '_blank');
-    });
-
+    // Initial render
     renderPlayers();
     renderHistory();
   </script>
