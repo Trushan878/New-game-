@@ -17,6 +17,7 @@
       justify-content: center;
       align-items: center;
       margin: 0;
+      overflow: hidden;
     }
 
     /* Modern Card Styling */
@@ -119,6 +120,37 @@
       outline: none;
       border: 2px solid #007bff;
       box-shadow: 0 0 10px rgba(0, 123, 255, 0.2);
+    }
+
+    /* Congrats Popup Animation */
+    .congrats-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 123, 255, 0.8);
+      color: white;
+      padding: 20px;
+      border-radius: 12px;
+      font-size: 1.5rem;
+      font-weight: bold;
+      animation: fadeInOut 3s ease-in-out forwards;
+      text-align: center;
+    }
+
+    @keyframes fadeInOut {
+      0% {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -40%);
+      }
     }
 
     /* Responsive Layout */
