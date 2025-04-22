@@ -27,223 +27,191 @@
     }
 
     @keyframes fadeInOut {
-      0% { opacity: 0; transform: translate(-50%, -30px); }
-      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
-      100% { opacity: 0; transform: translate(-50%, -30px); }
-    }
-
-    .initials {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 9999px;
-      color: white;
-      font-weight: bold;
-      font-size: 14px;
+      0% { opacity: 0; transform: translate(-50%, -70%); }
+      10%, 90% { opacity: 1; transform: translate(-50%, -50%); }
+      100% { opacity: 0; transform: translate(-50%, -70%); }
     }
   </style>
 </head>
-<body class="bg-gradient-to-r from-blue-200 to-purple-200 min-h-screen flex items-center justify-center">
+<body class="bg-gradient-to-r from-blue-100 via-purple-100 to-pink-100 min-h-screen flex justify-center py-6">
+  <section class="w-[360px] bg-white rounded-lg p-6 shadow-lg overflow-auto">
+    <h2 class="text-2xl font-bold text-center mb-6 text-blue-600">Game Point</h2>
 
-<!-- Welcome Page -->
-<div id="welcomePage" class="fixed inset-0 flex items-center justify-center bg-white z-50">
-  <div class="text-center px-6">
-    <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
-    <p class="text-red-600 text-lg font-semibold mb-2">This game has financial risk.</p>
-    <p class="text-gray-700 mb-6">Play carefully and responsibly.</p>
-    <button onclick="startGame()" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">Start</button>
-  </div>
-</div>
+    <div class="bg-yellow-100 text-yellow-900 font-semibold p-3 rounded text-sm mb-4 border-l-4 border-yellow-400">
+      This game has financial risk.<br>Play carefully.
+    </div>
 
-<!-- Main Game Section -->
-<section id="mainSection" class="w-[360px] bg-white rounded-lg p-6 shadow-lg hidden">
-  <h2 class="text-2xl font-semibold text-center mb-6">Game Point</h2>
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    </div>
 
-  <div class="mb-4 flex gap-2">
-    <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-    <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
-  </div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
-  <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
 
-  <div class="flex justify-between gap-2 mb-4">
-    <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-    <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
-  </div>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
 
-  <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-  <button id="sendWhatsAppBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points on WhatsApp</button>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
 
-  <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-  <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-</section>
+    <audio id="tutuSound" src="https://www.soundjay.com/buttons/sounds/button-3.mp3" preload="auto"></audio>
+  </section>
 
-<audio id="congratsSound" src="https://www.myinstants.com/media/sounds/tuturu.mp3"></audio>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.appspot.com",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+    };
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-    authDomain: "index-e95d1.firebaseapp.com",
-    databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "index-e95d1",
-    storageBucket: "index-e95d1.appspot.com",
-    messagingSenderId: "340216728284",
-    appId: "1:340216728284:web:f2e61485d29068fbf5c219"
-  };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
+    const newPlayerInput = document.getElementById('newPlayerName');
+    const playersList = document.getElementById('playersList');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
+    const sound = document.getElementById('tutuSound');
 
-  const playersList = document.getElementById('playersList');
-  const pointsHistory = document.getElementById('pointsHistory');
-  const gameHistory = document.getElementById('gameHistory');
-  const newPlayerInput = document.getElementById('newPlayerName');
+    const avatars = ['🐱','🦊','🐼','🐵','🐸','🐯','🦁','🐶','🐰','🦄'];
 
-  function getRandomColor(name) {
-    let hash = 0;
-    for (let i = 0; i < name.length; i++) {
-      hash = name.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    const color = `hsl(${hash % 360}, 70%, 60%)`;
-    return color;
-  }
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      const avatar = avatars[Math.floor(Math.random() * avatars.length)];
+      playersRef.child(name).set({ points: 0, avatar });
+      newPlayerInput.value = '';
+    };
 
-  document.getElementById('addPlayerBtn').onclick = () => {
-    const name = newPlayerInput.value.trim();
-    if (!name) return;
-    playersRef.child(name).set(0);
-    newPlayerInput.value = '';
-  };
+    document.getElementById('clearBtn').onclick = () => {
+      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+    };
 
-  document.getElementById('clearBtn').onclick = () => {
-    document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-  };
-
-  document.getElementById('clearAllBtn').onclick = () => {
-    if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
-      const players = {};
-      playersRef.once('value', snap => {
-        snap.forEach(child => {
-          players[child.key] = 0;
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Clear points and game history? Player names stay.")) {
+        playersRef.once('value', snap => {
+          snap.forEach(child => {
+            playersRef.child(child.key).update({ points: 0 });
+          });
         });
-        playersRef.set(players);
+        historyRef.remove();
+      }
+    };
+
+    document.getElementById('submitBtn').onclick = async () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        playersRef.child(name).get().then(snap => {
+          const data = snap.val();
+          playersRef.child(name).update({ points: (data?.points || 0) + 1 });
+        });
       });
-      historyRef.remove();
+
+      if (selected.length > 0) {
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        historyRef.push(`Game ${gameNumber}: ${selected.join(', ')}`);
+        showCongrats(selected);
+      }
+    };
+
+    function showCongrats(names) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        speechSynthesis.speak(msg);
+      }
+
+      // Play sound 5 times
+      let count = 0;
+      const playSound = () => {
+        if (count < 5) {
+          sound.play();
+          count++;
+          setTimeout(playSound, 500);
+        }
+      };
+      playSound();
     }
-  };
 
-  document.getElementById('submitBtn').onclick = async () => {
-    const selected = [];
-    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-      const name = cb.value;
-      selected.push(name);
-      playersRef.child(name).get().then(snap => {
-        const current = snap.exists() ? snap.val() : 0;
-        playersRef.child(name).set(current + 1);
-      });
-    });
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
 
-    if (selected.length > 0) {
-      const snap = await historyRef.once('value');
-      const gameNumber = snap.numChildren() + 1;
-      const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-      historyRef.push(entry);
-      showCongrats(selected);
-    }
-  };
+      for (const name in data) {
+        const player = data[name];
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
 
-  function showCongrats(names) {
-    const popup = document.createElement('div');
-    popup.className = 'congrats-popup';
-    popup.textContent = `Congratulations ${names.join(', ')}!`;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 3000);
-
-    document.getElementById('congratsSound').play();
-
-    if ('speechSynthesis' in window) {
-      const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-      speechSynthesis.speak(msg);
-    }
-  }
-
-  playersRef.on('value', snap => {
-    const data = snap.val() || {};
-    playersList.innerHTML = '';
-    pointsHistory.innerHTML = '';
-
-    for (const name in data) {
-      const div = document.createElement('div');
-      const initials = name.slice(0, 2).toUpperCase();
-      const bgColor = getRandomColor(name);
-
-      div.className = 'flex items-center justify-between';
-
-      div.innerHTML = `
-        <div class="flex items-center gap-2">
-          <div class="initials" style="background-color:${bgColor}">${initials}</div>
+        div.innerHTML = `
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
-            <span class="text-lg">${name}</span>
+            <span class="text-lg">${player.avatar || ''} ${name}</span>
           </label>
-        </div>
-        <div class="flex items-center gap-2">
-          <span class="text-sm text-gray-600">Points: ${data[name]}</span>
-          <button class="removePlayerBtn bg-red-500 text-white py-1 px-2 rounded hover:bg-red-600" data-player="${name}">x</button>
-        </div>
-      `;
-      playersList.appendChild(div);
-    }
+          <span class="text-sm text-gray-600">Points: ${player.points || 0}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+        `;
+        playersList.appendChild(div);
+      }
 
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        playersRef.child(playerToRemove).remove();
-      };
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();
+        };
+      });
+
+      for (const name in data) {
+        const entry = document.createElement('div');
+        entry.textContent = `${name}: ${data[name].points || 0} points`;
+        pointsHistory.appendChild(entry);
+      }
     });
 
-    for (const name in data) {
-      const historyEntry = document.createElement('div');
-      historyEntry.textContent = `${name}: ${data[name]} points`;
-      pointsHistory.appendChild(historyEntry);
-    }
-  });
-
-  historyRef.on('value', snap => {
-    const data = snap.val() || {};
-    const entries = Object.values(data);
-    gameHistory.innerHTML = '';
-    entries.forEach((entry, i) => {
-      const div = document.createElement('div');
-      div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-      gameHistory.appendChild(div);
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      const entries = Object.values(data);
+      gameHistory.innerHTML = '';
+      entries.forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        gameHistory.appendChild(div);
+      });
     });
-  });
 
-  document.getElementById('sendWhatsAppBtn').onclick = async () => {
-    const playersSnap = await playersRef.once('value');
-    const playersData = playersSnap.val() || {};
+    document.getElementById('sendWhatsAppBtn').onclick = async () => {
+      const playersSnap = await playersRef.once('value');
+      const playersData = playersSnap.val() || {};
 
-    let message = '🏆 *Game Points Summary* 🏆\n\n';
-    for (const name in playersData) {
-      message += `• ${name} — ${playersData[name]} pts\n`;
-    }
-    message += '\nKeep it up, players!';
+      let message = '🏆 *Game Points Summary* 🏆\n\n';
+      for (const name in playersData) {
+        message += `• ${name} — ${playersData[name].points || 0} pts\n`;
+      }
+      message += '\nKeep it up, players!';
 
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    window.open(whatsappUrl, '_blank');
-  };
-
-  function startGame() {
-    document.getElementById('welcomePage').style.display = 'none';
-    document.getElementById('mainSection').classList.remove('hidden');
-  }
-</script>
-
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+    };
+  </script>
 </body>
 </html>
