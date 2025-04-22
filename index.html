@@ -8,7 +8,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    /* General Styles for the KGF Theme */
     body {
       font-family: 'Arial', sans-serif;
       background-color: #1a1a1a;
@@ -18,10 +17,10 @@
     }
 
     h1, h2, p {
-      color: #f3d342; /* Gold Accent color */
+      color: #f3d342;
     }
 
-    /* Welcome page */
+    /* Welcome Page */
     .welcome-page {
       display: flex;
       justify-content: center;
@@ -37,7 +36,7 @@
       text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
-    /* Game board */
+    /* Game Board */
     .game-board {
       display: none;
       padding: 20px;
@@ -63,7 +62,7 @@
       background-color: #c7a007;
     }
 
-    /* Game section style */
+    /* Avatar */
     .avatar {
       border-radius: 50%;
       width: 40px;
@@ -77,7 +76,7 @@
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      background: #c7a007; /* KGF Gold Color */
+      background: #c7a007;
       color: black;
       padding: 1.5rem 2rem;
       border-radius: 0.75rem;
@@ -95,11 +94,7 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
 
-    .hidden {
-      display: none;
-    }
-
-    /* Game History & Points History */
+    /* History Section */
     .history-container {
       background: #333;
       border-radius: 8px;
@@ -109,6 +104,7 @@
       max-height: 200px;
       color: #f3d342;
     }
+
   </style>
 </head>
 <body>
@@ -139,6 +135,9 @@
 
     <button id="clearAllBtn" class="w-full button">Clear All Data</button>
 
+    <!-- Send Points to WhatsApp Button -->
+    <button id="sendPointsBtn" class="w-full button mt-4">Send Points to WhatsApp</button>
+
     <!-- Game History Section -->
     <div id="gameHistory" class="history-container"></div>
     <div id="pointsHistory" class="history-container"></div>
@@ -168,10 +167,26 @@
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
 
+    // List of Gunshot Sound Effects
+    const gunshotSounds = [
+      'https://www.soundjay.com/button/beep-07.wav', // Gunshot Sound 1
+      'https://www.soundjay.com/button/beep-09.wav', // Gunshot Sound 2
+      'https://www.soundjay.com/button/beep-10.wav', // Gunshot Sound 3
+      'https://www.soundjay.com/button/beep-11.wav'  // Gunshot Sound 4
+    ];
+
+    // Function to play a random gunshot sound
+    function playRandomGunshot() {
+      const randomSound = gunshotSounds[Math.floor(Math.random() * gunshotSounds.length)];
+      const audio = new Audio(randomSound);
+      audio.play();
+    }
+
     // Start Game Button
     document.getElementById('startGameBtn').onclick = () => {
       welcomePage.style.display = 'none';
       gameBoard.style.display = 'block';
+      playRandomGunshot(); // Play gunshot when game starts
     };
 
     // Add Player with Random Avatar
@@ -181,6 +196,7 @@
       const avatarUrl = `https://avatars.dicebear.com/api/human/${Math.random()}.svg`; // Random Avatar
       playersRef.child(name).set({ points: 0, avatar: avatarUrl });
       newPlayerInput.value = '';
+      playRandomGunshot(); // Play gunshot when player is added
     };
 
     // Submit Player Points
@@ -201,6 +217,7 @@
         const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
         historyRef.push(entry);
         showCongrats(selected);
+        playRandomGunshot(); // Play gunshot after submitting
       }
     };
 
@@ -214,9 +231,6 @@
       popup.textContent = `Congratulations ${names.join(', ')}!`;
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
-
-      const audio = new Audio('https://www.soundjay.com/button/beep-07.wav');
-      audio.play();
     }
 
     // Display Players and Points
@@ -244,7 +258,7 @@
         btn.onclick = () => {
           const playerToRemove = btn.getAttribute('data-player');
           playersRef.child(playerToRemove).remove();
-        };
+        });
       });
 
       for (const name in data) {
@@ -265,6 +279,32 @@
         gameHistory.appendChild(div);
       });
     });
+
+    // Clear All Data with Warning
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Are you sure you want to clear the points and game history? Player names will be retained.")) {
+        historyRef.remove(); // Remove game history
+        playersRef.once('value', snapshot => {
+          snapshot.forEach(childSnapshot => {
+            const playerName = childSnapshot.key;
+            playersRef.child(playerName).update({ points: 0 }); // Reset points
+          });
+        });
+      }
+    };
+
+    // Send Points to WhatsApp
+    document.getElementById('sendPointsBtn').onclick = () => {
+      let message = 'Player Points: \n';
+      playersRef.once('value', snap => {
+        const data = snap.val();
+        for (const player in data) {
+          message += `${player}: ${data[player].points} points\n`;
+        }
+        const encodedMessage = encodeURIComponent(message);
+        window.open(`https://wa.me/?text=${encodedMessage}`, '_blank');
+      });
+    };
   </script>
 </body>
 </html>
