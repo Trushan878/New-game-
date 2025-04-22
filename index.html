@@ -50,6 +50,7 @@
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="sendWhatsAppBtn" class="w-full bg-green-700 text-white py-2 rounded mb-4 hover:bg-green-800">Send to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
@@ -89,16 +90,14 @@
 
     document.getElementById('clearAllBtn').onclick = () => {
       if (confirm("Are you sure you want to clear points and game history? Player names will remain intact.")) {
-        // Remove points and game history, but keep players
         const players = {};
         playersRef.once('value', snap => {
           snap.forEach(child => {
             players[child.key] = 0;
           });
-          playersRef.set(players); // Reset points for all players
+          playersRef.set(players);
         });
-
-        historyRef.remove(); // Clear game history
+        historyRef.remove();
       }
     };
 
@@ -143,7 +142,6 @@
       for (const name in data) {
         const div = document.createElement('div');
         div.className = 'flex items-center justify-between';
-
         div.innerHTML = `
           <label class="flex items-center gap-2">
             <input type="checkbox" value="${name}" class="w-5 h-5" />
@@ -155,16 +153,13 @@
         playersList.appendChild(div);
       }
 
-      // Add remove player functionality
-      const removeBtns = document.querySelectorAll('.removePlayerBtn');
-      removeBtns.forEach(btn => {
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
         btn.onclick = () => {
           const playerToRemove = btn.getAttribute('data-player');
-          playersRef.child(playerToRemove).remove();  // Remove player from Firebase
+          playersRef.child(playerToRemove).remove();
         };
       });
 
-      // Render points history
       for (const name in data) {
         const historyEntry = document.createElement('div');
         historyEntry.textContent = `${name}: ${data[name]} points`;
@@ -182,6 +177,33 @@
         gameHistory.appendChild(div);
       });
     });
+
+    // WhatsApp share
+    document.getElementById('sendWhatsAppBtn').onclick = async () => {
+      const playersSnap = await playersRef.once('value');
+      const historySnap = await historyRef.once('value');
+
+      const playersData = playersSnap.val() || {};
+      const historyData = historySnap.val() || {};
+
+      let message = '*Game Points Summary*\n\n';
+
+      message += '*Points:*\n';
+      for (const name in playersData) {
+        message += `${name}: ${playersData[name]} points\n`;
+      }
+
+      message += '\n*Game History:*\n';
+      let i = 1;
+      for (const key in historyData) {
+        const line = historyData[key].replace(/^Game \d+: /, '');
+        message += `Game ${i++}: ${line}\n`;
+      }
+
+      const encodedMessage = encodeURIComponent(message);
+      const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+      window.open(whatsappUrl, '_blank');
+    };
   </script>
 </body>
 </html>
