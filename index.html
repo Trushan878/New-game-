@@ -288,7 +288,7 @@
       let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
 
       const sortedPlayers = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
-      const medals = ['🥇', '🥈', '🥉'];
+      const medals = ['1', '2', '3'];
 
       sortedPlayers.forEach(([name, info], index) => {
         const medal = medals[index] || `${index + 1}.`;
