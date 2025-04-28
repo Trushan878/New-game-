@@ -7,16 +7,12 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap');
-
     body {
-      font-family: 'Orbitron', 'Arial', sans-serif;
+      font-family: 'Orbitron', sans-serif;
       background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
       color: #00f0ff;
       min-height: 100vh;
-      margin: 0;
       overflow-x: hidden;
     }
 
@@ -25,13 +21,12 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
-      background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
-      background-size: cover;
-      background-position: center;
+      background: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?fit=crop&w=1950&q=80') no-repeat center center/cover;
       position: relative;
-      text-align: center;
-      padding: 2rem;
       color: #00f0ff;
+      text-align: center;
+      font-size: 1.5rem;
+      padding: 2rem;
     }
 
     .overlay {
@@ -43,42 +38,23 @@
     }
 
     .warning-box {
-      background-color: rgba(255, 0, 0, 0.2);
-      border: 2px solid #ff0057;
+      background: rgba(255, 0, 102, 0.2);
+      border: 2px solid #ff007f;
       padding: 10px;
       border-radius: 10px;
       margin-top: 10px;
       font-weight: bold;
-      color: #ff0057;
+      color: #ff007f;
     }
 
     .game-board {
       display: none;
+      margin: 2rem;
+      background: rgba(15, 15, 15, 0.9);
+      border: 2px solid #00f0ff;
+      border-radius: 10px;
       padding: 2rem;
-      margin: 2rem auto;
-      background: rgba(0, 0, 0, 0.8);
-      border: 2px solid #00f0ff;
-      border-radius: 1rem;
-      max-width: 700px;
-      box-shadow: 0 0 20px #00f0ff;
-    }
-
-    .animated-button {
-      padding: 10px 20px;
-      font-size: 1.5rem;
-      background: none;
-      color: #00f0ff;
-      border: 2px solid #00f0ff;
-      border-radius: 50px;
-      position: relative;
-      overflow: hidden;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .animated-button:hover {
-      background-color: #00f0ff;
-      color: #000;
+      box-shadow: 0 0 30px #00f0ff;
     }
 
     .congrats-popup {
@@ -86,13 +62,13 @@
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      background: #00ff00;
-      color: #000;
+      background: #ff00c8;
+      color: white;
       padding: 1.5rem 2rem;
       border-radius: 0.75rem;
       font-size: 1.5rem;
-      font-weight: 700;
-      box-shadow: 0 0 15px #00ff00;
+      font-weight: bold;
+      box-shadow: 0 10px 15px rgba(255, 0, 200, 0.6);
       z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
@@ -104,180 +80,218 @@
       100% { opacity: 0; transform: translate(-50%, -20px); }
     }
 
+    .animated-button {
+      position: relative;
+      overflow: hidden;
+      padding: 10px 30px;
+      font-size: 1.5rem;
+      color: #0ff;
+      background-color: transparent;
+      border: 2px solid #0ff;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .animated-button::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background-color: rgba(0, 255, 255, 0.1);
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
+      transition: all 0.4s ease;
+    }
+
+    .animated-button:hover::before {
+      width: 0;
+      height: 0;
+      opacity: 1;
+    }
+
+    .animated-button:hover {
+      background: #00f0ff;
+      color: #000;
+    }
+
     input, button {
-      font-family: 'Orbitron', sans-serif;
+      border: none;
+      outline: none;
     }
     input {
-      background: #1a1a2e;
+      background: rgba(255,255,255,0.1);
+      color: #0ff;
       border: 1px solid #00f0ff;
-      color: #00f0ff;
+      padding: 10px;
+      border-radius: 5px;
     }
-    input:focus {
-      outline: none;
-      border-color: #ff00f7;
+    input::placeholder {
+      color: #99faff;
     }
   </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap" rel="stylesheet">
 </head>
 
 <body>
 
-  <div id="welcomePage" class="welcome-page">
-    <div class="overlay"></div>
-    <div style="z-index: 1; position: relative;">
-      <h1 class="text-4xl font-bold mb-4">Welcome to the Game!</h1>
-      <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
-      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
-      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
-    </div>
+<!-- Welcome Page -->
+<div id="welcomePage" class="welcome-page">
+  <div class="overlay"></div>
+  <div style="z-index: 1; position: relative;">
+    <h1 class="text-5xl font-extrabold mb-6">Welcome to the Cyberpunk Game!</h1>
+    <div class="warning-box mb-2">⚠️ Financial Risk Warning ⚠️</div>
+    <div class="warning-box">⚠️ Play Carefully! ⚠️</div>
+    <button id="startGameBtn" class="animated-button mt-8">Start Game</button>
+  </div>
+</div>
+
+<!-- Game Board -->
+<section id="gameBoard" class="game-board">
+  <h2 class="text-3xl font-bold text-center mb-8">Cyberpunk Scoreboard</h2>
+
+  <div class="flex mb-4 gap-3">
+    <input type="text" id="newPlayerName" placeholder="Add player..." class="flex-grow rounded px-3 py-2" />
+    <button id="addPlayerBtn" class="animated-button">Add</button>
   </div>
 
-  <section id="gameBoard" class="game-board">
-    <h2 class="text-3xl font-semibold text-center mb-8">Cyberpunk Scoreboard</h2>
+  <div id="playersList" class="space-y-4 max-h-60 overflow-y-auto mb-6"></div>
 
-    <div class="flex gap-2 mb-6">
-      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow rounded px-3 py-2" />
-      <button id="addPlayerBtn" class="bg-pink-500 hover:bg-pink-600 px-4 py-2 rounded text-black font-bold">Add</button>
-    </div>
+  <div class="flex justify-between gap-4 mb-4">
+    <button id="clearBtn" class="animated-button w-full">Clear</button>
+    <button id="submitBtn" class="animated-button w-full">Submit</button>
+  </div>
 
-    <div id="playersList" class="space-y-4 mb-6 max-h-60 overflow-y-auto"></div>
+  <button id="clearAllBtn" class="animated-button w-full mb-4">Clear All Data</button>
+  <button id="deleteLastGameBtn" class="animated-button w-full mb-4">Delete Last Game</button>
+  <button id="whatsappBtn" class="animated-button w-full mb-4">Send to WhatsApp</button>
 
-    <div class="flex gap-2 mb-6">
-      <button id="clearBtn" class="flex-1 bg-gray-700 hover:bg-gray-600 py-2 rounded">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-500 hover:bg-blue-600 py-2 rounded text-black font-bold">Submit</button>
-    </div>
+  <div id="pointsHistory" class="bg-gray-800 p-4 rounded mb-4 text-sm text-white max-h-40 overflow-y-auto"></div>
+  <div id="gameHistory" class="bg-gray-700 p-4 rounded text-sm text-white max-h-40 overflow-y-auto"></div>
+</section>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 hover:bg-red-700 text-black font-bold py-2 rounded mb-4">Clear All Data</button>
-    <button id="deleteLastGameBtn" class="w-full bg-yellow-400 hover:bg-yellow-500 text-black font-bold py-2 rounded mb-4">Delete Last Game</button>
-    <button id="whatsappBtn" class="w-full bg-green-400 hover:bg-green-500 text-black font-bold py-2 rounded mb-4">Send Points to WhatsApp</button>
+<!-- Start Sound -->
+<audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
 
-    <div id="pointsHistory" class="bg-gray-900 p-4 rounded mb-4 text-sm text-green-300 max-h-40 overflow-y-auto"></div>
-    <div id="gameHistory" class="bg-gray-800 p-4 rounded text-sm text-pink-300 max-h-40 overflow-y-auto"></div>
-  </section>
+<script>
+  // Your JavaScript logic
 
-  <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
+  const firebaseConfig = {
+    databaseURL: "https://your-project.firebaseio.com/" // Replace with your Firebase Realtime Database URL
+  };
+  firebase.initializeApp(firebaseConfig);
+  const database = firebase.database();
 
-  <script>
-    // Initialize Firebase
-    const firebaseConfig = {
-      databaseURL: "https://gametrushan-default-rtdb.firebaseio.com/"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+  const welcomePage = document.getElementById('welcomePage');
+  const gameBoard = document.getElementById('gameBoard');
+  const startGameBtn = document.getElementById('startGameBtn');
+  const startSound = document.getElementById('startSound');
 
-    const startSound = document.getElementById('startSound');
-    const welcomePage = document.getElementById('welcomePage');
-    const gameBoard = document.getElementById('gameBoard');
-    const startGameBtn = document.getElementById('startGameBtn');
+  const playersList = document.getElementById('playersList');
+  const newPlayerName = document.getElementById('newPlayerName');
+  const addPlayerBtn = document.getElementById('addPlayerBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const deleteLastGameBtn = document.getElementById('deleteLastGameBtn');
+  const whatsappBtn = document.getElementById('whatsappBtn');
+  const pointsHistory = document.getElementById('pointsHistory');
+  const gameHistory = document.getElementById('gameHistory');
 
-    startGameBtn.addEventListener('click', () => {
-      welcomePage.style.display = 'none';
-      gameBoard.style.display = 'block';
-      startSound.play();
-    });
+  let players = [];
+  let history = [];
 
-    const playersList = document.getElementById('playersList');
-    const newPlayerName = document.getElementById('newPlayerName');
-    const addPlayerBtn = document.getElementById('addPlayerBtn');
-    const clearBtn = document.getElementById('clearBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const deleteLastGameBtn = document.getElementById('deleteLastGameBtn');
-    const whatsappBtn = document.getElementById('whatsappBtn');
-    const pointsHistory = document.getElementById('pointsHistory');
-    const gameHistory = document.getElementById('gameHistory');
+  startGameBtn.addEventListener('click', () => {
+    welcomePage.style.display = 'none';
+    gameBoard.style.display = 'block';
+    startSound.play();
+  });
 
-    function createPlayerElement(name) {
+  addPlayerBtn.addEventListener('click', () => {
+    const name = newPlayerName.value.trim();
+    if (name) {
+      players.push({ name: name, points: 0 });
+      newPlayerName.value = '';
+      renderPlayers();
+    }
+  });
+
+  clearBtn.addEventListener('click', () => {
+    players = [];
+    renderPlayers();
+  });
+
+  submitBtn.addEventListener('click', () => {
+    if (players.length === 0) return;
+    const gameData = { date: new Date().toLocaleString(), players: [...players] };
+    history.push(gameData);
+    saveGameToDatabase(gameData);
+    showCongratsPopup();
+    players = [];
+    renderPlayers();
+    renderHistory();
+  });
+
+  clearAllBtn.addEventListener('click', () => {
+    database.ref('games').remove();
+    history = [];
+    renderHistory();
+  });
+
+  deleteLastGameBtn.addEventListener('click', () => {
+    history.pop();
+    renderHistory();
+  });
+
+  whatsappBtn.addEventListener('click', () => {
+    const text = history.map(game =>
+      `Game on ${game.date}\n` + game.players.map(p => `${p.name}: ${p.points} pts`).join('\n')
+    ).join('\n\n');
+    const encodedText = encodeURIComponent(text);
+    window.open(`https://wa.me/?text=${encodedText}`, '_blank');
+  });
+
+  function renderPlayers() {
+    playersList.innerHTML = '';
+    players.forEach((player, index) => {
       const div = document.createElement('div');
-      div.className = 'flex items-center space-x-4';
-
-      const label = document.createElement('label');
-      label.className = 'flex-1';
-      label.textContent = name;
-
-      const input = document.createElement('input');
-      input.type = 'number';
-      input.placeholder = 'Points';
-      input.className = 'w-24 rounded px-2 py-1';
-
-      div.appendChild(label);
-      div.appendChild(input);
-
-      return div;
-    }
-
-    addPlayerBtn.addEventListener('click', () => {
-      const name = newPlayerName.value.trim();
-      if (name) {
-        playersList.appendChild(createPlayerElement(name));
-        newPlayerName.value = '';
-      }
+      div.className = 'flex items-center justify-between bg-gray-800 p-3 rounded';
+      div.innerHTML = `
+        <span>${player.name}</span>
+        <input type="number" class="w-24 rounded text-black" value="${player.points}" onchange="updatePoints(${index}, this.value)" />
+      `;
+      playersList.appendChild(div);
     });
+  }
 
-    clearBtn.addEventListener('click', () => {
-      playersList.innerHTML = '';
-    });
+  window.updatePoints = function(index, value) {
+    players[index].points = parseInt(value) || 0;
+  }
 
-    submitBtn.addEventListener('click', () => {
-      const data = {};
-      playersList.querySelectorAll('div').forEach(div => {
-        const name = div.querySelector('label').textContent;
-        const points = parseInt(div.querySelector('input').value) || 0;
-        data[name] = points;
-      });
-      const timestamp = new Date().toISOString();
-      db.ref('games').push({ timestamp, players: data });
+  function saveGameToDatabase(gameData) {
+    database.ref('games').push(gameData);
+  }
 
-      pointsHistory.innerHTML = JSON.stringify(data, null, 2);
-      showCongratsPopup();
+  function renderHistory() {
+    pointsHistory.innerHTML = history.map(h => `
+      <div class="mb-2">
+        <strong>${h.date}</strong><br/>
+        ${h.players.map(p => `${p.name}: ${p.points}`).join('<br/>')}
+      </div>
+    `).join('');
+  }
 
-      playersList.innerHTML = '';
-    });
-
-    clearAllBtn.addEventListener('click', () => {
-      if (confirm('Are you sure you want to clear ALL data?')) {
-        db.ref('games').remove();
-      }
-    });
-
-    deleteLastGameBtn.addEventListener('click', () => {
-      db.ref('games').limitToLast(1).once('value', snapshot => {
-        const updates = {};
-        snapshot.forEach(child => updates[child.key] = null);
-        db.ref('games').update(updates);
-      });
-    });
-
-    whatsappBtn.addEventListener('click', () => {
-      let message = "Game Points:\n";
-      playersList.querySelectorAll('div').forEach(div => {
-        const name = div.querySelector('label').textContent;
-        const points = div.querySelector('input').value;
-        message += `${name}: ${points}\n`;
-      });
-      const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(whatsappURL, '_blank');
-    });
-
-    function showCongratsPopup() {
-      const popup = document.createElement('div');
-      popup.className = 'congrats-popup';
-      popup.textContent = "Submitted Successfully!";
-      document.body.appendChild(popup);
-      setTimeout(() => {
-        popup.remove();
-      }, 3000);
-    }
-
-    db.ref('games').on('value', snapshot => {
-      let games = snapshot.val();
-      gameHistory.innerHTML = '';
-      if (games) {
-        Object.entries(games).reverse().forEach(([id, game]) => {
-          gameHistory.innerHTML += `<div class="mb-2"><strong>${game.timestamp}</strong><br>${JSON.stringify(game.players)}</div>`;
-        });
-      }
-    });
-  </script>
+  function showCongratsPopup() {
+    const popup = document.createElement('div');
+    popup.className = 'congrats-popup';
+    popup.textContent = "Congratulations!";
+    document.body.appendChild(popup);
+    setTimeout(() => popup.remove(), 3000);
+  }
+</script>
 
 </body>
 </html>
