@@ -8,10 +8,7 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    /* Your previous CSS (same as you posted) */
-    body {
-      font-family: 'Arial', sans-serif;
-    }
+    body { font-family: 'Arial', sans-serif; }
     .welcome-page {
       display: flex;
       justify-content: center;
@@ -28,10 +25,8 @@
     }
     .overlay {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0, 0, 0, 0.5);
       z-index: 0;
     }
@@ -67,9 +62,9 @@
       animation: fadeInOut 3s forwards;
     }
     @keyframes fadeInOut {
-      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
-      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      0% { opacity: 0; transform: translate(-50%, -20px); }
+      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -20px); }
     }
     .animated-button {
       position: relative;
@@ -105,230 +100,228 @@
       background-color: white;
       color: #22c55e;
     }
-    .animated-button:focus {
-      outline: none;
-    }
+    .animated-button:focus { outline: none; }
   </style>
 </head>
+
 <body>
-
-<div id="welcomePage" class="welcome-page">
-  <div class="overlay"></div>
-  <div style="z-index: 1; position: relative;">
-    <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
-    <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
-    <div class="warning-box">⚠️ Play Carefully ⚠️</div>
-    <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
-  </div>
-</div>
-
-<section id="gameBoard" class="game-board">
-  <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
-
-  <div class="mb-4 flex gap-2">
-    <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-    <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+  <div id="welcomePage" class="welcome-page">
+    <div class="overlay"></div>
+    <div style="z-index: 1; position: relative;">
+      <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
+      <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
+      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
+      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
+    </div>
   </div>
 
-  <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+  <section id="gameBoard" class="game-board">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    </div>
 
-  <div class="flex justify-between gap-2 mb-4">
-    <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-    <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
-  </div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
-  <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-  <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
-  <button id="deleteLastGameBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Delete Last Game</button>
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
 
-  <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-  <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-</section>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="deleteLastGameBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Delete Last Game</button>
+    <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
-<audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+  </section>
 
-<script>
-const firebaseConfig = {
-  apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-  authDomain: "index-e95d1.firebaseapp.com",
-  databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-  projectId: "index-e95d1",
-  storageBucket: "index-e95d1.appspot.com",
-  messagingSenderId: "340216728284",
-  appId: "1:340216728284:web:f2e61485d29068fbf5c219"
-};
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-const playersRef = db.ref("players");
-const historyRef = db.ref("gameHistory");
+  <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
 
-const welcomePage = document.getElementById('welcomePage');
-const gameBoard = document.getElementById('gameBoard');
-const startGameBtn = document.getElementById('startGameBtn');
-const startSound = document.getElementById('startSound');
-const playersList = document.getElementById('playersList');
-const newPlayerInput = document.getElementById('newPlayerName');
-const pointsHistory = document.getElementById('pointsHistory');
-const gameHistory = document.getElementById('gameHistory');
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.appspot.com",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-startGameBtn.onclick = () => {
-  welcomePage.style.display = 'none';
-  gameBoard.style.display = 'block';
-  startSound.currentTime = 10;
-  startSound.play();
-  setTimeout(() => startSound.pause(), 4000);
-};
+    const welcomePage = document.getElementById('welcomePage');
+    const gameBoard = document.getElementById('gameBoard');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const startSound = document.getElementById('startSound');
+    const playersList = document.getElementById('playersList');
+    const newPlayerInput = document.getElementById('newPlayerName');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
 
-document.getElementById('addPlayerBtn').onclick = () => {
-  const name = newPlayerInput.value.trim();
-  if (!name) return;
-  playersRef.child(name).set({ points: 0 });
-  newPlayerInput.value = '';
-};
+    startGameBtn.onclick = () => {
+      welcomePage.style.display = 'none';
+      gameBoard.style.display = 'block';
+      startSound.currentTime = 10;
+      startSound.play();
+      setTimeout(() => startSound.pause(), 4000);
+    };
 
-document.getElementById('clearAllBtn').onclick = () => {
-  if (confirm("Are you sure you want to clear all player points and game history?")) {
-    playersRef.once('value', snapshot => {
-      const data = snapshot.val() || {};
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      playersRef.child(name).set({ points: 0 });
+      newPlayerInput.value = '';
+    };
+
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Are you sure you want to clear all player points and game history?")) {
+        playersRef.once('value', snapshot => {
+          const data = snapshot.val() || {};
+          for (const name in data) {
+            playersRef.child(name).update({ points: 0 });
+          }
+        });
+        historyRef.remove();
+      }
+    };
+
+    document.getElementById('submitBtn').onclick = async () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
+        awm.play();
+        playersRef.child(name).get().then(snap => {
+          const current = snap.exists() ? snap.val().points : 0;
+          playersRef.child(name).update({ points: current + 1 });
+        });
+      });
+
+      if (selected.length > 0) {
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
+        showCongrats(selected);
+      }
+    };
+
+    function showCongrats(names) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+
+      const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
+      audio.play();
+
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        msg.lang = 'en-US';
+        speechSynthesis.speak(msg);
+      }
+    }
+
+    function showSuccess(message) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup bg-green-500';
+      popup.textContent = message;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+    }
+
+    document.getElementById('deleteLastGameBtn').onclick = async () => {
+      const confirmDelete = confirm("Are you sure you want to delete the last game and update points?");
+      if (!confirmDelete) return;
+
+      const snap = await historyRef.once('value');
+      const data = snap.val();
+      if (!data) return alert("No games to delete.");
+
+      const keys = Object.keys(data);
+      const lastKey = keys[keys.length - 1];
+      const lastEntry = data[lastKey];
+      const players = lastEntry.replace(/^Game \d+: /, '').split(',').map(p => p.trim());
+
+      const updates = {};
+      for (const name of players) {
+        const playerSnap = await playersRef.child(name).get();
+        if (playerSnap.exists()) {
+          const current = playerSnap.val().points;
+          updates[`players/${name}/points`] = Math.max(current - 1, 0);
+        }
+      }
+      await db.ref().update(updates);
+      await historyRef.child(lastKey).remove();
+      showSuccess("Last game deleted and points updated!");
+    };
+
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
+
       for (const name in data) {
-        playersRef.child(name).update({ points: 0 });
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
+        div.innerHTML = `
+          <label class="flex items-center gap-2">
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <span class="text-lg">${name}</span>
+          </label>
+          <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+        `;
+        playersList.appendChild(div);
+      }
+
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();
+        };
+      });
+
+      for (const name in data) {
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        pointsHistory.appendChild(historyEntry);
       }
     });
-    historyRef.remove();
-  }
-};
 
-document.getElementById('submitBtn').onclick = async () => {
-  const selected = [];
-  document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-    const name = cb.value;
-    selected.push(name);
-    const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
-    awm.play();
-    playersRef.child(name).get().then(snap => {
-      const current = snap.exists() ? snap.val().points : 0;
-      playersRef.child(name).update({ points: current + 1 });
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      gameHistory.innerHTML = '';
+      Object.values(data).forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        gameHistory.appendChild(div);
+      });
     });
-  });
 
-  if (selected.length > 0) {
-    const snap = await historyRef.once('value');
-    const gameNumber = snap.numChildren() + 1;
-    const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-    historyRef.push(entry);
-    showCongrats(selected);
-  }
-};
+    document.getElementById('whatsappBtn').onclick = async () => {
+      const snap = await playersRef.once('value');
+      const data = snap.val() || {};
+      let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
 
-let congratsCount = 0;
-function showCongrats(names) {
-  if (congratsCount >= 5) return;
-  congratsCount++;
+      const sortedPlayers = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
+      const medals = ['1', '2', '3'];
 
-  const popup = document.createElement('div');
-  popup.className = 'congrats-popup';
-  popup.textContent = `Congratulations ${names.join(', ')}!`;
-  document.body.appendChild(popup);
-  setTimeout(() => popup.remove(), 3000);
+      sortedPlayers.forEach(([name, info], index) => {
+        const medal = medals[index] || `${index + 1}.`;
+        message += `${medal} *${name}* — ${info.points} point(s)\n`;
+      });
 
-  const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
-  audio.play();
-
-  if ('speechSynthesis' in window) {
-    const msg = new SpeechSynthesisUtterance();
-    msg.text = `Congratulations ${names.join(', ')}!`;
-    msg.lang = 'en-US';
-    speechSynthesis.speak(msg);
-  }
-}
-
-playersRef.on('value', snap => {
-  const data = snap.val() || {};
-  playersList.innerHTML = '';
-  pointsHistory.innerHTML = '';
-
-  for (const name in data) {
-    const div = document.createElement('div');
-    div.className = 'flex items-center justify-between';
-    div.innerHTML = `
-      <label class="flex items-center gap-2">
-        <input type="checkbox" value="${name}" class="w-5 h-5" />
-        <span class="text-lg">${name}</span>
-      </label>
-      <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
-      <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
-    `;
-    playersList.appendChild(div);
-  }
-
-  document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-    btn.onclick = () => {
-      const playerToRemove = btn.getAttribute('data-player');
-      playersRef.child(playerToRemove).remove();
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
     };
-  });
-
-  for (const name in data) {
-    const historyEntry = document.createElement('div');
-    historyEntry.textContent = `${name}: ${data[name].points} points`;
-    pointsHistory.appendChild(historyEntry);
-  }
-});
-
-historyRef.on('value', snap => {
-  const data = snap.val() || {};
-  gameHistory.innerHTML = '';
-  Object.values(data).forEach((entry, i) => {
-    const div = document.createElement('div');
-    div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-    gameHistory.appendChild(div);
-  });
-});
-
-// WhatsApp Share
-document.getElementById('whatsappBtn').onclick = async () => {
-  const snap = await playersRef.once('value');
-  const data = snap.val() || {};
-  let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
-
-  const sortedPlayers = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
-  const medals = ['1', '2', '3'];
-
-  sortedPlayers.forEach(([name, info], index) => {
-    const medal = medals[index] || `${index + 1}.`;
-    message += `${medal} *${name}* — ${info.points} point(s)\n`;
-  });
-
-  const encoded = encodeURIComponent(message);
-  window.open(`https://wa.me/?text=${encoded}`, '_blank');
-};
-
-// Delete Last Game
-document.getElementById('deleteLastGameBtn').onclick = async () => {
-  const confirmDelete = confirm("Are you sure you want to delete the last game and update points?");
-  if (!confirmDelete) return;
-
-  const snap = await historyRef.once('value');
-  const data = snap.val();
-  if (!data) return alert("No games to delete.");
-
-  const keys = Object.keys(data);
-  const lastKey = keys[keys.length - 1];
-  const lastEntry = data[lastKey];
-  const players = lastEntry.replace(/^Game \d+: /, '').split(',').map(p => p.trim());
-
-  const updates = {};
-  for (const name of players) {
-    const playerSnap = await playersRef.child(name).get();
-    if (playerSnap.exists()) {
-      const current = playerSnap.val().points;
-      updates[`players/${name}/points`] = Math.max(current - 1, 0);
-    }
-  }
-  await db.ref().update(updates);
-  await historyRef.child(lastKey).remove();
-  alert("Deleted last game and updated player points.");
-};
-</script>
+  </script>
 </body>
 </html>
