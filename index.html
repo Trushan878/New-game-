@@ -1,236 +1,115 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Cyberpunk Scoreboard</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
-
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
 
   <style>
     body {
       font-family: 'Orbitron', sans-serif;
-      background: #0f0f0f;
+      background: radial-gradient(circle at center, #0f0f0f, #000000);
       color: #00f7ff;
       min-height: 100vh;
       overflow-x: hidden;
-      position: relative;
+      padding: 20px;
     }
-
-    /* Neon moving background safely inside a background layer */
-    .background-layer {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: -1;
-      overflow: hidden;
-      pointer-events: none;
+    h1, h2 {
+      text-shadow: 0 0 5px #00f7ff, 0 0 10px #ff00c8;
     }
-
-    .background-layer::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: repeating-linear-gradient(
-        45deg,
-        #00f7ff 0,
-        #00f7ff 2px,
-        transparent 2px,
-        transparent 40px
-      );
-      opacity: 0.05;
-      animation: moveBackground 20s linear infinite;
-    }
-
-    @keyframes moveBackground {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(40px, 40px); }
-    }
-
-    .welcome-page {
-      position: relative;
-      background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
-      background-size: cover;
-      background-blend-mode: overlay;
-      background-color: rgba(15, 15, 15, 0.8);
-      color: #00f7ff;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 0 20px #00f7ff;
-    }
-
-    .overlay {
-      background: rgba(0, 0, 0, 0.7);
-      padding: 2rem;
-      border-radius: 1rem;
-    }
-
-    .warning-box {
-      border: 2px solid #ff00c8;
-      background: rgba(255, 0, 200, 0.1);
-      color: #ff00c8;
-      text-shadow: 0 0 5px #ff00c8;
-      padding: 1rem;
-      margin-bottom: 1rem;
-      border-radius: 0.5rem;
-    }
-
-    .game-board {
-      background: #121212;
+    .neon-box {
       border: 2px solid #00f7ff;
-      padding: 1rem;
-      margin-top: 2rem;
+      background: rgba(0, 0, 0, 0.6);
+      box-shadow: 0 0 15px #00f7ff, 0 0 25px #ff00c8;
       border-radius: 1rem;
-      box-shadow: 0 0 20px #00f7ff, 0 0 40px #ff00c8;
+      padding: 20px;
     }
-
-    .animated-button {
-      background-color: #ff00c8;
-      border: 2px solid #ff00c8;
-      color: white;
+    .neon-button {
+      background: #ff00c8;
+      color: black;
       font-weight: bold;
-      padding: 0.5rem 1rem;
+      padding: 10px 20px;
       border-radius: 0.5rem;
-      transition: all 0.4s;
+      box-shadow: 0 0 10px #ff00c8, 0 0 20px #00f7ff;
+      transition: all 0.3s;
     }
-
-    .animated-button:hover {
+    .neon-button:hover {
       background: black;
       color: #ff00c8;
-      border-color: #ff00c8;
       box-shadow: 0 0 15px #ff00c8;
     }
-
     input[type="text"] {
-      background: #1f1f1f;
-      color: #00f7ff;
+      background: black;
       border: 2px solid #00f7ff;
-      padding: 0.5rem;
+      color: #00f7ff;
+      padding: 10px;
       border-radius: 0.5rem;
+      margin-bottom: 10px;
       width: 100%;
-      margin-bottom: 1rem;
     }
-
     input[type="checkbox"] {
       accent-color: #ff00c8;
     }
-
-    .congrats-popup {
-      background: #00f7ff;
-      color: black;
-      font-weight: bold;
-      padding: 1rem;
-      border-radius: 1rem;
-      text-shadow: none;
-      box-shadow: 0 0 20px #00f7ff, 0 0 40px #ff00c8;
-      margin-top: 1rem;
-    }
-
-    #clearBtn, #submitBtn, #clearAllBtn, #deleteLastGameBtn, #whatsappBtn {
-      background-color: #1f1f1f;
-      border: 2px solid #ff00c8;
-      color: #ff00c8;
-      font-weight: bold;
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
-      margin: 0.5rem 0;
-      transition: all 0.4s;
-    }
-
-    #clearBtn:hover, #submitBtn:hover, #clearAllBtn:hover, #deleteLastGameBtn:hover, #whatsappBtn:hover {
-      background-color: #ff00c8;
-      color: black;
-      box-shadow: 0 0 15px #ff00c8;
-    }
-
     #playersList span, #pointsHistory div, #gameHistory div {
-      text-shadow: 0 0 5px #00f7ff;
-      margin: 0.25rem 0;
+      margin-bottom: 8px;
+      display: block;
     }
   </style>
-</head>
 
+</head>
 <body>
 
-  <!-- Neon animated background layer -->
-  <div class="background-layer"></div>
+  <h1 class="text-5xl mb-8">Cyberpunk Scoreboard</h1>
 
-  <div class="welcome-page">
-    <div class="overlay">
-      <h1 class="text-4xl font-bold mb-6">Cyberpunk Scoreboard</h1>
+  <div class="neon-box mb-8">
+    <h2 class="text-3xl mb-4">Warning</h2>
+    <p>Double-check your scores. No second chances in the cyber world!</p>
+  </div>
 
-      <div class="warning-box">
-        Warning: Double-check your scores. No second chances in the cyber world!
-      </div>
+  <div class="grid md:grid-cols-2 gap-8">
 
-      <div class="flex flex-col md:flex-row gap-6">
-        
-        <div class="flex-1">
-          <h2 class="text-2xl mb-2">Players</h2>
-          <div id="playersList"></div>
-          <input type="text" id="playerNameInput" placeholder="Enter player name..." />
-          <button id="addPlayerBtn" class="animated-button mt-2">Add Player</button>
-        </div>
+    <div class="neon-box">
+      <h2 class="text-2xl mb-4">Players</h2>
+      <div id="playersList"></div>
+      <input type="text" id="playerNameInput" placeholder="Enter player name...">
+      <button id="addPlayerBtn" class="neon-button mt-2">Add Player</button>
+    </div>
 
-        <div class="flex-1">
-          <h2 class="text-2xl mb-2">Points</h2>
-          <div id="pointsHistory"></div>
-        </div>
+    <div class="neon-box">
+      <h2 class="text-2xl mb-4">Points</h2>
+      <div id="pointsHistory"></div>
+    </div>
 
-      </div>
+  </div>
 
-      <div class="mt-8 game-board">
-        <h2 class="text-2xl mb-4">Game Actions</h2>
-
-        <input type="text" id="gameNameInput" placeholder="Enter game name..." />
-        <input type="text" id="scoreInput" placeholder="Enter score..." />
-        <div class="flex gap-4 mt-2">
-          <button id="submitBtn" class="animated-button">Submit Score</button>
-          <button id="clearBtn" class="animated-button">Clear</button>
-        </div>
-
-        <div class="flex gap-4 mt-4">
-          <button id="clearAllBtn" class="animated-button">Clear All Players</button>
-          <button id="deleteLastGameBtn" class="animated-button">Delete Last Game</button>
-          <button id="whatsappBtn" class="animated-button">Share on WhatsApp</button>
-        </div>
-      </div>
-
-      <div class="mt-8 game-board">
-        <h2 class="text-2xl mb-4">Game History</h2>
-        <div id="gameHistory"></div>
-      </div>
-
-      <div id="congratsPopup" class="congrats-popup hidden">
-        Congratulations! You have scored the highest!
-      </div>
-
+  <div class="neon-box mt-8">
+    <h2 class="text-2xl mb-4">Game Actions</h2>
+    <input type="text" id="gameNameInput" placeholder="Enter game name...">
+    <input type="text" id="scoreInput" placeholder="Enter score...">
+    <div class="flex flex-wrap gap-4 mt-4">
+      <button id="submitBtn" class="neon-button">Submit Score</button>
+      <button id="clearBtn" class="neon-button">Clear</button>
+    </div>
+    <div class="flex flex-wrap gap-4 mt-4">
+      <button id="clearAllBtn" class="neon-button">Clear All Players</button>
+      <button id="deleteLastGameBtn" class="neon-button">Delete Last Game</button>
+      <button id="whatsappBtn" class="neon-button">Share on WhatsApp</button>
     </div>
   </div>
 
-  <script>
-    // Firebase configuration (dummy for now)
-    const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT_ID.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
+  <div class="neon-box mt-8">
+    <h2 class="text-2xl mb-4">Game History</h2>
+    <div id="gameHistory"></div>
+  </div>
 
-    // Example buttons
+  <div id="congratsPopup" class="neon-box mt-8 hidden">
+    <p>Congratulations! You have scored the highest!</p>
+  </div>
+
+  <script>
     document.getElementById('addPlayerBtn').addEventListener('click', function () {
       const name = document.getElementById('playerNameInput').value;
       if (name) {
