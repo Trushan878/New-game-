@@ -8,28 +8,63 @@
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
-    body { font-family: 'Arial', sans-serif; }
-    .welcome-page {
-      display: flex; justify-content: center; align-items: center;
-      height: 100vh; background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
-      background-size: cover; background-position: center; position: relative;
-      color: white; text-align: center; font-size: 1.5rem; padding: 2rem;
+    /* Your previous CSS (same as you posted) */
+    body {
+      font-family: 'Arial', sans-serif;
     }
-    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 0; }
+    .welcome-page {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
+      background-size: cover;
+      background-position: center;
+      position: relative;
+      color: white;
+      text-align: center;
+      font-size: 1.5rem;
+      padding: 2rem;
+    }
+    .overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 0;
+    }
     .warning-box {
-      background-color: transparent; border: 2px solid red; padding: 10px;
-      border-radius: 10px; margin-top: 10px; font-weight: bold;
+      background-color: transparent;
+      border: 2px solid red;
+      padding: 10px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-weight: bold;
     }
     .game-board {
-      display: none; padding: 20px; background-color: #fff;
-      border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      display: none;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     .congrats-popup {
-      position: fixed; top: 20%; left: 50%;
-      transform: translateX(-50%); background: #22c55e; color: white;
-      padding: 1.5rem 2rem; border-radius: 0.75rem; font-size: 1.5rem;
-      font-weight: 600; box-shadow: 0 10px 15px rgba(34,197,94,0.5);
-      z-index: 10000; opacity: 0; animation: fadeInOut 3s forwards;
+      position: fixed;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #22c55e;
+      color: white;
+      padding: 1.5rem 2rem;
+      border-radius: 0.75rem;
+      font-size: 1.5rem;
+      font-weight: 600;
+      box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
+      z-index: 10000;
+      opacity: 0;
+      animation: fadeInOut 3s forwards;
     }
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
@@ -37,31 +72,49 @@
       100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
     }
     .animated-button {
-      position: relative; overflow: hidden; padding: 10px 20px; font-size: 1.25rem;
-      color: white; background-color: #22c55e; border: 2px solid #22c55e;
-      border-radius: 50px; cursor: pointer; transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+      padding: 10px 20px;
+      font-size: 1.25rem;
+      color: white;
+      background-color: #22c55e;
+      border: 2px solid #22c55e;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: all 0.4s ease;
     }
     .animated-button::before {
-      content: ''; position: absolute; top: 50%; left: 50%;
-      width: 300%; height: 300%; background-color: rgba(255,255,255,0.15);
-      transition: all 0.4s ease; border-radius: 50%;
-      transform: translate(-50%, -50%); opacity: 0;
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 300%;
+      height: 300%;
+      background-color: rgba(255, 255, 255, 0.15);
+      transition: all 0.4s ease;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      opacity: 0;
     }
     .animated-button:hover::before {
-      width: 0; height: 0; opacity: 1;
+      width: 0;
+      height: 0;
+      opacity: 1;
     }
     .animated-button:hover {
-      background-color: white; color: #22c55e;
+      background-color: white;
+      color: #22c55e;
     }
-    .animated-button:focus { outline: none; }
+    .animated-button:focus {
+      outline: none;
+    }
   </style>
 </head>
-
 <body>
 
 <div id="welcomePage" class="welcome-page">
   <div class="overlay"></div>
-  <div style="z-index:1; position:relative;">
+  <div style="z-index: 1; position: relative;">
     <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
     <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
     <div class="warning-box">⚠️ Play Carefully ⚠️</div>
@@ -85,8 +138,8 @@
   </div>
 
   <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-  <button id="deleteLastGameBtn" class="w-full bg-yellow-600 text-white py-2 rounded mb-4 hover:bg-yellow-700">Delete Last Game</button>
   <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
+  <button id="deleteLastGameBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Delete Last Game</button>
 
   <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
   <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
@@ -167,7 +220,11 @@ document.getElementById('submitBtn').onclick = async () => {
   }
 };
 
+let congratsCount = 0;
 function showCongrats(names) {
+  if (congratsCount >= 5) return;
+  congratsCount++;
+
   const popup = document.createElement('div');
   popup.className = 'congrats-popup';
   popup.textContent = `Congratulations ${names.join(', ')}!`;
@@ -228,32 +285,7 @@ historyRef.on('value', snap => {
   });
 });
 
-// Delete Last Game + Update Points
-document.getElementById('deleteLastGameBtn').onclick = async () => {
-  const snap = await historyRef.once('value');
-  const data = snap.val();
-  if (!data) return alert("No games to delete.");
-
-  const keys = Object.keys(data);
-  const lastKey = keys[keys.length - 1];
-  const lastEntry = data[lastKey];
-  const players = lastEntry.replace(/^Game \d+: /, '').split(',').map(p => p.trim());
-
-  // Remove 1 point from each player in last game
-  const updates = {};
-  for (const name of players) {
-    const playerSnap = await playersRef.child(name).get();
-    if (playerSnap.exists()) {
-      const current = playerSnap.val().points;
-      updates[`players/${name}/points`] = Math.max(current - 1, 0);
-    }
-  }
-  await db.ref().update(updates);
-  await historyRef.child(lastKey).remove();
-  alert("Deleted last game and updated player points.");
-};
-
-// WhatsApp Button
+// WhatsApp Share
 document.getElementById('whatsappBtn').onclick = async () => {
   const snap = await playersRef.once('value');
   const data = snap.val() || {};
@@ -270,7 +302,33 @@ document.getElementById('whatsappBtn').onclick = async () => {
   const encoded = encodeURIComponent(message);
   window.open(`https://wa.me/?text=${encoded}`, '_blank');
 };
-</script>
 
+// Delete Last Game
+document.getElementById('deleteLastGameBtn').onclick = async () => {
+  const confirmDelete = confirm("Are you sure you want to delete the last game and update points?");
+  if (!confirmDelete) return;
+
+  const snap = await historyRef.once('value');
+  const data = snap.val();
+  if (!data) return alert("No games to delete.");
+
+  const keys = Object.keys(data);
+  const lastKey = keys[keys.length - 1];
+  const lastEntry = data[lastKey];
+  const players = lastEntry.replace(/^Game \d+: /, '').split(',').map(p => p.trim());
+
+  const updates = {};
+  for (const name of players) {
+    const playerSnap = await playersRef.child(name).get();
+    if (playerSnap.exists()) {
+      const current = playerSnap.val().points;
+      updates[`players/${name}/points`] = Math.max(current - 1, 0);
+    }
+  }
+  await db.ref().update(updates);
+  await historyRef.child(lastKey).remove();
+  alert("Deleted last game and updated player points.");
+};
+</script>
 </body>
 </html>
