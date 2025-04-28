@@ -7,21 +7,24 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
+
     body {
       font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #eee;
-      min-height: 100vh;
+      background: linear-gradient(135deg, #1f005c, #5b0060, #870160, #ac255e, #ca485c, #e16b5c, #f39060, #ffb56b);
       background-size: 400% 400%;
-      animation: gradientBG 15s ease infinite;
+      animation: gradientShift 15s ease infinite;
+      color: #fff;
+      min-height: 100vh;
     }
-    @keyframes gradientBG {
+
+    @keyframes gradientShift {
       0% { background-position: 0% 50%; }
       50% { background-position: 100% 50%; }
       100% { background-position: 0% 50%; }
     }
+
     .welcome-page {
       display: flex;
       flex-direction: column;
@@ -29,106 +32,134 @@
       align-items: center;
       height: 100vh;
       text-align: center;
-      background: rgba(0, 0, 0, 0.7);
+      padding: 2rem;
+      position: relative;
     }
+
     .overlay {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.6);
+      background: rgba(0, 0, 0, 0.7);
       z-index: 0;
     }
-    .neon-border {
-      border: 2px solid #8f00ff;
-      box-shadow: 0 0 10px #8f00ff, 0 0 20px #8f00ff;
+
+    .warning-box {
+      background: rgba(255, 0, 150, 0.2);
+      border: 2px solid #ff00ff;
       padding: 10px;
       border-radius: 10px;
-      background: rgba(255, 255, 255, 0.05);
+      margin-top: 10px;
+      font-weight: bold;
+      color: #ff66ff;
+      text-shadow: 0 0 5px #ff00ff;
     }
+
+    .animated-button {
+      background: transparent;
+      border: 2px solid #00ffe7;
+      color: #00ffe7;
+      padding: 10px 30px;
+      border-radius: 50px;
+      font-size: 1.5rem;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.4s ease;
+    }
+
+    .animated-button::before {
+      content: '';
+      position: absolute;
+      background: #00ffe7;
+      width: 120%;
+      height: 0;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(45deg);
+      transition: 0.5s;
+      border-radius: 50%;
+      z-index: -1;
+    }
+
+    .animated-button:hover::before {
+      height: 500%;
+    }
+
+    .animated-button:hover {
+      color: #000;
+    }
+
     .game-board {
       display: none;
-      padding: 2rem;
-      margin: 2rem auto;
-      max-width: 600px;
-      background: rgba(0, 0, 0, 0.6);
-      border-radius: 1rem;
-      box-shadow: 0 0 20px #00d2ff, 0 0 40px #3a47d5;
+      padding: 20px;
     }
-    .animated-button {
-      padding: 10px 20px;
-      font-size: 1.25rem;
-      color: #fff;
-      background: #8f00ff;
-      border: none;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: 0.3s;
-      box-shadow: 0 0 10px #8f00ff, 0 0 20px #8f00ff;
-    }
-    .animated-button:hover {
-      background: #00d2ff;
-      box-shadow: 0 0 15px #00d2ff, 0 0 30px #00d2ff;
-    }
-    input, button {
-      outline: none;
-    }
+
     .congrats-popup {
       position: fixed;
       top: 20%;
       left: 50%;
       transform: translateX(-50%);
-      background: #8f00ff;
-      color: white;
+      background: #00ffe7;
+      color: #000;
       padding: 1.5rem 2rem;
       border-radius: 1rem;
       font-size: 1.5rem;
       font-weight: bold;
-      box-shadow: 0 0 20px #8f00ff, 0 0 40px #8f00ff;
+      z-index: 10000;
       opacity: 0;
       animation: fadeInOut 3s forwards;
-      z-index: 9999;
+      text-shadow: 0 0 5px #00ffe7;
     }
+
     @keyframes fadeInOut {
       0% { opacity: 0; transform: translate(-50%, -20px); }
       10%, 90% { opacity: 1; transform: translate(-50%, 0); }
       100% { opacity: 0; transform: translate(-50%, -20px); }
     }
-  </style>
 
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700&display=swap" rel="stylesheet">
+    input, button {
+      font-family: 'Orbitron', sans-serif;
+    }
+
+    input::placeholder {
+      color: #cccccc;
+    }
+  </style>
 </head>
 
 <body>
   <div id="welcomePage" class="welcome-page">
     <div class="overlay"></div>
     <div style="z-index: 1; position: relative;">
-      <h1 class="text-4xl font-bold mb-6 neon-border">Welcome to the Cyberpunk Game!</h1>
-      <div class="neon-border mb-4">⚡ Financial Risk Alert! ⚡</div>
-      <div class="neon-border mb-6">⚡ Play Carefully ⚡</div>
-      <button id="startGameBtn" class="animated-button">Enter the Game</button>
+      <h1 class="text-4xl font-bold mb-6 neon-text">Welcome to the Cyberpunk Game!</h1>
+      <div class="warning-box mb-2">⚠️ Financial Risk Alert! ⚠️</div>
+      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
+      <button id="startGameBtn" class="animated-button">Start Game</button>
     </div>
   </div>
 
   <section id="gameBoard" class="game-board">
-    <h2 class="text-3xl font-semibold text-center mb-8">Scoreboard</h2>
+    <h2 class="text-3xl font-bold text-center mb-6">Scoreboard</h2>
     <div class="mb-4 flex gap-2">
-      <input type="text" id="newPlayerName" placeholder="Add player" class="flex-grow rounded px-3 py-2 bg-gray-900 text-white border border-purple-400" />
-      <button id="addPlayerBtn" class="animated-button">Add</button>
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow px-4 py-2 rounded-lg text-black" />
+      <button id="addPlayerBtn" class="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-lg">Add</button>
     </div>
 
-    <div id="playersList" class="space-y-4 max-h-64 overflow-auto"></div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-y-auto mb-4"></div>
 
-    <div class="flex gap-2 mt-6">
-      <button id="clearBtn" class="flex-1 animated-button">Clear</button>
-      <button id="submitBtn" class="flex-1 animated-button">Submit</button>
+    <div class="flex gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-600 hover:bg-gray-700 py-2 rounded-lg">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 hover:bg-blue-700 py-2 rounded-lg">Submit</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full animated-button mt-4">Clear All Data</button>
-    <button id="deleteLastGameBtn" class="w-full animated-button mt-2">Delete Last Game</button>
-    <button id="whatsappBtn" class="w-full animated-button mt-2">Send to WhatsApp</button>
+    <button id="clearAllBtn" class="w-full bg-red-600 hover:bg-red-700 py-2 rounded-lg mb-4">Clear All</button>
+    <button id="deleteLastGameBtn" class="w-full bg-yellow-500 hover:bg-yellow-600 py-2 rounded-lg mb-4">Delete Last Game</button>
+    <button id="whatsappBtn" class="w-full bg-green-500 hover:bg-green-600 py-2 rounded-lg mb-4">Send to WhatsApp</button>
 
-    <div id="pointsHistory" class="mt-6 p-3 rounded bg-gray-900 max-h-40 overflow-auto text-sm"></div>
-    <div id="gameHistory" class="mt-4 p-3 rounded bg-gray-900 max-h-40 overflow-auto text-sm"></div>
+    <div id="pointsHistory" class="bg-purple-900 p-4 rounded-lg mb-4 max-h-40 overflow-y-auto text-sm"></div>
+    <div id="gameHistory" class="bg-blue-900 p-4 rounded-lg text-sm max-h-40 overflow-y-auto"></div>
   </section>
 
   <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
@@ -143,6 +174,7 @@
       messagingSenderId: "340216728284",
       appId: "1:340216728284:web:f2e61485d29068fbf5c219"
     };
+
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
     const playersRef = db.ref("players");
@@ -170,6 +202,18 @@
       if (!name) return;
       playersRef.child(name).set({ points: 0 });
       newPlayerInput.value = '';
+    };
+
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Clear all player points and history?")) {
+        playersRef.once('value', snapshot => {
+          const data = snapshot.val() || {};
+          for (const name in data) {
+            playersRef.child(name).update({ points: 0 });
+          }
+        });
+        historyRef.remove();
+      }
     };
 
     document.getElementById('submitBtn').onclick = async () => {
@@ -200,6 +244,29 @@
       setTimeout(() => popup.remove(), 3000);
     }
 
+    document.getElementById('deleteLastGameBtn').onclick = async () => {
+      if (!confirm("Delete the last game and rollback points?")) return;
+      const snap = await historyRef.once('value');
+      const data = snap.val();
+      if (!data) return alert("No games found.");
+
+      const keys = Object.keys(data);
+      const lastKey = keys[keys.length - 1];
+      const players = data[lastKey].replace(/^Game \d+: /, '').split(',').map(p => p.trim());
+
+      const updates = {};
+      for (const name of players) {
+        const playerSnap = await playersRef.child(name).get();
+        if (playerSnap.exists()) {
+          const current = playerSnap.val().points;
+          updates[`players/${name}/points`] = Math.max(current - 1, 0);
+        }
+      }
+      await db.ref().update(updates);
+      await historyRef.child(lastKey).remove();
+      showCongrats(["Game Deleted"]);
+    };
+
     playersRef.on('value', snap => {
       const data = snap.val() || {};
       playersList.innerHTML = '';
@@ -207,20 +274,28 @@
 
       for (const name in data) {
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between bg-gray-800 p-2 rounded';
+        div.className = 'flex items-center justify-between';
         div.innerHTML = `
           <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="w-5 h-5 accent-purple-500" />
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
             <span class="text-lg">${name}</span>
           </label>
-          <span class="text-sm text-purple-400">Points: ${data[name].points}</span>
+          <span>Points: ${data[name].points}</span>
+          <button class="removePlayerBtn bg-red-600 hover:bg-red-700 text-white py-1 px-3 rounded" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
       }
 
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const playerToRemove = btn.getAttribute('data-player');
+          playersRef.child(playerToRemove).remove();
+        };
+      });
+
       for (const name in data) {
         const historyEntry = document.createElement('div');
-        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        historyEntry.textContent = `${name}: ${data[name].points} pts`;
         pointsHistory.appendChild(historyEntry);
       }
     });
@@ -230,43 +305,21 @@
       gameHistory.innerHTML = '';
       Object.values(data).forEach((entry, i) => {
         const div = document.createElement('div');
-        div.textContent = entry;
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
         gameHistory.appendChild(div);
       });
     });
 
-    document.getElementById('clearBtn').onclick = () => {
-      document.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
-    };
-
-    document.getElementById('clearAllBtn').onclick = () => {
-      if (confirm("Clear all player points and game history?")) {
-        playersRef.once('value', snapshot => {
-          const data = snapshot.val() || {};
-          for (const name in data) {
-            playersRef.child(name).update({ points: 0 });
-          }
-        });
-        historyRef.remove();
-      }
-    };
-
-    document.getElementById('deleteLastGameBtn').onclick = async () => {
-      const snap = await historyRef.once('value');
-      const data = snap.val();
-      if (!data) return alert("No games to delete.");
-      const keys = Object.keys(data);
-      const lastKey = keys[keys.length - 1];
-      historyRef.child(lastKey).remove();
-    };
-
     document.getElementById('whatsappBtn').onclick = async () => {
       const snap = await playersRef.once('value');
       const data = snap.val() || {};
-      let message = `*Cyberpunk Scoreboard* - ${new Date().toLocaleString()}\n\n`;
-      Object.entries(data).forEach(([name, info], index) => {
-        message += `${index + 1}. *${name}*: ${info.points} pts\n`;
+      let message = `*Cyberpunk Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
+
+      const sorted = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
+      sorted.forEach(([name, info], i) => {
+        message += `${i+1}. *${name}* - ${info.points} pts\n`;
       });
+
       const encoded = encodeURIComponent(message);
       window.open(`https://wa.me/?text=${encoded}`, '_blank');
     };
