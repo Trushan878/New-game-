@@ -1,208 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Scoreboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .welcome-page {
+      display: flex; justify-content: center; align-items: center;
+      height: 100vh;
+      background: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg') no-repeat center center;
+      background-size: cover;
+      position: relative; color: white; text-align: center; font-size: 1.5rem; padding: 2rem;
+    }
+    .overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 0; }
+    .warning-box {
+      background-color: transparent; border: 2px solid red;
+      padding: 10px; border-radius: 10px; margin-top: 10px; font-weight: bold;
+    }
+    .game-board {
+      display: none; padding: 20px; background-color: #fff;
+      border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .congrats-popup {
+      position: fixed; top: 20%; left: 50%; transform: translateX(-50%);
+      background: #22c55e; color: white; padding: 1.5rem 2rem; border-radius: 0.75rem;
+      font-size: 1.5rem; font-weight: 600; z-index: 10000; opacity: 0;
+      animation: fadeInOut 3s forwards;
+    }
+    @keyframes fadeInOut {
+      0% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      10%, 90% { opacity: 1; transform: translateX(-50%) translateY(0); }
+      100% { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+    }
+    .animated-button {
+      position: relative; overflow: hidden; padding: 10px 20px; font-size: 1.25rem;
+      color: white; background-color: #22c55e; border: 2px solid #22c55e;
+      border-radius: 50px; cursor: pointer; transition: all 0.4s ease;
+    }
+    .animated-button::before {
+      content: ''; position: absolute; top: 50%; left: 50%;
+      width: 300%; height: 300%; background-color: rgba(255,255,255,0.15);
+      transition: all 0.4s ease; border-radius: 50%;
+      transform: translate(-50%, -50%); opacity: 0;
+    }
+    .animated-button:hover::before {
+      width: 0; height: 0; opacity: 1;
+    }
+    .animated-button:hover { background-color: white; color: #22c55e; }
+    .animated-button:focus { outline: none; }
+  </style>
 </head>
-<body class="font-sans">
+<body>
+  <div id="welcomePage" class="welcome-page">
+    <div class="overlay"></div>
+    <div style="z-index: 1; position: relative;">
+      <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
+      <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
+      <div class="warning-box">⚠️ Play Carefully ⚠️</div>
+      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
+    </div>
+  </div>
 
-<!-- Welcome Page -->
-<div id="welcomePage" class="flex justify-center items-center h-screen bg-cover bg-center relative text-white text-center text-xl p-8" style="background-image: url('https://raw.githubusercontent.com/Trushan878/New-game-/main/IMG-20250422-WA0016.jpg');">
-  <div class="absolute inset-0 bg-black opacity-50"></div>
-  <div style="z-index: 1;">
-    <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
-    <div class="bg-transparent border-2 border-red-600 p-2 rounded mb-2 font-bold">⚠️ This Game has Financial Risk ⚠️</div>
-    <div class="bg-transparent border-2 border-red-600 p-2 rounded font-bold">⚠️ Play Carefully ⚠️</div>
-    <button id="startGameBtn" class="mt-6 bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700 transition">Start Game</button>
-  </div>
-</div>
+  <section id="gameBoard" class="game-board">
+    <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+    <div class="mb-4 flex gap-2">
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
+    </div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
-<!-- Game Board -->
-<section id="gameBoard" class="hidden p-6 max-w-2xl mx-auto">
-  <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+    <div class="flex justify-between gap-2 mb-4">
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+    </div>
 
-  <div class="flex gap-2 mb-4">
-    <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
-    <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
-  </div>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
-  <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
+  </section>
 
-  <div class="flex justify-between gap-2 mb-4">
-    <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-    <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
-  </div>
+  <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
 
-  <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-  <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
+      authDomain: "index-e95d1.firebaseapp.com",
+      databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "index-e95d1",
+      storageBucket: "index-e95d1.appspot.com",
+      messagingSenderId: "340216728284",
+      appId: "1:340216728284:web:f2e61485d29068fbf5c219"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-  <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-  <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
-</section>
+    const welcomePage = document.getElementById('welcomePage');
+    const gameBoard = document.getElementById('gameBoard');
+    const startGameBtn = document.getElementById('startGameBtn');
+    const startSound = document.getElementById('startSound');
+    const playersList = document.getElementById('playersList');
+    const newPlayerInput = document.getElementById('newPlayerName');
+    const pointsHistory = document.getElementById('pointsHistory');
+    const gameHistory = document.getElementById('gameHistory');
 
-<audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
+    startGameBtn.onclick = () => {
+      welcomePage.style.display = 'none';
+      gameBoard.style.display = 'block';
+      startSound.currentTime = 10;
+      startSound.play();
+      setTimeout(() => startSound.pause(), 4000);
+    };
 
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-    authDomain: "index-e95d1.firebaseapp.com",
-    databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "index-e95d1",
-    storageBucket: "index-e95d1.appspot.com",
-    messagingSenderId: "340216728284",
-    appId: "1:340216728284:web:f2e61485d29068fbf5c219"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return;
+      playersRef.child(name).set({ points: 0 });
+      newPlayerInput.value = '';
+    };
 
-  const welcomePage = document.getElementById('welcomePage');
-  const gameBoard = document.getElementById('gameBoard');
-  const startGameBtn = document.getElementById('startGameBtn');
-  const startSound = document.getElementById('startSound');
-  const newPlayerInput = document.getElementById('newPlayerName');
-  const playersList = document.getElementById('playersList');
-  const pointsHistory = document.getElementById('pointsHistory');
-  const gameHistory = document.getElementById('gameHistory');
+    document.getElementById('clearAllBtn').onclick = () => {
+      if (confirm("Clear all player points and game history?")) {
+        playersRef.once('value', snapshot => {
+          const data = snapshot.val() || {};
+          for (const name in data) {
+            playersRef.child(name).update({ points: 0 });
+          }
+        });
+        historyRef.remove();
+      }
+    };
 
-  startGameBtn.onclick = () => {
-    welcomePage.style.display = 'none';
-    gameBoard.classList.remove('hidden');
-    startSound.currentTime = 10;
-    startSound.play();
-    setTimeout(() => startSound.pause(), 4000);
-  };
+    document.getElementById('submitBtn').onclick = async () => {
+      const selected = [];
+      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
+        awm.play();
+        playersRef.child(name).once('value', snap => {
+          const current = snap.exists() ? snap.val().points : 0;
+          playersRef.child(name).update({ points: current + 1 });
+        });
+      });
 
-  document.getElementById('addPlayerBtn').onclick = () => {
-    const name = newPlayerInput.value.trim();
-    if (!name) {
-      alert("Please enter a player name.");
-      return;
-    }
+      if (selected.length > 0) {
+        const snap = await historyRef.once('value');
+        const gameNumber = snap.numChildren() + 1;
+        const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
+        historyRef.push(entry);
+        showCongrats(selected);
+      }
+    };
 
-    playersRef.child(name).set({ points: 0 }).then(() => {
-      console.log("Player added:", name);
-      newPlayerInput.value = '';
-    }).catch(err => {
-      console.error("Failed to add player:", err);
-    });
-  };
+    let congratsCount = 0;
+    function showCongrats(names) {
+      if (congratsCount >= 5) return;
+      congratsCount++;
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+      new Audio("https://www.fesliyanstudios.com/play-mp3/387").play();
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
+        msg.lang = 'en-US';
+        speechSynthesis.speak(msg);
+      }
+    }
 
-  playersRef.on('value', snap => {
-    const data = snap.val() || {};
-    playersList.innerHTML = '';
-    pointsHistory.innerHTML = '';
-    for (const name in data) {
-      const div = document.createElement('div');
-      div.className = 'flex items-center justify-between';
-      div.innerHTML = `
-        <label class="flex items-center gap-2">
-          <input type="checkbox" value="${name}" class="w-5 h-5" />
-          <span class="text-lg">${name}</span>
-        </label>
-        <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
-        <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
-      `;
-      playersList.appendChild(div);
-    }
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      playersList.innerHTML = '';
+      pointsHistory.innerHTML = '';
 
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        playersRef.child(playerToRemove).remove();
-      };
-    });
+      for (const name in data) {
+        const div = document.createElement('div');
+        div.className = 'flex items-center justify-between';
+        div.innerHTML = `
+          <label class="flex items-center gap-2">
+            <input type="checkbox" value="${name}" class="w-5 h-5" />
+            <span class="text-lg">${name}</span>
+          </label>
+          <span class="text-sm text-gray-600">Points: ${data[name].points}</span>
+          <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
+        `;
+        playersList.appendChild(div);
+      }
 
-    for (const name in data) {
-      const entry = document.createElement('div');
-      entry.textContent = `${name}: ${data[name].points} points`;
-      pointsHistory.appendChild(entry);
-    }
-  });
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const player = btn.getAttribute('data-player');
+          playersRef.child(player).remove();
+        };
+      });
 
-  document.getElementById('submitBtn').onclick = async () => {
-    const selected = [];
-    document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-      const name = cb.value;
-      selected.push(name);
-      const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
-      awm.play();
-      playersRef.child(name).once('value').then(snap => {
-        const current = snap.exists() ? snap.val().points : 0;
-        playersRef.child(name).update({ points: current + 1 });
-      });
-    });
+      for (const name in data) {
+        const historyEntry = document.createElement('div');
+        historyEntry.textContent = `${name}: ${data[name].points} points`;
+        pointsHistory.appendChild(historyEntry);
+      }
+    });
 
-    if (selected.length > 0) {
-      const snap = await historyRef.once('value');
-      const gameNumber = snap.numChildren() + 1;
-      const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-      historyRef.push(entry);
-      showCongrats(selected);
-    }
-  };
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      gameHistory.innerHTML = '';
+      Object.values(data).forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
+        gameHistory.appendChild(div);
+      });
+    });
 
-  let congratsCount = 0;
-  function showCongrats(names) {
-    if (congratsCount >= 5) return;
-    congratsCount++;
+    document.getElementById('whatsappBtn').onclick = async () => {
+      const snap = await playersRef.once('value');
+      const data = snap.val() || {};
+      let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
+      const sorted = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
+      const medals = ['1.', '2.', '3.'];
 
-    const popup = document.createElement('div');
-    popup.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-green-500 text-white px-6 py-4 rounded-xl text-xl font-semibold shadow-lg';
-    popup.textContent = `Congratulations ${names.join(', ')}!`;
-    document.body.appendChild(popup);
-    setTimeout(() => popup.remove(), 3000);
+      sorted.forEach(([name, info], i) => {
+        const medal = medals[i] || `${i + 1}.`;
+        message += `${medal} *${name}* — ${info.points} point(s)\n`;
+      });
 
-    const audio = new Audio("https://www.fesliyanstudios.com/play-mp3/387");
-    audio.play();
-
-    if ('speechSynthesis' in window) {
-      const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}`);
-      msg.lang = 'en-US';
-      speechSynthesis.speak(msg);
-    }
-  }
-
-  historyRef.on('value', snap => {
-    const data = snap.val() || {};
-    gameHistory.innerHTML = '';
-    Object.values(data).forEach((entry, i) => {
-      const div = document.createElement('div');
-      div.textContent = `Game ${i + 1}: ${entry.replace(/^Game \d+: /, '')}`;
-      gameHistory.appendChild(div);
-    });
-  });
-
-  document.getElementById('clearAllBtn').onclick = () => {
-    if (confirm("Are you sure you want to clear all player points and game history?")) {
-      playersRef.once('value', snapshot => {
-        const data = snapshot.val() || {};
-        for (const name in data) {
-          playersRef.child(name).update({ points: 0 });
-        }
-      });
-      historyRef.remove();
-    }
-  };
-
-  document.getElementById('whatsappBtn').onclick = async () => {
-    const snap = await playersRef.once('value');
-    const data = snap.val() || {};
-    let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
-    const sorted = Object.entries(data).sort((a, b) => b[1].points - a[1].points);
-    const medals = ['1', '2', '3'];
-    sorted.forEach(([name, info], i) => {
-      const medal = medals[i] || `${i + 1}.`;
-      message += `${medal} *${name}* — ${info.points} point(s)\n`;
-    });
-    const encoded = encodeURIComponent(message);
-    window.open(`https://wa.me/?text=${encoded}`, '_blank');
-  };
-</script>
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    };
+  </script>
 </body>
 </html>
