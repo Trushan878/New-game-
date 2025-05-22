@@ -1,146 +1,108 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Scoreboard with Firebase</title>
-  <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <style>
+    .player { margin-bottom: 10px; }
+  </style>
 </head>
-<body class="p-4 bg-gray-100">
+<body>
 
-  <div class="max-w-xl mx-auto">
-    <h1 class="text-2xl font-bold mb-4 text-center">Game Scoreboard</h1>
-    <div class="flex mb-4 gap-2">
-      <input id="playerName" class="flex-1 border p-2 rounded" type="text" placeholder="Player Name">
-      <button id="addPlayerBtn" class="bg-green-500 text-white px-4 py-2 rounded">Add Player</button>
-    </div>
+<h2>Scoreboard</h2>
 
-    <div id="playersContainer" class="space-y-4"></div>
+<div id="playersContainer"></div>
 
-    <button id="submitBtn" class="w-full mt-4 bg-blue-600 text-white py-2 rounded">Submit</button>
-    <button id="clearGameHistoryBtn" class="w-full mt-2 bg-yellow-500 text-white py-2 rounded">Clear Game History</button>
+<button id="submitBtn">Submit All Changes</button>
 
-    <h2 class="text-xl mt-6 mb-2 font-semibold">Game History</h2>
-    <div id="gameHistory" class="bg-white p-3 rounded shadow max-h-60 overflow-y-auto text-sm"></div>
-  </div>
+<script>
+  // --- Your Firebase config ---
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+    authDomain: "point-system-1bd8a.firebaseapp.com",
+    databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com/",
+    projectId: "point-system-1bd8a",
+    storageBucket: "point-system-1bd8a.appspot.com",
+    messagingSenderId: "755307639843",
+    appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+    measurementId: "G-9ZMSNWJHHH"
+  };
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-      authDomain: "point-system-1bd8a.firebaseapp.com",
-      projectId: "point-system-1bd8a",
-      storageBucket: "point-system-1bd8a.appspot.com",
-      messagingSenderId: "755307639843",
-      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-      measurementId: "G-9ZMSNWJHHH",
-      databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com/"
-    };
+  // Initialize Firebase
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const playersRef = db.ref('players');
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const playersRef = db.ref("players");
-    const historyRef = db.ref("gameHistory");
+  const playersContainer = document.getElementById('playersContainer');
+  const submitBtn = document.getElementById('submitBtn');
 
-    const playerNameInput = document.getElementById("playerName");
-    const addPlayerBtn = document.getElementById("addPlayerBtn");
-    const playersContainer = document.getElementById("playersContainer");
-    const submitBtn = document.getElementById("submitBtn");
-    const gameHistoryDiv = document.getElementById("gameHistory");
-    const clearGameHistoryBtn = document.getElementById("clearGameHistoryBtn");
+  let playersData = {};
 
-    addPlayerBtn.onclick = () => {
-      const name = playerNameInput.value.trim();
-      if (!name) return;
-      playersRef.child(name).set({ points: 0 });
-      playerNameInput.value = '';
-    };
+  // Render players with controls
+  function renderPlayers(players) {
+    playersContainer.innerHTML = '';
+    playersData = players;
 
-    submitBtn.onclick = async () => {
-      const checkboxes = document.querySelectorAll('.player-check:checked');
-      if (checkboxes.length === 0) return;
+    for (const playerName in players) {
+      const player = players[playerName];
+      const div = document.createElement('div');
+      div.classList.add('player');
+      div.dataset.name = playerName;
 
-      const updates = {};
-      const historyPlayers = [];
+      div.innerHTML = `
+        <strong>${playerName}</strong> - Current points: <span class="points">${player.points}</span><br>
+        <label>
+          <input type="radio" name="op_${playerName}" value="plus" checked> +
+        </label>
+        <label>
+          <input type="radio" name="op_${playerName}" value="minus"> -
+        </label>
+        <input type="number" class="pointsInput" value="0" min="0" style="width: 60px;">
+      `;
 
-      for (const checkbox of checkboxes) {
-        const name = checkbox.value;
-        const input = document.querySelector(`#input-${name}`);
-        const delta = parseInt(input.value);
-        if (isNaN(delta)) continue;
-
-        const snap = await playersRef.child(name).get();
-        const current = snap.exists() ? snap.val().points : 0;
-        updates[name + '/points'] = current + delta;
-        historyPlayers.push(`${name} (${delta > 0 ? '+' : ''}${delta})`);
-        input.value = ''; // clear input after submission
-        checkbox.checked = false;
-      }
-
-      if (Object.keys(updates).length > 0) {
-        playersRef.update(updates);
-        const historySnap = await historyRef.once('value');
-        const gameNumber = historySnap.numChildren() + 1;
-        historyRef.push(`Game ${gameNumber}: ${historyPlayers.join(', ')}`);
-        speakCongrats(historyPlayers.map(p => p.split(' ')[0]));
-      }
-    };
-
-    function speakCongrats(names) {
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance();
-        msg.text = `Congratulations ${names.join(', ')}`;
-        msg.lang = 'en-US';
-        speechSynthesis.speak(msg);
-      }
+      playersContainer.appendChild(div);
     }
+  }
 
-    clearGameHistoryBtn.onclick = () => {
-      if (confirm("Clear all game history?")) {
-        historyRef.remove();
+  // Listen for players data changes in Firebase
+  playersRef.on('value', snapshot => {
+    const players = snapshot.val() || {};
+    renderPlayers(players);
+  });
+
+  // When submit clicked: update all players points based on inputs and plus/minus selection
+  submitBtn.onclick = () => {
+    const updates = {};
+    const playerDivs = playersContainer.querySelectorAll('.player');
+
+    playerDivs.forEach(div => {
+      const playerName = div.dataset.name;
+      const currentPoints = playersData[playerName]?.points || 0;
+
+      const op = div.querySelector(`input[name="op_${playerName}"]:checked`).value;
+      const input = div.querySelector('.pointsInput');
+      let change = parseInt(input.value) || 0;
+
+      // Apply plus or minus
+      if (op === 'minus') {
+        change = -change;
       }
-    };
 
-    function renderPlayers(players) {
-      playersContainer.innerHTML = '';
-      for (const [name, info] of Object.entries(players)) {
-        const div = document.createElement('div');
-        div.className = "bg-white p-3 rounded shadow flex items-center gap-3";
+      let newPoints = currentPoints + change;
+      if (newPoints < 0) newPoints = 0; // Avoid negative points
 
-        div.innerHTML = `
-          <input type="checkbox" class="player-check" value="${name}">
-          <span class="flex-1 font-medium">${name} - ${info.points} pts</span>
-          <input type="number" id="input-${name}" class="w-20 border rounded px-2 py-1" placeholder="+/- pts">
-          <button class="removeBtn bg-red-500 text-white px-2 py-1 rounded" data-name="${name}">X</button>
-        `;
-
-        div.querySelector('.removeBtn').onclick = () => {
-          if (confirm(`Remove ${name}?`)) playersRef.child(name).remove();
-        };
-
-        playersContainer.appendChild(div);
-      }
-    }
-
-    function renderGameHistory(data) {
-      gameHistoryDiv.innerHTML = '';
-      Object.values(data || {}).forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.textContent = entry;
-        gameHistoryDiv.appendChild(div);
-      });
-    }
-
-    playersRef.on('value', snap => {
-      const data = snap.val() || {};
-      renderPlayers(data);
+      updates[playerName + '/points'] = newPoints;
     });
 
-    historyRef.on('value', snap => {
-      const data = snap.val() || {};
-      renderGameHistory(data);
+    // Push update to Firebase
+    playersRef.update(updates).then(() => {
+      alert('Points updated successfully!');
+    }).catch(error => {
+      alert('Error updating points: ' + error.message);
     });
-  </script>
+  };
+</script>
+
 </body>
 </html>
