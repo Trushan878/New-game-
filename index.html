@@ -131,7 +131,7 @@
 
     <div
       id="playersList"
-      class="space-y-4 mb-4 max-h-56 overflow-y-auto border border-gray-200 rounded p-2 bg-white"
+      class="space-y-1 mb-4 border border-gray-200 rounded p-1 bg-white"
       aria-label="Players list"
     ></div>
 
@@ -214,21 +214,21 @@
       localStorage.setItem('gameHistory', JSON.stringify(gameHistory));
     }
 
-    // Render the list of players with checkboxes and points
+    // Render the list of players with checkboxes and points (compact layout)
     function renderPlayers() {
       playersList.innerHTML = '';
       for (const name in players) {
         const div = document.createElement('div');
         div.className =
-          'flex flex-col sm:flex-row items-start sm:items-center justify-between bg-white rounded p-2 shadow-sm';
+          'flex items-center justify-between bg-white rounded px-2 py-1 shadow-sm text-sm';
         div.innerHTML = `
-          <label class="flex items-center gap-3 mb-2 sm:mb-0 cursor-pointer">
-            <input type="checkbox" value="${name}" class="w-6 h-6" />
-            <span class="text-lg font-medium">${name}</span>
+          <label class="flex items-center gap-2 cursor-pointer flex-grow">
+            <input type="checkbox" value="${name}" class="w-4 h-4" />
+            <span class="font-medium truncate max-w-[120px]">${name}</span>
           </label>
-          <span class="text-sm text-gray-600 mb-2 sm:mb-0">Points: ${players[name]}</span>
+          <span class="text-gray-600 mr-3">Points: ${players[name]}</span>
           <button
-            class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 self-start sm:self-auto"
+            class="removePlayerBtn bg-red-500 text-white py-0.5 px-2 rounded hover:bg-red-600 text-xs"
             data-player="${name}"
             aria-label="Remove player ${name}"
           >
@@ -329,57 +329,64 @@
       }
     };
 
-    // Reset all points and history but keep players
+    // Reset everything, including players
     document.getElementById('resetAllBtn').onclick = () => {
       if (
         confirm(
-          'Are you sure you want to reset all points and game history? This will keep all players.'
+          'Are you sure you want to reset everything? All players, points, and history will be lost.'
         )
       ) {
-        for (const name in players) {
-          players[name] = 0;
-        }
+        players = {};
         gameHistory = [];
         saveToStorage();
         renderPlayers();
         renderHistory();
-        alert('All points and game history have been reset, but players are kept.');
       }
     };
 
-    // WhatsApp sharing (send points summary)
+    // Send points summary to WhatsApp
     document.getElementById('whatsappBtn').onclick = () => {
-      if (Object.keys(players).length === 0)
-        return alert('No players to share.');
-      let message = 'Game Points Summary:%0A';
-      for (const name in players) {
-        message += `${name}: ${players[name]} point(s)%0A`;
+      if (Object.keys(players).length === 0) {
+        alert('Add some players first!');
+        return;
       }
-      const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-      window.open(url, '_blank');
+      const lines = ['Game Points Summary:'];
+      for (const name in players) {
+        lines.push(`${name}: ${players[name]} point(s)`);
+      }
+      const message = encodeURIComponent(lines.join('\n'));
+      window.open(`https://wa.me/?text=${message}`, '_blank');
     };
 
-    // Show congratulations popup briefly
-    function showCongratsPopup(playersList) {
+    // Show congrats popup
+    function showCongratsPopup(playerNames) {
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
-      popup.textContent = `Congrats ${playersList.join(', ')}! Points added.`;
+      popup.textContent = `Congrats to: ${playerNames.join(', ')}`;
       document.body.appendChild(popup);
-      setTimeout(() => popup.remove(), 3000);
+      setTimeout(() => {
+        popup.remove();
+      }, 3000);
     }
 
-    // Start game button handler
+    // Start game button: hides welcome, shows game board and plays sound
     startGameBtn.onclick = () => {
-      startSound.play();
       welcomePage.style.display = 'none';
       gameBoard.classList.remove('hidden');
-      gameBoard.style.display = 'flex';
+      startSound.play().catch(() => {});
     };
 
-    // Initialize app
+    // Initialize
     loadFromStorage();
     renderPlayers();
     renderHistory();
+
+    // Press enter to add player from input
+    newPlayerInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        document.getElementById('addPlayerBtn').click();
+      }
+    });
   </script>
 </body>
 </html>
