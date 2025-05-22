@@ -1,445 +1,115 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Styled Scoreboard with Firebase</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 10px;
-      background: #f0f4f8;
-      color: #333;
-      box-sizing: border-box;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-    #newPlayerName {
-      width: calc(100% - 110px);
-      padding: 8px 12px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    #newPlayerName:focus {
-      border-color: #2980b9;
-      outline: none;
-    }
-    #addPlayerBtn {
-      width: 100px;
-      padding: 8px;
-      font-size: 1rem;
-      background: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      box-sizing: border-box;
-    }
-    #addPlayerBtn:hover {
-      background: #219150;
-    }
-    #playersList {
-      margin-top: 15px;
-    }
-    .player {
-      background: white;
-      padding: 8px 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.95rem;
-      user-select: none;
-      flex-wrap: nowrap;
-    }
-    .player-name {
-      font-weight: 600;
-      flex-shrink: 0;
-      min-width: 80px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #34495e;
-    }
-    .points-display {
-      font-weight: 700;
-      color: #34495e;
-      background: #ecf0f1;
-      padding: 5px 10px;
-      border-radius: 8px;
-      width: 55px;
-      text-align: center;
-      flex-shrink: 0;
-      user-select: none;
-      box-shadow: inset 0 1px 3px #d0d7dd;
-    }
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 1;
-      min-width: 0;
-    }
-    label {
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      user-select: none;
-      color: #34495e;
-    }
-    input[type=radio] {
-      cursor: pointer;
-      width: 16px;
-      height: 16px;
-    }
-    .pointsInput {
-      width: 60px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      font-size: 0.9rem;
-      text-align: center;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    .pointsInput:focus {
-      border-color: #2980b9;
-      outline: none;
-    }
-    button.removePlayerBtn {
-      background: #e74c3c;
-      border: none;
-      color: white;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px;
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s ease;
-      flex-shrink: 0;
-    }
-    button.removePlayerBtn:hover {
-      background: #c0392b;
-    }
-    #submitBtn, #clearAllBtn {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      user-select: none;
-      margin-top: 15px;
-      box-sizing: border-box;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-      letter-spacing: 0.05em;
-    }
-    #submitBtn {
-      background: #2980b9;
-      box-shadow: 0 4px 8px rgb(41 128 185 / 0.4);
-    }
-    #submitBtn:hover {
-      background: #216994;
-      box-shadow: 0 6px 10px rgb(33 105 148 / 0.6);
-    }
-    #clearAllBtn {
-      background: #e74c3c;
-      box-shadow: 0 4px 8px rgb(231 76 60 / 0.4);
-      margin-top: 12px;
-    }
-    #clearAllBtn:hover {
-      background: #c0392b;
-      box-shadow: 0 6px 10px rgb(192 57 43 / 0.6);
-    }
-    #gameHistory {
-      background: white;
-      margin-top: 20px;
-      border-radius: 12px;
-      padding: 15px 20px;
-      max-height: 180px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.95rem;
-      color: #34495e;
-      box-shadow: inset 0 0 8px #ddd;
-      user-select: none;
-    }
-    #gameHistory > div {
-      margin-bottom: 6px;
-    }
-    svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      pointer-events: none;
-      user-select: none;
-    }
-  </style>
+  <title>Game Scoreboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
-<body>
+<body class="bg-gray-100 p-4 font-sans">
+  <div class="max-w-lg mx-auto bg-white rounded shadow p-4">
+    <h1 class="text-2xl font-bold text-center mb-4">Scoreboard</h1>
 
-<h1>Game Scoreboard</h1>
+    <div class="flex gap-2 mb-4">
+      <input id="newPlayer" placeholder="Enter name" class="flex-grow border px-3 py-1 rounded" />
+      <button id="addPlayer" class="bg-green-500 text-white px-4 py-1 rounded">Add</button>
+    </div>
 
-<div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-  <input type="text" id="newPlayerName" placeholder="Enter player name" />
-  <button id="addPlayerBtn">Add Player</button>
-</div>
+    <div id="playerList" class="space-y-2 text-sm"></div>
 
-<div id="playersList"></div>
+    <button id="submitChanges" class="w-full mt-4 bg-blue-600 text-white py-2 rounded">Submit Changes</button>
+    <button id="clearAllBtn" class="w-full mt-2 bg-yellow-500 text-white py-2 rounded">Reset All Points</button>
+  </div>
 
-<button id="submitBtn">Submit All Changes</button>
-<button id="clearAllBtn">Reset Points & History</button>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+      authDomain: "point-system-1bd8a.firebaseapp.com",
+      projectId: "point-system-1bd8a",
+      storageBucket: "point-system-1bd8a.appspot.com",
+      messagingSenderId: "755307639843",
+      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+      measurementId: "G-9ZMSNWJHHH"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
 
-<h2>Game History</h2>
-<div id="gameHistory"></div>
+    const newPlayer = document.getElementById("newPlayer");
+    const addPlayer = document.getElementById("addPlayer");
+    const playerList = document.getElementById("playerList");
+    const submitChanges = document.getElementById("submitChanges");
+    const clearAllBtn = document.getElementById("clearAllBtn");
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-    authDomain: "point-system-1bd8a.firebaseapp.com",
-    databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
-    projectId: "point-system-1bd8a",
-    storageBucket: "point-system-1bd8a.appspot.com",
-    messagingSenderId: "755307639843",
-    appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-    measurementId: "G-9ZMSNWJHHH"
-  };
+    const pendingChanges = {};
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
-
-  const playersList = document.getElementById('playersList');
-  const gameHistoryDiv = document.getElementById('gameHistory');
-  const newPlayerNameInput = document.getElementById('newPlayerName');
-  const addPlayerBtn = document.getElementById('addPlayerBtn');
-  const submitBtn = document.getElementById('submitBtn');
-  const clearAllBtn = document.getElementById('clearAllBtn');
-
-  addPlayerBtn.onclick = () => {
-    const name = newPlayerNameInput.value.trim();
-    if (!name) return alert("Enter a player name");
-    playersRef.child(name).once('value').then(snap => {
-      if (snap.exists()) {
-        alert("Player already exists");
-        return;
+    addPlayer.onclick = () => {
+      const name = newPlayer.value.trim();
+      if (name) {
+        playersRef.child(name).set({ points: 0 });
+        newPlayer.value = "";
       }
-      playersRef.child(name).set({ points: 0 });
-      newPlayerNameInput.value = '';
-    });
-  };
+    };
 
-  function getPlusIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"></path>
-      </svg>`;
-  }
-  function getMinusIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 13H5v-2h14v2z"></path>
-      </svg>`;
-  }
-  function getRemoveIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"></path>
-      </svg>`;
-  }
-
-  function renderPlayers(data) {
-    playersList.innerHTML = '';
-    for (const name in data) {
-      const player = data[name];
-      const div = document.createElement('div');
-      div.className = 'player';
-
-      div.innerHTML = `
-        <div class="player-name">${name}</div>
-        <div class="points-display" id="points-${name}">${player.points}</div>
-        <div class="controls">
-          <label title="Add Points">
-            <input type="radio" name="change-${name}" value="plus" checked>
-            ${getPlusIcon()}
-          </label>
-          <label title="Subtract Points">
-            <input type="radio" name="change-${name}" value="minus">
-            ${getMinusIcon()}
-          </label>
-          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
-          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
-        </div>
-      `;
-
-      playersList.appendChild(div);
-    }
-
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        if (confirm(`Remove player "${playerToRemove}"?`)) {
-          playersRef.child(playerToRemove).remove();
-        }
-      };
-    });
-  }
-
-  function renderHistory(data) {
-    gameHistoryDiv.innerHTML = '';
-    if (!data) {
-      gameHistoryDiv.textContent = 'No game history yet.';
-      return;
-    }
-    // data is an object with keys like "game1", "game2"
-    // Show most recent on top
-    const entries = Object.entries(data).sort((a,b) => {
-      // sort by game number descending
-      return parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''));
-    });
-    for (const [gameKey, changes] of entries) {
-      const div = document.createElement('div');
-      let lines = [];
-      for (const player in changes) {
-        const change = changes[player];
-        lines.push(`${player}: ${change > 0 ? '+' : ''}${change}`);
-      }
-      div.textContent = `${gameKey}: ${lines.join(', ')}`;
-      gameHistoryDiv.appendChild(div);
-    }
-  }
-
-  // Listen for players data updates
-  playersRef.on('value', snapshot => {
-    const data = snapshot.val() || {};
-    renderPlayers(data);
-  });
-
-  // Listen for game history updates
-  historyRef.on('value', snapshot => {
-    const data = snapshot.val();
-    renderHistory(data);
-  });
-
-  // Submit button to update all players points
-  submitBtn.onclick = () => {
-    playersRef.once('value').then(snapshot => {
-      const players = snapshot.val() || {};
-      let updates = {};
-      let gameChanges = {};
-      let validChange = false;
-
-      for (const player in players) {
-        const radios = document.getElementsByName(`change-${player}`);
-        let action = 'plus'; // default
-        for (const r of radios) if (r.checked) action = r.value;
-
-        const inputEl = document.getElementById(`input-${player}`);
-        let val = parseInt(inputEl.value);
-        if (isNaN(val) || val < 1) {
-          val = 0; // treat empty or invalid as zero change
-        }
-
-        if (val > 0) {
-          validChange = true;
-          const currentPoints = players[player].points || 0;
-          const newPoints = action === 'plus' ? currentPoints + val : currentPoints - val;
-
-          // prevent negative points - clamp to 0
-          updates[player + '/points'] = Math.max(newPoints, 0);
-
-          // Track changes for history
-          gameChanges[player] = action === 'plus' ? val : -val;
-        }
-      }
-
-      if (!validChange) {
-        alert('Please enter at least one valid point change.');
-        return;
-      }
-
-      // Push changes to Firebase in one update
-      playersRef.update(updates).then(() => {
-        // Add game history entry
-        historyRef.once('value').then(hSnap => {
-          const history = hSnap.val() || {};
-          // Find next game number:
-          let gameNum = 1;
-          while(history['game' + gameNum]) gameNum++;
-          const newGameKey = 'game' + gameNum;
-
-          historyRef.child(newGameKey).set(gameChanges).then(() => {
-            // Clear all input fields and reset radios to plus
-            for (const player in players) {
-              const radios = document.getElementsByName(`change-${player}`);
-              for (const r of radios) r.checked = false;
-              radios[0].checked = true; // first radio plus checked
-
-              const inputEl = document.getElementById(`input-${player}`);
-              inputEl.value = '';
-            }
-
-            // Speech congrats for player(s) with highest points
-            playersRef.once('value').then(snap => {
-              const updatedPlayers = snap.val() || {};
-              let maxPoints = -Infinity;
-              let winners = [];
-              for (const p in updatedPlayers) {
-                if (updatedPlayers[p].points > maxPoints) {
-                  maxPoints = updatedPlayers[p].points;
-                  winners = [p];
-                } else if (updatedPlayers[p].points === maxPoints) {
-                  winners.push(p);
-                }
-              }
-              if ('speechSynthesis' in window && winners.length) {
-                const utterance = new SpeechSynthesisUtterance('Congratulations to ' + winners.join(' and ') + '!');
-                window.speechSynthesis.speak(utterance);
-              }
-            });
+    clearAllBtn.onclick = () => {
+      if (confirm("Reset all points to 0?")) {
+        playersRef.once("value", (snapshot) => {
+          const updates = {};
+          snapshot.forEach((child) => {
+            updates[child.key + "/points"] = 0;
           });
+          playersRef.update(updates);
         });
-      });
-    });
-  };
-
-  // Reset points and history but keep players
-  clearAllBtn.onclick = () => {
-    if (!confirm('Reset all players\' points to zero and clear game history? This cannot be undone.')) return;
-    playersRef.once('value').then(snap => {
-      const players = snap.val() || {};
-      let resetData = {};
-      for (const p in players) {
-        resetData[p + '/points'] = 0;
       }
-      playersRef.update(resetData).then(() => {
-        historyRef.remove();
+    };
+
+    submitChanges.onclick = () => {
+      const updates = {};
+      for (const player in pendingChanges) {
+        const value = document.getElementById(`input-${player}`).value;
+        const point = parseInt(value) || 0;
+        updates[player + "/points"] = point; // ALLOW NEGATIVE POINTS
+      }
+      if (Object.keys(updates).length > 0) {
+        playersRef.update(updates);
+        Object.keys(pendingChanges).forEach(name => delete pendingChanges[name]);
+        alert("Points updated!");
+      }
+    };
+
+    playersRef.on("value", (snap) => {
+      const data = snap.val() || {};
+      playerList.innerHTML = "";
+      Object.keys(data).forEach(name => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between bg-gray-50 p-2 rounded border";
+
+        row.innerHTML = `
+          <span class="font-medium w-1/3">${name}</span>
+          <div class="flex gap-1 items-center w-2/3 justify-end">
+            <button class="bg-red-500 text-white px-2 rounded" onclick="changePoints('${name}', -1)">-</button>
+            <input id="input-${name}" type="number" value="${data[name].points}" class="w-16 text-center border rounded px-1 py-0.5" />
+            <button class="bg-green-500 text-white px-2 rounded" onclick="changePoints('${name}', 1)">+</button>
+            <button class="text-xs text-red-600" onclick="removePlayer('${name}')">Remove</button>
+          </div>
+        `;
+        playerList.appendChild(row);
       });
     });
-  };
-</script>
+
+    function changePoints(player, delta) {
+      const input = document.getElementById(`input-${player}`);
+      input.value = parseInt(input.value || 0) + delta;
+      pendingChanges[player] = true;
+    }
+
+    function removePlayer(player) {
+      if (confirm(`Remove ${player}?`)) {
+        playersRef.child(player).remove();
+      }
+    }
+  </script>
 </body>
 </html>
