@@ -157,7 +157,7 @@
       <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit Points</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Reset All Points</button>
+    <button id="clearAllBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Reset All Points & Clear History</button>
     <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
@@ -176,7 +176,7 @@
   const gameHistory = document.getElementById('gameHistory');
 
   let players = {}; // { name: points }
-  let history = []; // Array of { timestamp, players: [names] }
+  let history = []; // Array of { players: [names] }
 
   // Load data from localStorage
   function loadData() {
@@ -234,10 +234,8 @@
       cb.checked = false;
     });
 
-    // Add entry to history with timestamp
-    const now = new Date();
+    // Add entry to history (no timestamp)
     history.unshift({
-      timestamp: now.toLocaleString(),
       players: updatedPlayers
     });
     if(history.length > 50) history.pop(); // limit history size
@@ -255,11 +253,13 @@
   };
 
   document.getElementById('clearAllBtn').onclick = () => {
-    if (confirm('Are you sure you want to reset all points to zero? This will NOT remove any players.')) {
+    if (confirm('Are you sure you want to reset all points and clear game history?')) {
       Object.keys(players).forEach(name => players[name] = 0);
+      history = [];
       saveData();
       renderPlayers();
       renderPointsHistory();
+      renderGameHistory();
     }
   };
 
@@ -323,14 +323,14 @@
     pointsHistory.textContent = sorted.map(([name, pts]) => `${name}: ${pts} point(s)`).join('\n');
   }
 
-  // Render game history
+  // Render game history with numbering like Game 1, Game 2...
   function renderGameHistory() {
     if (history.length === 0) {
       gameHistory.textContent = 'No history yet.';
       return;
     }
     gameHistory.textContent = history
-      .map(h => `[${h.timestamp}] Points awarded to: ${h.players.join(', ')}`)
+      .map((h, i) => `Game ${history.length - i}: Points awarded to: ${h.players.join(', ')}`)
       .join('\n\n');
   }
 
