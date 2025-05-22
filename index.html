@@ -60,7 +60,7 @@
       font-weight: 600;
       box-shadow: 0 10px 15px rgba(34, 197, 94, 0.5);
       z-index: 10000;
-      opacity: 1;
+      opacity: 0;
       animation: fadeInOut 3s forwards;
     }
     @keyframes fadeInOut {
@@ -128,12 +128,12 @@
     <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
     <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear Points</button>
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear Inputs</button>
       <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
-
+    
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
     <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
@@ -147,19 +147,79 @@
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
     const clearBtn = document.getElementById('clearBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
     const submitBtn = document.getElementById('submitBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
     const addPlayerBtn = document.getElementById('addPlayerBtn');
 
-    let players = JSON.parse(localStorage.getItem('players') || '{}');
-    let history = JSON.parse(localStorage.getItem('history') || '[]');
+    let players = JSON.parse(localStorage.getItem('players')) || {};
+    let history = JSON.parse(localStorage.getItem('history')) || [];
 
     startGameBtn.onclick = () => {
       welcomePage.style.display = 'none';
       gameBoard.style.display = 'block';
+    };
+
+    addPlayerBtn.onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name) return alert('Please enter a player name.');
+      if(players[name]) return alert('Player already exists.');
+      players[name] = 0;
+      saveData();
       renderPlayers();
       renderPointsHistory();
-      renderGameHistory();
+      newPlayerInput.value = '';
+    };
+
+    clearBtn.onclick = () => {
+      document.querySelectorAll('.points-input').forEach(input => input.value = '');
+    };
+
+    clearAllBtn.onclick = () => {
+      if (confirm("Are you sure you want to clear all player points and game history?")) {
+        // Reset points to 0 but do not remove players
+        for (const name in players) {
+          players[name] = 0;
+        }
+        history = [];
+        saveData();
+        renderPlayers();
+        renderPointsHistory();
+        renderGameHistory();
+      }
+    };
+
+    submitBtn.onclick = () => {
+      const changedPlayers = [];
+      let validChange = false;
+
+      document.querySelectorAll('.points-input').forEach(input => {
+        const name = input.getAttribute('data-player');
+        let val = parseInt(input.value, 10);
+
+        if (isNaN(val) || val === 0 || val < -250 || val > 250) {
+          if (input.value.trim() !== '') {
+            alert(`Points for ${name} must be between -250 and 250, excluding 0.`);
+          }
+          return;
+        }
+        
+        players[name] = (players[name] || 0) + val;
+        input.value = '';
+        validChange = true;
+        changedPlayers.push(name);
+      });
+
+      if (validChange) {
+        // Add game history entry
+        const gameNum = history.length + 1;
+        const entry = `Game ${gameNum}: ${changedPlayers.map(n => n + ` (${players[n]} pts)`).join(', ')}`;
+        history.push(entry);
+        saveData();
+        renderPlayers();
+        renderPointsHistory();
+        renderGameHistory();
+        speakCongrats(changedPlayers);
+      }
     };
 
     function saveData() {
@@ -170,25 +230,28 @@
     function renderPlayers() {
       playersList.innerHTML = '';
       for (const name in players) {
+        const points = players[name];
         const div = document.createElement('div');
-        div.className = 'flex items-center justify-between';
+        div.className = 'flex items-center justify-between gap-4';
         div.innerHTML = `
-          <label class="flex items-center gap-2">
-            <input type="checkbox" value="${name}" class="w-5 h-5" />
-            <span class="text-lg">${name}</span>
-          </label>
-          <span class="text-sm text-gray-600">Points: ${players[name]}</span>
+          <div class="flex items-center gap-2 flex-grow">
+            <span class="text-lg font-semibold">${name}</span>
+            <span class="text-sm text-gray-600">Points: ${points}</span>
+          </div>
+          <input type="number" class="points-input border rounded px-2 py-1 w-24" data-player="${name}" placeholder="±1 to 250" min="-250" max="250" />
           <button class="removePlayerBtn bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600" data-player="${name}">Remove</button>
         `;
         playersList.appendChild(div);
       }
       document.querySelectorAll('.removePlayerBtn').forEach(btn => {
         btn.onclick = () => {
-          const playerToRemove = btn.getAttribute('data-player');
-          delete players[playerToRemove];
-          saveData();
-          renderPlayers();
-          renderPointsHistory();
+          const player = btn.getAttribute('data-player');
+          if(confirm(`Remove player "${player}"?`)){
+            delete players[player];
+            saveData();
+            renderPlayers();
+            renderPointsHistory();
+          }
         };
       });
     }
@@ -204,81 +267,25 @@
 
     function renderGameHistory() {
       gameHistory.innerHTML = '';
-      history.forEach((entry, index) => {
+      history.forEach(entry => {
         const div = document.createElement('div');
-        div.textContent = `Game ${index + 1}: ${entry.join(', ')}`;
+        div.textContent = entry;
         gameHistory.appendChild(div);
       });
     }
 
-    addPlayerBtn.onclick = () => {
-      const name = newPlayerInput.value.trim();
-      if (!name) return alert("Enter player name");
-      if (players[name] !== undefined) return alert("Player already exists");
-      players[name] = 0;
-      newPlayerInput.value = '';
-      saveData();
-      renderPlayers();
-      renderPointsHistory();
-    };
-
-    clearBtn.onclick = () => {
-      for (const name in players) {
-        players[name] = 0;
-      }
-      saveData();
-      renderPlayers();
-      renderPointsHistory();
-    };
-
-    clearAllBtn.onclick = () => {
-      if (confirm("Are you sure you want to clear all points and game history? Players will remain.")) {
-        for (const name in players) {
-          players[name] = 0;
-        }
-        history = [];
-        saveData();
-        renderPlayers();
-        renderPointsHistory();
-        renderGameHistory();
-      }
-    };
-
-    submitBtn.onclick = () => {
-      const selected = [];
-      document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-        selected.push(cb.value);
-        players[cb.value]++;
-      });
-      if (selected.length === 0) {
-        alert('Select at least one player to submit points.');
-        return;
-      }
-      history.push(selected);
-      saveData();
-      renderPlayers();
-      renderPointsHistory();
-      renderGameHistory();
-      showCongratsPopup(selected);
-    };
-
-    function showCongratsPopup(names) {
-      const popup = document.createElement('div');
-      popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations to: ${names.join(', ')}`;
-      document.body.appendChild(popup);
-
-      // Text to Speech
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations to ${names.join(', ')}`);
-        window.speechSynthesis.speak(msg);
-      }
-
-      setTimeout(() => {
-        popup.style.opacity = '0';
-        setTimeout(() => popup.remove(), 1000);
-      }, 3000);
+    function speakCongrats(names) {
+      if (!('speechSynthesis' in window)) return;
+      const msg = new SpeechSynthesisUtterance();
+      msg.lang = 'en-US';
+      msg.text = `Congratulations ${names.join(', ')}!`;
+      speechSynthesis.speak(msg);
     }
+
+    // Initial render
+    renderPlayers();
+    renderPointsHistory();
+    renderGameHistory();
   </script>
 </body>
 </html>
