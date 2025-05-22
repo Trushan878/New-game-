@@ -369,7 +369,8 @@
           const newPoints = action === 'plus' ? currentPoints + val : currentPoints - val;
 
           // prevent negative points - clamp to 0
-          updates[player + '/points'] = Math.max(newPoints, 0);
+          updates[player + '/points'] = newPoints;
+
 
           // Track changes for history
           gameChanges[player] = action === 'plus' ? val : -val;
