@@ -3,132 +3,144 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Scoreboard</title>
+  <title>Scoreboard with Firebase</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <style>
-    body { font-family: Arial, sans-serif; }
-    .player-row { display: flex; align-items: center; gap: 10px; }
-    .player-row input[type="number"] { width: 60px; }
-  </style>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="p-4 bg-gray-100">
-  <div class="max-w-xl mx-auto bg-white p-4 rounded shadow">
-    <h2 class="text-xl font-bold mb-4">Game Scoreboard</h2>
 
-    <div class="flex gap-2 mb-4">
-      <input id="newPlayerName" type="text" placeholder="Add player name" class="flex-grow border px-3 py-2 rounded" />
-      <button onclick="addPlayer()" class="bg-green-600 text-white px-4 py-2 rounded">Add</button>
+  <div class="max-w-xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4 text-center">Game Scoreboard</h1>
+    <div class="flex mb-4 gap-2">
+      <input id="playerName" class="flex-1 border p-2 rounded" type="text" placeholder="Player Name">
+      <button id="addPlayerBtn" class="bg-green-500 text-white px-4 py-2 rounded">Add Player</button>
     </div>
 
-    <div id="playersList" class="space-y-3 mb-4"></div>
+    <div id="playersContainer" class="space-y-4"></div>
 
-    <button onclick="submitPoints()" class="w-full bg-blue-600 text-white py-2 rounded">Submit</button>
-    <button onclick="resetPoints()" class="w-full bg-yellow-500 text-white py-2 rounded mt-2">Reset Points</button>
-    <button onclick="clearGameHistory()" class="w-full bg-red-600 text-white py-2 rounded mt-2">Clear Game History</button>
+    <button id="submitBtn" class="w-full mt-4 bg-blue-600 text-white py-2 rounded">Submit</button>
+    <button id="clearGameHistoryBtn" class="w-full mt-2 bg-yellow-500 text-white py-2 rounded">Clear Game History</button>
 
-    <div class="mt-6">
-      <h3 class="text-lg font-semibold mb-2">Game History</h3>
-      <div id="gameHistory" class="bg-gray-200 p-2 rounded max-h-40 overflow-y-auto text-sm"></div>
-    </div>
+    <h2 class="text-xl mt-6 mb-2 font-semibold">Game History</h2>
+    <div id="gameHistory" class="bg-white p-3 rounded shadow max-h-60 overflow-y-auto text-sm"></div>
   </div>
 
   <script>
-    let players = JSON.parse(localStorage.getItem('players') || '{}');
-    let gameNumber = parseInt(localStorage.getItem('gameNumber') || '1');
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+      authDomain: "point-system-1bd8a.firebaseapp.com",
+      projectId: "point-system-1bd8a",
+      storageBucket: "point-system-1bd8a.appspot.com",
+      messagingSenderId: "755307639843",
+      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+      measurementId: "G-9ZMSNWJHHH",
+      databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com/"
+    };
 
-    function saveData() {
-      localStorage.setItem('players', JSON.stringify(players));
-      localStorage.setItem('gameNumber', gameNumber);
-    }
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-    function renderPlayers() {
-      const list = document.getElementById('playersList');
-      list.innerHTML = '';
-      for (const name in players) {
-        const row = document.createElement('div');
-        row.className = 'player-row';
+    const playerNameInput = document.getElementById("playerName");
+    const addPlayerBtn = document.getElementById("addPlayerBtn");
+    const playersContainer = document.getElementById("playersContainer");
+    const submitBtn = document.getElementById("submitBtn");
+    const gameHistoryDiv = document.getElementById("gameHistory");
+    const clearGameHistoryBtn = document.getElementById("clearGameHistoryBtn");
 
-        row.innerHTML = `
-          <span class="flex-1 font-medium">${name}</span>
-          <input type="number" id="input-${name}" placeholder="0" class="border rounded px-2 py-1" />
-          <label><input type="radio" name="action-${name}" value="+" /> +</label>
-          <label><input type="radio" name="action-${name}" value="-" /> -</label>
-          <span class="text-sm text-gray-600">Points: ${players[name]}</span>
-          <button onclick="removePlayer('${name}')" class="bg-red-500 text-white px-2 rounded">X</button>
-        `;
-        list.appendChild(row);
+    addPlayerBtn.onclick = () => {
+      const name = playerNameInput.value.trim();
+      if (!name) return;
+      playersRef.child(name).set({ points: 0 });
+      playerNameInput.value = '';
+    };
+
+    submitBtn.onclick = async () => {
+      const checkboxes = document.querySelectorAll('.player-check:checked');
+      if (checkboxes.length === 0) return;
+
+      const updates = {};
+      const historyPlayers = [];
+
+      for (const checkbox of checkboxes) {
+        const name = checkbox.value;
+        const input = document.querySelector(`#input-${name}`);
+        const delta = parseInt(input.value);
+        if (isNaN(delta)) continue;
+
+        const snap = await playersRef.child(name).get();
+        const current = snap.exists() ? snap.val().points : 0;
+        updates[name + '/points'] = current + delta;
+        historyPlayers.push(`${name} (${delta > 0 ? '+' : ''}${delta})`);
+        input.value = ''; // clear input after submission
+        checkbox.checked = false;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        playersRef.update(updates);
+        const historySnap = await historyRef.once('value');
+        const gameNumber = historySnap.numChildren() + 1;
+        historyRef.push(`Game ${gameNumber}: ${historyPlayers.join(', ')}`);
+        speakCongrats(historyPlayers.map(p => p.split(' ')[0]));
+      }
+    };
+
+    function speakCongrats(names) {
+      if ('speechSynthesis' in window) {
+        const msg = new SpeechSynthesisUtterance();
+        msg.text = `Congratulations ${names.join(', ')}`;
+        msg.lang = 'en-US';
+        speechSynthesis.speak(msg);
       }
     }
 
-    function renderHistory() {
-      const history = JSON.parse(localStorage.getItem('gameHistory') || '[]');
-      const container = document.getElementById('gameHistory');
-      container.innerHTML = '';
-      history.forEach((entry, i) => {
+    clearGameHistoryBtn.onclick = () => {
+      if (confirm("Clear all game history?")) {
+        historyRef.remove();
+      }
+    };
+
+    function renderPlayers(players) {
+      playersContainer.innerHTML = '';
+      for (const [name, info] of Object.entries(players)) {
         const div = document.createElement('div');
-        div.textContent = `Game ${i + 1}: ${entry}`;
-        container.appendChild(div);
+        div.className = "bg-white p-3 rounded shadow flex items-center gap-3";
+
+        div.innerHTML = `
+          <input type="checkbox" class="player-check" value="${name}">
+          <span class="flex-1 font-medium">${name} - ${info.points} pts</span>
+          <input type="number" id="input-${name}" class="w-20 border rounded px-2 py-1" placeholder="+/- pts">
+          <button class="removeBtn bg-red-500 text-white px-2 py-1 rounded" data-name="${name}">X</button>
+        `;
+
+        div.querySelector('.removeBtn').onclick = () => {
+          if (confirm(`Remove ${name}?`)) playersRef.child(name).remove();
+        };
+
+        playersContainer.appendChild(div);
+      }
+    }
+
+    function renderGameHistory(data) {
+      gameHistoryDiv.innerHTML = '';
+      Object.values(data || {}).forEach((entry, i) => {
+        const div = document.createElement('div');
+        div.textContent = entry;
+        gameHistoryDiv.appendChild(div);
       });
     }
 
-    function addPlayer() {
-      const nameInput = document.getElementById('newPlayerName');
-      const name = nameInput.value.trim();
-      if (name && !players[name]) {
-        players[name] = 0;
-        nameInput.value = '';
-        saveData();
-        renderPlayers();
-      }
-    }
+    playersRef.on('value', snap => {
+      const data = snap.val() || {};
+      renderPlayers(data);
+    });
 
-    function removePlayer(name) {
-      delete players[name];
-      saveData();
-      renderPlayers();
-    }
-
-    function submitPoints() {
-      const history = [];
-
-      for (const name in players) {
-        const val = parseInt(document.getElementById(`input-${name}`).value);
-        const action = document.querySelector(`input[name="action-${name}"]:checked`);
-
-        if (!isNaN(val) && action) {
-          if (action.value === '+') players[name] += val;
-          else if (action.value === '-') players[name] -= val;
-          history.push(`${name} (${action.value}${val})`);
-        }
-      }
-
-      if (history.length > 0) {
-        const allHistory = JSON.parse(localStorage.getItem('gameHistory') || '[]');
-        allHistory.push(history.join(', '));
-        localStorage.setItem('gameHistory', JSON.stringify(allHistory));
-        gameNumber++;
-        saveData();
-        renderPlayers();
-        renderHistory();
-      }
-    }
-
-    function resetPoints() {
-      for (const name in players) {
-        players[name] = 0;
-      }
-      saveData();
-      renderPlayers();
-    }
-
-    function clearGameHistory() {
-      localStorage.setItem('gameHistory', '[]');
-      renderHistory();
-    }
-
-    // Init on load
-    renderPlayers();
-    renderHistory();
+    historyRef.on('value', snap => {
+      const data = snap.val() || {};
+      renderGameHistory(data);
+    });
   </script>
 </body>
 </html>
