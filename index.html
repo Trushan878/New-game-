@@ -1,33 +1,35 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" >
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Scoreboard with Firebase & Manual Points</title>
+  <title>Mobile Friendly Scoreboard</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 700px;
-      margin: 20px auto;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 15px;
       background: #f5f7fa;
       color: #333;
-      padding: 15px;
-      border-radius: 8px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+      box-sizing: border-box;
     }
     h1, h2 {
       text-align: center;
       color: #2c3e50;
+      margin-bottom: 10px;
     }
     #newPlayerName {
+      width: calc(100% - 110px);
       padding: 10px;
-      width: 70%;
       font-size: 1rem;
       border-radius: 6px;
       border: 1px solid #ccc;
+      box-sizing: border-box;
     }
     #addPlayerBtn {
-      padding: 10px 15px;
+      width: 90px;
+      padding: 10px;
       margin-left: 10px;
       font-size: 1rem;
       background: #27ae60;
@@ -36,6 +38,7 @@
       border-radius: 6px;
       cursor: pointer;
       transition: background 0.3s ease;
+      box-sizing: border-box;
     }
     #addPlayerBtn:hover {
       background: #219150;
@@ -45,45 +48,58 @@
     }
     .player {
       background: white;
-      display: grid;
-      grid-template-columns: 1fr 60px 100px 90px 90px 100px;
-      align-items: center;
       padding: 12px 15px;
       border-radius: 8px;
       margin-bottom: 12px;
       box-shadow: 0 2px 8px rgb(0 0 0 / 0.05);
-      gap: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      box-sizing: border-box;
     }
     .player-name {
       font-weight: 600;
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       user-select: none;
     }
     .points-display {
-      text-align: center;
       font-size: 1.1rem;
       font-weight: 700;
       color: #34495e;
-      border-radius: 6px;
       background: #ecf0f1;
-      padding: 6px 0;
+      padding: 6px 10px;
+      border-radius: 6px;
+      width: fit-content;
       user-select: none;
+      margin-bottom: 6px;
+    }
+    .controls {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
     }
     label {
       user-select: none;
       cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-weight: 500;
+      font-size: 1rem;
     }
     input[type=radio] {
-      margin-right: 6px;
       cursor: pointer;
     }
     .pointsInput {
-      width: 70px;
+      flex: 1 1 70px;
+      min-width: 70px;
       padding: 6px;
       border-radius: 6px;
       border: 1px solid #ccc;
       font-size: 1rem;
       text-align: center;
+      box-sizing: border-box;
     }
     .removePlayerBtn {
       background: #e74c3c;
@@ -94,12 +110,14 @@
       padding: 8px 12px;
       font-weight: 600;
       transition: background 0.3s ease;
+      flex-shrink: 0;
+      margin-left: auto;
     }
     .removePlayerBtn:hover {
       background: #c0392b;
     }
     #submitBtn, #clearAllBtn {
-      margin-top: 25px;
+      width: 100%;
       padding: 12px 20px;
       font-size: 1.1rem;
       border-radius: 8px;
@@ -107,6 +125,8 @@
       cursor: pointer;
       transition: background 0.3s ease;
       user-select: none;
+      margin-top: 15px;
+      box-sizing: border-box;
     }
     #submitBtn {
       background: #2980b9;
@@ -118,7 +138,7 @@
     #clearAllBtn {
       background: #e74c3c;
       color: white;
-      margin-left: 15px;
+      margin-top: 10px;
     }
     #clearAllBtn:hover {
       background: #c0392b;
@@ -143,23 +163,20 @@
 
 <h1>Game Scoreboard</h1>
 
-<div>
+<div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
   <input type="text" id="newPlayerName" placeholder="Enter player name" />
   <button id="addPlayerBtn">Add Player</button>
 </div>
 
 <div id="playersList"></div>
 
-<div style="text-align:center;">
-  <button id="submitBtn">Submit All Changes</button>
-  <button id="clearAllBtn">Reset Points & History</button>
-</div>
+<button id="submitBtn">Submit All Changes</button>
+<button id="clearAllBtn">Reset Points & History</button>
 
 <h2>Game History</h2>
 <div id="gameHistory"></div>
 
 <script>
-  // Firebase config - replace with your own!
   const firebaseConfig = {
     apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
     authDomain: "point-system-1bd8a.firebaseapp.com",
@@ -183,7 +200,6 @@
   const submitBtn = document.getElementById('submitBtn');
   const clearAllBtn = document.getElementById('clearAllBtn');
 
-  // Add player
   addPlayerBtn.onclick = () => {
     const name = newPlayerNameInput.value.trim();
     if (!name) return alert("Enter a player name");
@@ -197,7 +213,6 @@
     });
   };
 
-  // Render players UI
   function renderPlayers(data) {
     playersList.innerHTML = '';
     for (const name in data) {
@@ -208,18 +223,17 @@
       div.innerHTML = `
         <div class="player-name">${name}</div>
         <div class="points-display" id="points-${name}">${player.points}</div>
-
-        <label><input type="radio" name="change-${name}" value="plus" checked> + </label>
-        <label><input type="radio" name="change-${name}" value="minus"> - </label>
-        <input type="number" min="1" max="250" value="1" class="pointsInput" id="input-${name}">
-
-        <button data-player="${name}" class="removePlayerBtn">Remove</button>
+        <div class="controls">
+          <label><input type="radio" name="change-${name}" value="plus" checked> + </label>
+          <label><input type="radio" name="change-${name}" value="minus"> - </label>
+          <input type="number" min="1" max="250" placeholder="Points" class="pointsInput" id="input-${name}">
+          <button data-player="${name}" class="removePlayerBtn">Remove</button>
+        </div>
       `;
 
       playersList.appendChild(div);
     }
 
-    // Remove player handler
     document.querySelectorAll('.removePlayerBtn').forEach(btn => {
       btn.onclick = () => {
         const playerToRemove = btn.getAttribute('data-player');
@@ -230,7 +244,6 @@
     });
   }
 
-  // Render game history UI
   function renderHistory(historyData) {
     gameHistoryDiv.innerHTML = '';
     let count = 1;
@@ -243,19 +256,16 @@
     }
   }
 
-  // Listen for players data changes
   playersRef.on('value', snap => {
     const data = snap.val() || {};
     renderPlayers(data);
   });
 
-  // Listen for game history changes
   historyRef.on('value', snap => {
     const data = snap.val() || {};
     renderHistory(data);
   });
 
-  // Submit button logic - apply all changes at once
   submitBtn.onclick = async () => {
     const snap = await playersRef.once('value');
     const playersData = snap.val() || {};
@@ -269,32 +279,35 @@
 
       const changeType = changeRadio.value;
       let changeAmount = parseInt(pointsInput.value);
-      if (isNaN(changeAmount) || changeAmount < 1) changeAmount = 1;
-      if (changeAmount > 250) changeAmount = 250;
+      if (isNaN(changeAmount) || changeAmount < 1 || changeAmount > 250) {
+        // skip if invalid input or empty
+        continue;
+      }
 
       let newPoints = playersData[name].points || 0;
       if (changeType === 'plus') {
         newPoints += changeAmount;
       } else {
-        newPoints -= changeAmount; // allow negative points now
+        newPoints -= changeAmount; // allow negative points
       }
 
       updatedPlayers[name] = { points: newPoints };
       congratNames.push(`${name} (${changeType === 'plus' ? '+' : '-'}${changeAmount})`);
     }
 
+    if (Object.keys(updatedPlayers).length === 0) {
+      alert("No valid point changes to submit.");
+      return;
+    }
+
     await playersRef.update(updatedPlayers);
 
-    // Add entry to game history
     const historySnap = await historyRef.once('value');
-    const gameCount = historySnap.numChildren() + 1;
     await historyRef.push({ players: congratNames });
 
-    // Speak congratulation
     congratsSpeak(congratNames);
   };
 
-  // Reset points and history without removing players
   clearAllBtn.onclick = async () => {
     if (!confirm("Reset all player points to 0 and clear game history?")) return;
 
@@ -308,7 +321,6 @@
     await historyRef.remove();
   };
 
-  // Text-to-speech congratulations
   function congratsSpeak(names) {
     if ('speechSynthesis' in window) {
       const msg = new SpeechSynthesisUtterance();
