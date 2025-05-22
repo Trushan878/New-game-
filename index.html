@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard (No Firebase)</title>
+  <title>Game Scoreboard (LocalStorage)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -162,9 +162,29 @@
 
   let players = {}; // Store players as { name: points }
 
+  // Load from localStorage
+  function loadPlayers() {
+    const data = localStorage.getItem('gamePlayers');
+    if (data) {
+      try {
+        players = JSON.parse(data);
+      } catch {
+        players = {};
+      }
+    }
+  }
+
+  // Save to localStorage
+  function savePlayers() {
+    localStorage.setItem('gamePlayers', JSON.stringify(players));
+  }
+
   startGameBtn.onclick = () => {
     welcomePage.style.display = 'none';
     gameBoard.style.display = 'block';
+    loadPlayers();
+    renderPlayers();
+    renderPointsHistory();
   };
 
   document.getElementById('addPlayerBtn').onclick = () => {
@@ -176,6 +196,7 @@
     }
     players[name] = 0;
     newPlayerInput.value = '';
+    savePlayers();
     renderPlayers();
     renderPointsHistory();
   };
@@ -191,6 +212,7 @@
       players[name] = (players[name] || 0) + 1;
       cb.checked = false;
     });
+    savePlayers();
     renderPointsHistory();
     showCongratsPopup(Array.from(selectedCheckboxes).map(cb => cb.value));
   };
@@ -204,6 +226,7 @@
   document.getElementById('clearAllBtn').onclick = () => {
     if (confirm('Are you sure you want to reset all points to zero? This will NOT remove any players.')) {
       Object.keys(players).forEach(name => players[name] = 0);
+      savePlayers();
       renderPlayers();
       renderPointsHistory();
     }
@@ -228,6 +251,7 @@
   function removePlayer(name) {
     if (confirm(`Remove player "${name}"? This action cannot be undone.`)) {
       delete players[name];
+      savePlayers();
       renderPlayers();
       renderPointsHistory();
     }
