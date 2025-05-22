@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Simple Game Scoreboard</title>
+  <title>Persistent Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body { font-family: 'Arial', sans-serif; }
@@ -54,13 +54,18 @@
   </section>
 
   <script>
-    const players = {};
-    const gameHistory = [];
+    let players = JSON.parse(localStorage.getItem('players')) || {};
+    let gameHistory = JSON.parse(localStorage.getItem('gameHistory')) || [];
 
     const playersList = document.getElementById('playersList');
     const newPlayerInput = document.getElementById('newPlayerName');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistoryEl = document.getElementById('gameHistory');
+
+    function saveToStorage() {
+      localStorage.setItem('players', JSON.stringify(players));
+      localStorage.setItem('gameHistory', JSON.stringify(gameHistory));
+    }
 
     function renderPlayers() {
       playersList.innerHTML = '';
@@ -84,6 +89,7 @@
         btn.onclick = () => {
           const player = btn.getAttribute('data-player');
           delete players[player];
+          saveToStorage();
           renderPlayers();
         };
       });
@@ -94,45 +100,6 @@
         pointsHistory.appendChild(line);
       }
     }
-
-    document.getElementById('addPlayerBtn').onclick = () => {
-      const name = newPlayerInput.value.trim();
-      if (!name || players[name]) return;
-      players[name] = 0;
-      newPlayerInput.value = '';
-      renderPlayers();
-    };
-
-    document.getElementById('clearBtn').onclick = () => {
-      document.querySelectorAll('#playersList input[type="checkbox"]').forEach(cb => cb.checked = false);
-    };
-
-    document.getElementById('submitBtn').onclick = () => {
-      const selected = [];
-      document.querySelectorAll('#playersList input[type="checkbox"]:checked').forEach(cb => {
-        const name = cb.value;
-        selected.push(name);
-        players[name]++;
-      });
-
-      if (selected.length > 0) {
-        gameHistory.push([...selected]);
-        renderHistory();
-        showCongrats(selected);
-        renderPlayers();
-      }
-    };
-
-    document.getElementById('deleteLastGameBtn').onclick = () => {
-      if (!gameHistory.length) return alert("No games to undo.");
-      const lastGame = gameHistory.pop();
-      lastGame.forEach(name => {
-        if (players[name] > 0) players[name]--;
-      });
-      renderHistory();
-      renderPlayers();
-      alert("Last game undone.");
-    };
 
     function renderHistory() {
       gameHistoryEl.innerHTML = '';
@@ -151,6 +118,48 @@
       setTimeout(() => popup.remove(), 3000);
     }
 
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name || players[name]) return;
+      players[name] = 0;
+      newPlayerInput.value = '';
+      saveToStorage();
+      renderPlayers();
+    };
+
+    document.getElementById('clearBtn').onclick = () => {
+      document.querySelectorAll('#playersList input[type="checkbox"]').forEach(cb => cb.checked = false);
+    };
+
+    document.getElementById('submitBtn').onclick = () => {
+      const selected = [];
+      document.querySelectorAll('#playersList input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        players[name]++;
+      });
+
+      if (selected.length > 0) {
+        gameHistory.push([...selected]);
+        saveToStorage();
+        renderHistory();
+        showCongrats(selected);
+        renderPlayers();
+      }
+    };
+
+    document.getElementById('deleteLastGameBtn').onclick = () => {
+      if (!gameHistory.length) return alert("No games to undo.");
+      const lastGame = gameHistory.pop();
+      lastGame.forEach(name => {
+        if (players[name] > 0) players[name]--;
+      });
+      saveToStorage();
+      renderHistory();
+      renderPlayers();
+      alert("Last game undone.");
+    };
+
     document.getElementById('whatsappBtn').onclick = () => {
       let message = `*Game Scoreboard*\n\n`;
       const sorted = Object.entries(players).sort((a, b) => b[1] - a[1]);
@@ -160,6 +169,10 @@
       const encoded = encodeURIComponent(message);
       window.open(`https://wa.me/?text=${encoded}`, '_blank');
     };
+
+    // Initial render on load
+    renderPlayers();
+    renderHistory();
   </script>
 </body>
 </html>
