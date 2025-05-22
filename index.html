@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Styled Scoreboard</title>
+  <title>Styled Scoreboard with Firebase</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -187,7 +187,6 @@
     #gameHistory > div {
       margin-bottom: 6px;
     }
-    /* Icon styles */
     svg {
       width: 18px;
       height: 18px;
@@ -309,98 +308,138 @@
     });
   }
 
-  function renderHistory(historyData) {
+  function renderHistory(data) {
     gameHistoryDiv.innerHTML = '';
-    let count = 1;
-    for (const key in historyData) {
-      const entry = historyData[key];
+    if (!data) {
+      gameHistoryDiv.textContent = 'No game history yet.';
+      return;
+    }
+    // data is an object with keys like "game1", "game2"
+    // Show most recent on top
+    const entries = Object.entries(data).sort((a,b) => {
+      // sort by game number descending
+      return parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''));
+    });
+    for (const [gameKey, changes] of entries) {
       const div = document.createElement('div');
-      div.textContent = `Game ${count}: ${entry.players.join(', ')}`;
+      let lines = [];
+      for (const player in changes) {
+        const change = changes[player];
+        lines.push(`${player}: ${change > 0 ? '+' : ''}${change}`);
+      }
+      div.textContent = `${gameKey}: ${lines.join(', ')}`;
       gameHistoryDiv.appendChild(div);
-      count++;
     }
   }
 
-  playersRef.on('value', snap => {
-    const data = snap.val() || {};
+  // Listen for players data updates
+  playersRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
     renderPlayers(data);
   });
 
-  historyRef.on('value', snap => {
-    const data = snap.val() || {};
+  // Listen for game history updates
+  historyRef.on('value', snapshot => {
+    const data = snapshot.val();
     renderHistory(data);
   });
 
-  submitBtn.onclick = async () => {
-    const snap = await playersRef.once('value');
-    const playersData = snap.val() || {};
-    const updatedPlayers = {};
-    const congratNames = [];
+  // Submit button to update all players points
+  submitBtn.onclick = () => {
+    playersRef.once('value').then(snapshot => {
+      const players = snapshot.val() || {};
+      let updates = {};
+      let gameChanges = {};
+      let validChange = false;
 
-    for (const name in playersData) {
-      const changeRadio = document.querySelector(`input[name="change-${name}"]:checked`);
-      const pointsInput = document.getElementById(`input-${name}`);
-      if (!changeRadio || !pointsInput) continue;
+      for (const player in players) {
+        const radios = document.getElementsByName(`change-${player}`);
+        let action = 'plus'; // default
+        for (const r of radios) if (r.checked) action = r.value;
 
-      const changeType = changeRadio.value;
-      let changeAmount = parseInt(pointsInput.value);
-      if (isNaN(changeAmount) || changeAmount < 1 || changeAmount > 250) {
-        continue;
+        const inputEl = document.getElementById(`input-${player}`);
+        let val = parseInt(inputEl.value);
+        if (isNaN(val) || val < 1) {
+          val = 0; // treat empty or invalid as zero change
+        }
+
+        if (val > 0) {
+          validChange = true;
+          const currentPoints = players[player].points || 0;
+          const newPoints = action === 'plus' ? currentPoints + val : currentPoints - val;
+
+          // prevent negative points - clamp to 0
+          updates[player + '/points'] = Math.max(newPoints, 0);
+
+          // Track changes for history
+          gameChanges[player] = action === 'plus' ? val : -val;
+        }
       }
 
-      let newPoints = playersData[name].points || 0;
-      if (changeType === 'plus') {
-        newPoints += changeAmount;
-      } else {
-        newPoints -= changeAmount;
+      if (!validChange) {
+        alert('Please enter at least one valid point change.');
+        return;
       }
 
-      updatedPlayers[name] = { points: newPoints };
-      congratNames.push(`${name} (${changeType === 'plus' ? '+' : '-'}${changeAmount})`);
-    }
+      // Push changes to Firebase in one update
+      playersRef.update(updates).then(() => {
+        // Add game history entry
+        historyRef.once('value').then(hSnap => {
+          const history = hSnap.val() || {};
+          // Find next game number:
+          let gameNum = 1;
+          while(history['game' + gameNum]) gameNum++;
+          const newGameKey = 'game' + gameNum;
 
-    if (Object.keys(updatedPlayers).length === 0) {
-      alert("No valid point changes to submit.");
-      return;
-    }
+          historyRef.child(newGameKey).set(gameChanges).then(() => {
+            // Clear all input fields and reset radios to plus
+            for (const player in players) {
+              const radios = document.getElementsByName(`change-${player}`);
+              for (const r of radios) r.checked = false;
+              radios[0].checked = true; // first radio plus checked
 
-    await playersRef.update(updatedPlayers);
+              const inputEl = document.getElementById(`input-${player}`);
+              inputEl.value = '';
+            }
 
-    const historySnap = await historyRef.once('value');
-    await historyRef.push({ players: congratNames });
-
-    congratsSpeak(congratNames);
-
-    // Clear inputs after submission
-    for (const name in playersData) {
-      const pointsInput = document.getElementById(`input-${name}`);
-      if (pointsInput) pointsInput.value = '';
-    }
+            // Speech congrats for player(s) with highest points
+            playersRef.once('value').then(snap => {
+              const updatedPlayers = snap.val() || {};
+              let maxPoints = -Infinity;
+              let winners = [];
+              for (const p in updatedPlayers) {
+                if (updatedPlayers[p].points > maxPoints) {
+                  maxPoints = updatedPlayers[p].points;
+                  winners = [p];
+                } else if (updatedPlayers[p].points === maxPoints) {
+                  winners.push(p);
+                }
+              }
+              if ('speechSynthesis' in window && winners.length) {
+                const utterance = new SpeechSynthesisUtterance('Congratulations to ' + winners.join(' and ') + '!');
+                window.speechSynthesis.speak(utterance);
+              }
+            });
+          });
+        });
+      });
+    });
   };
 
-  clearAllBtn.onclick = async () => {
-    if (!confirm("Reset all player points to 0 and clear game history?")) return;
-
-    const snap = await playersRef.once('value');
-    const data = snap.val() || {};
-    const resetPoints = {};
-    for (const name in data) {
-      resetPoints[name] = { points: 0 };
-    }
-    await playersRef.update(resetPoints);
-    await historyRef.remove();
+  // Reset points and history but keep players
+  clearAllBtn.onclick = () => {
+    if (!confirm('Reset all players\' points to zero and clear game history? This cannot be undone.')) return;
+    playersRef.once('value').then(snap => {
+      const players = snap.val() || {};
+      let resetData = {};
+      for (const p in players) {
+        resetData[p + '/points'] = 0;
+      }
+      playersRef.update(resetData).then(() => {
+        historyRef.remove();
+      });
+    });
   };
-
-  function congratsSpeak(names) {
-    if ('speechSynthesis' in window) {
-      const msg = new SpeechSynthesisUtterance();
-      msg.text = `Congratulations to ${names.join(', ')}`;
-      msg.lang = 'en-US';
-      window.speechSynthesis.speak(msg);
-    }
-    alert(`Points updated:\n${names.join('\n')}`);
-  }
 </script>
-
 </body>
 </html>
