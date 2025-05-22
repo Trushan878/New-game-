@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Compact Mobile Scoreboard</title>
+  <title>Compact One-Line Scoreboard</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -47,46 +47,51 @@
     }
     .player {
       background: white;
-      padding: 8px 10px;
+      padding: 6px 10px;
       border-radius: 6px;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
       box-shadow: 0 1px 5px rgb(0 0 0 / 0.07);
       display: flex;
-      flex-direction: column;
+      align-items: center;
       gap: 6px;
-      box-sizing: border-box;
       font-size: 0.9rem;
+      user-select: none;
     }
     .player-name {
       font-weight: 600;
-      font-size: 1rem;
-      user-select: none;
+      flex-shrink: 0;
+      min-width: 80px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
     .points-display {
-      font-size: 1rem;
       font-weight: 700;
       color: #34495e;
       background: #ecf0f1;
-      padding: 5px 8px;
+      padding: 4px 7px;
       border-radius: 5px;
-      width: fit-content;
+      width: 50px;
+      text-align: center;
+      flex-shrink: 0;
       user-select: none;
-      margin-bottom: 5px;
     }
     .controls {
       display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 6px;
       align-items: center;
+      flex-wrap: nowrap;
+      flex-shrink: 1;
+      min-width: 0;
     }
     label {
-      user-select: none;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 2px;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
+      user-select: none;
     }
     input[type=radio] {
       cursor: pointer;
@@ -94,14 +99,14 @@
       height: 14px;
     }
     .pointsInput {
-      flex: 1 1 60px;
-      min-width: 60px;
-      padding: 5px;
+      width: 60px;
+      padding: 4px;
       border-radius: 5px;
       border: 1px solid #ccc;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
       text-align: center;
       box-sizing: border-box;
+      flex-shrink: 0;
     }
     .removePlayerBtn {
       background: #e74c3c;
@@ -109,12 +114,11 @@
       color: white;
       border-radius: 5px;
       cursor: pointer;
-      padding: 6px 10px;
+      padding: 4px 8px;
       font-weight: 600;
       transition: background 0.3s ease;
       flex-shrink: 0;
-      margin-left: auto;
-      font-size: 0.85rem;
+      font-size: 0.8rem;
     }
     .removePlayerBtn:hover {
       background: #c0392b;
@@ -229,8 +233,8 @@
         <div class="controls">
           <label><input type="radio" name="change-${name}" value="plus" checked> + </label>
           <label><input type="radio" name="change-${name}" value="minus"> - </label>
-          <input type="number" min="1" max="250" placeholder="Points" class="pointsInput" id="input-${name}">
-          <button data-player="${name}" class="removePlayerBtn">Remove</button>
+          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}">
+          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">×</button>
         </div>
       `;
 
