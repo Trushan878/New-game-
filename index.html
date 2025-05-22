@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard (LocalStorage)</title>
+  <title>Game Scoreboard with History (LocalStorage)</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body {
@@ -39,7 +39,7 @@
     .game-board {
       display: none;
       padding: 20px;
-      max-width: 500px;
+      max-width: 600px;
       margin: 2rem auto;
       background-color: #fff;
       border-radius: 8px;
@@ -117,6 +117,17 @@
     .remove-btn:hover {
       background: #dc2626; /* red-600 */
     }
+    #gameHistory {
+      max-height: 180px;
+      overflow-y: auto;
+      background: #f9fafb;
+      border: 1px solid #d1d5db;
+      padding: 10px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      white-space: pre-wrap;
+      margin-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -150,6 +161,9 @@
     <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+
+    <h3 class="font-semibold mb-2">Game History (Last Actions)</h3>
+    <div id="gameHistory" class="text-gray-700">No history yet.</div>
   </section>
 
 <script>
@@ -159,32 +173,37 @@
   const playersList = document.getElementById('playersList');
   const newPlayerInput = document.getElementById('newPlayerName');
   const pointsHistory = document.getElementById('pointsHistory');
+  const gameHistory = document.getElementById('gameHistory');
 
-  let players = {}; // Store players as { name: points }
+  let players = {}; // { name: points }
+  let history = []; // Array of { timestamp, players: [names] }
 
-  // Load from localStorage
-  function loadPlayers() {
-    const data = localStorage.getItem('gamePlayers');
-    if (data) {
-      try {
-        players = JSON.parse(data);
-      } catch {
-        players = {};
-      }
+  // Load data from localStorage
+  function loadData() {
+    try {
+      const savedPlayers = localStorage.getItem('gamePlayers');
+      const savedHistory = localStorage.getItem('gameHistory');
+      players = savedPlayers ? JSON.parse(savedPlayers) : {};
+      history = savedHistory ? JSON.parse(savedHistory) : [];
+    } catch {
+      players = {};
+      history = [];
     }
   }
 
-  // Save to localStorage
-  function savePlayers() {
+  // Save data to localStorage
+  function saveData() {
     localStorage.setItem('gamePlayers', JSON.stringify(players));
+    localStorage.setItem('gameHistory', JSON.stringify(history));
   }
 
   startGameBtn.onclick = () => {
     welcomePage.style.display = 'none';
     gameBoard.style.display = 'block';
-    loadPlayers();
+    loadData();
     renderPlayers();
     renderPointsHistory();
+    renderGameHistory();
   };
 
   document.getElementById('addPlayerBtn').onclick = () => {
@@ -196,7 +215,7 @@
     }
     players[name] = 0;
     newPlayerInput.value = '';
-    savePlayers();
+    saveData();
     renderPlayers();
     renderPointsHistory();
   };
@@ -207,14 +226,26 @@
       alert('Please select at least one player.');
       return;
     }
+    const updatedPlayers = [];
     selectedCheckboxes.forEach(cb => {
       const name = cb.value;
       players[name] = (players[name] || 0) + 1;
+      updatedPlayers.push(name);
       cb.checked = false;
     });
-    savePlayers();
+
+    // Add entry to history with timestamp
+    const now = new Date();
+    history.unshift({
+      timestamp: now.toLocaleString(),
+      players: updatedPlayers
+    });
+    if(history.length > 50) history.pop(); // limit history size
+
+    saveData();
     renderPointsHistory();
-    showCongratsPopup(Array.from(selectedCheckboxes).map(cb => cb.value));
+    renderGameHistory();
+    showCongratsPopup(updatedPlayers);
   };
 
   document.getElementById('clearBtn').onclick = () => {
@@ -226,7 +257,7 @@
   document.getElementById('clearAllBtn').onclick = () => {
     if (confirm('Are you sure you want to reset all points to zero? This will NOT remove any players.')) {
       Object.keys(players).forEach(name => players[name] = 0);
-      savePlayers();
+      saveData();
       renderPlayers();
       renderPointsHistory();
     }
@@ -247,16 +278,17 @@
     window.open(url, '_blank');
   };
 
-  // Remove player function
+  // Remove player
   function removePlayer(name) {
     if (confirm(`Remove player "${name}"? This action cannot be undone.`)) {
       delete players[name];
-      savePlayers();
+      saveData();
       renderPlayers();
       renderPointsHistory();
     }
   }
 
+  // Render players list with checkboxes and remove buttons
   function renderPlayers() {
     playersList.innerHTML = '';
     if (Object.keys(players).length === 0) {
@@ -276,12 +308,12 @@
           <button class="remove-btn" title="Remove player">Remove</button>
         </div>
       `;
-      // Remove button handler
       div.querySelector('button.remove-btn').onclick = () => removePlayer(name);
       playersList.appendChild(div);
     });
   }
 
+  // Render points summary
   function renderPointsHistory() {
     if (Object.keys(players).length === 0) {
       pointsHistory.textContent = 'No points recorded yet.';
@@ -291,6 +323,18 @@
     pointsHistory.textContent = sorted.map(([name, pts]) => `${name}: ${pts} point(s)`).join('\n');
   }
 
+  // Render game history
+  function renderGameHistory() {
+    if (history.length === 0) {
+      gameHistory.textContent = 'No history yet.';
+      return;
+    }
+    gameHistory.textContent = history
+      .map(h => `[${h.timestamp}] Points awarded to: ${h.players.join(', ')}`)
+      .join('\n\n');
+  }
+
+  // Congrats popup animation
   function showCongratsPopup(names) {
     const popup = document.createElement('div');
     popup.className = 'congrats-popup';
