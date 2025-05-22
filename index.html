@@ -3,13 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard</title>
+  <title>Game Scoreboard (No Firebase)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
   <style>
     body {
-      font-family: 'Arial', sans-serif;
+      font-family: Arial, sans-serif;
     }
     .welcome-page {
       display: flex;
@@ -21,14 +19,13 @@
       position: relative;
       color: white;
       text-align: center;
-      font-size: 1.5rem;
       padding: 2rem;
     }
     .overlay {
       position: absolute;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: rgba(0, 0, 0, 0.5);
+      background: rgba(0,0,0,0.5);
       z-index: 0;
     }
     .warning-box {
@@ -42,9 +39,11 @@
     .game-board {
       display: none;
       padding: 20px;
+      max-width: 500px;
+      margin: 2rem auto;
       background-color: #fff;
       border-radius: 8px;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     }
     .congrats-popup {
       position: fixed;
@@ -78,6 +77,7 @@
       border-radius: 50px;
       cursor: pointer;
       transition: all 0.4s ease;
+      margin-top: 1rem;
     }
     .animated-button::before {
       content: '';
@@ -107,18 +107,20 @@
   </style>
 </head>
 <body>
+
   <div id="welcomePage" class="welcome-page">
     <div class="overlay"></div>
     <div style="z-index: 1; position: relative;">
       <h1 class="text-3xl font-bold mb-4">Welcome to the Game!</h1>
       <div class="warning-box mb-2">⚠️ This Game has Financial Risk ⚠️</div>
       <div class="warning-box">⚠️ Play Carefully ⚠️</div>
-      <button id="startGameBtn" class="animated-button mt-6">Start Game</button>
+      <button id="startGameBtn" class="animated-button">Start Game</button>
     </div>
   </div>
 
   <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
+    
     <div class="mb-4 flex gap-2">
       <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
       <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
@@ -127,167 +129,128 @@
     <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
     <div class="flex justify-between gap-2 mb-4">
-      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear</button>
-      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Clear Selections</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit Points</button>
     </div>
 
     <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
     <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
-    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
 
-  <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
+<script>
+  const welcomePage = document.getElementById('welcomePage');
+  const gameBoard = document.getElementById('gameBoard');
+  const startGameBtn = document.getElementById('startGameBtn');
+  const playersList = document.getElementById('playersList');
+  const newPlayerInput = document.getElementById('newPlayerName');
+  const pointsHistory = document.getElementById('pointsHistory');
 
-  <script>
-    window.onload = () => {
-      const firebaseConfig = {
-        apiKey: "AIzaSyAaQlSNJkU-NQnP0-uATxf2pU7a_8HEQpo",
-        authDomain: "index-e95d1.firebaseapp.com",
-        databaseURL: "https://index-e95d1-default-rtdb.asia-southeast1.firebasedatabase.app",
-        projectId: "index-e95d1",
-        storageBucket: "index-e95d1.appspot.com",
-        messagingSenderId: "340216728284",
-        appId: "1:340216728284:web:f2e61485d29068fbf5c219"
-      };
-      firebase.initializeApp(firebaseConfig);
+  let players = {}; // Store players as { name: points }
 
-      const db = firebase.database();
-      const playersRef = db.ref("players");
-      const historyRef = db.ref("gameHistory");
+  startGameBtn.onclick = () => {
+    welcomePage.style.display = 'none';
+    gameBoard.style.display = 'block';
+  };
 
-      const welcomePage = document.getElementById('welcomePage');
-      const gameBoard = document.getElementById('gameBoard');
-      const startGameBtn = document.getElementById('startGameBtn');
-      const startSound = document.getElementById('startSound');
-      const playersList = document.getElementById('playersList');
-      const newPlayerInput = document.getElementById('newPlayerName');
-      const pointsHistory = document.getElementById('pointsHistory');
-      const gameHistory = document.getElementById('gameHistory');
+  document.getElementById('addPlayerBtn').onclick = () => {
+    const name = newPlayerInput.value.trim();
+    if (!name) return alert('Please enter a player name.');
+    if (players[name]) {
+      alert('Player already exists!');
+      return;
+    }
+    players[name] = 0;
+    newPlayerInput.value = '';
+    renderPlayers();
+    renderPointsHistory();
+  };
 
-      startGameBtn.onclick = () => {
-        welcomePage.style.display = 'none';
-        gameBoard.style.display = 'block';
-        startSound.currentTime = 10;
-        startSound.play();
-        setTimeout(() => startSound.pause(), 4000);
-      };
+  document.getElementById('submitBtn').onclick = () => {
+    const selectedCheckboxes = document.querySelectorAll('#playersList input[type="checkbox"]:checked');
+    if (selectedCheckboxes.length === 0) {
+      alert('Please select at least one player.');
+      return;
+    }
+    selectedCheckboxes.forEach(cb => {
+      const name = cb.value;
+      players[name] = (players[name] || 0) + 1;
+      cb.checked = false;
+    });
+    renderPointsHistory();
+    showCongratsPopup(Array.from(selectedCheckboxes).map(cb => cb.value));
+  };
 
-      document.getElementById('addPlayerBtn').onclick = () => {
-        const name = newPlayerInput.value.trim();
-        if (!name) return;
-        playersRef.child(name).set({ points: 0 });
-        newPlayerInput.value = '';
-      };
+  document.getElementById('clearBtn').onclick = () => {
+    document.querySelectorAll('#playersList input[type="checkbox"]').forEach(cb => {
+      cb.checked = false;
+    });
+  };
 
-      document.getElementById('clearAllBtn').onclick = () => {
-        if (confirm("Are you sure you want to clear all player points and game history?")) {
-          playersRef.once('value', snapshot => {
-            const data = snapshot.val() || {};
-            for (const name in data) {
-              playersRef.child(name).update({ points: 0 });
-            }
-          });
-          historyRef.remove();
-        }
-      };
+  document.getElementById('clearAllBtn').onclick = () => {
+    if (confirm('Are you sure you want to clear all players and points?')) {
+      players = {};
+      renderPlayers();
+      renderPointsHistory();
+    }
+  };
 
-      document.getElementById('submitBtn').onclick = async () => {
-        const selected = [];
-        document.querySelectorAll('input[type="checkbox"]:checked').forEach(cb => {
-          const name = cb.value;
-          selected.push(name);
-          const awm = new Audio("https://downloadwap.com/content2/mp3-ringtones/tones/2020/awm-sniper-shot-79763.mp3");
-          awm.play();
-          playersRef.child(name).get().then(snap => {
-            const current = snap.exists() ? snap.val().points : 0;
-            playersRef.child(name).update({ points: current + 1 });
-          });
-        });
+  document.getElementById('whatsappBtn').onclick = () => {
+    let message = '*Game Scoreboard*\n\n';
+    if (Object.keys(players).length === 0) {
+      alert('No players to send.');
+      return;
+    }
+    const sortedPlayers = Object.entries(players).sort((a,b) => b[1] - a[1]);
+    sortedPlayers.forEach(([name, pts], i) => {
+      const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+      message += `${medal} *${name}* — ${pts} point(s)\n`;
+    });
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+  };
 
-        if (selected.length > 0) {
-          const snap = await historyRef.once('value');
-          const gameNumber = snap.numChildren() + 1;
-          const entry = `Game ${gameNumber}: ${selected.join(', ')}`;
-          historyRef.push(entry);
-          showCongratsPopup(selected.join(", "));
-        }
-      };
+  function renderPlayers() {
+    playersList.innerHTML = '';
+    if (Object.keys(players).length === 0) {
+      playersList.innerHTML = '<p class="text-center text-gray-500">No players added yet.</p>';
+      return;
+    }
+    Object.entries(players).forEach(([name, pts]) => {
+      const div = document.createElement('div');
+      div.className = 'flex items-center justify-between bg-gray-100 p-2 rounded';
+      div.innerHTML = `
+        <label class="flex items-center gap-2 cursor-pointer">
+          <input type="checkbox" value="${name}" />
+          <span class="font-semibold">${name}</span>
+        </label>
+        <span class="font-bold">${pts}</span>
+      `;
+      playersList.appendChild(div);
+    });
+  }
 
-      document.getElementById('clearBtn').onclick = () => {
-        document.querySelectorAll('input[type="checkbox"]').forEach(cb => {
-          cb.checked = false;
-        });
-      };
+  function renderPointsHistory() {
+    if (Object.keys(players).length === 0) {
+      pointsHistory.textContent = 'No points recorded yet.';
+      return;
+    }
+    const sorted = Object.entries(players).sort((a,b) => b[1] - a[1]);
+    pointsHistory.textContent = sorted.map(([name, pts]) => `${name}: ${pts} point(s)`).join('\n');
+  }
 
-      document.getElementById('whatsappBtn').onclick = () => {
-        let message = "Game points are:\n";
-        playersRef.once('value').then(snapshot => {
-          const data = snapshot.val() || {};
-          for (const name in data) {
-            message += `${name}: ${data[name].points}\n`;
-          }
-          const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
-          window.open(url, '_blank');
-        });
-      };
+  function showCongratsPopup(names) {
+    const popup = document.createElement('div');
+    popup.className = 'congrats-popup';
+    popup.textContent = `Congratulations to: ${names.join(', ')}`;
+    document.body.appendChild(popup);
+    setTimeout(() => {
+      popup.style.opacity = '0';
+      setTimeout(() => popup.remove(), 1000);
+    }, 3000);
+  }
+</script>
 
-      // Show congrats popup
-      function showCongratsPopup(names) {
-        const popup = document.createElement('div');
-        popup.className = 'congrats-popup';
-        popup.textContent = `Congratulations ${names}! +1 Point`;
-        document.body.appendChild(popup);
-        setTimeout(() => {
-          popup.remove();
-        }, 3000);
-      }
-
-      // Update players list with checkboxes and points
-      playersRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        playersList.innerHTML = '';
-        for (const name in data) {
-          const playerPoints = data[name].points || 0;
-
-          const div = document.createElement('div');
-          div.className = 'flex justify-between items-center bg-gray-100 p-2 rounded';
-
-          div.innerHTML = `
-            <label class="flex items-center gap-2 cursor-pointer">
-              <input type="checkbox" value="${name}" />
-              <span class="font-semibold">${name}</span>
-            </label>
-            <span>Points: ${playerPoints}</span>
-          `;
-
-          playersList.appendChild(div);
-        }
-      });
-
-      // Update points history
-      playersRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        let historyText = '';
-        for (const name in data) {
-          historyText += `${name}: ${data[name].points}\n`;
-        }
-        pointsHistory.textContent = historyText;
-      });
-
-      // Update game history display
-      historyRef.on('value', snapshot => {
-        const data = snapshot.val() || {};
-        gameHistory.innerHTML = '';
-        for (const key in data) {
-          const div = document.createElement('div');
-          div.textContent = data[key];
-          gameHistory.appendChild(div);
-        }
-      });
-
-    };
-  </script>
 </body>
 </html>
