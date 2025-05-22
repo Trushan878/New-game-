@@ -3,13 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Mobile Friendly Scoreboard</title>
+  <title>Compact Mobile Scoreboard</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       max-width: 480px;
       margin: 0 auto;
-      padding: 15px;
+      padding: 10px;
       background: #f5f7fa;
       color: #333;
       box-sizing: border-box;
@@ -17,25 +17,24 @@
     h1, h2 {
       text-align: center;
       color: #2c3e50;
-      margin-bottom: 10px;
+      margin-bottom: 8px;
     }
     #newPlayerName {
-      width: calc(100% - 110px);
-      padding: 10px;
-      font-size: 1rem;
-      border-radius: 6px;
+      width: calc(100% - 100px);
+      padding: 8px;
+      font-size: 0.9rem;
+      border-radius: 5px;
       border: 1px solid #ccc;
       box-sizing: border-box;
     }
     #addPlayerBtn {
       width: 90px;
-      padding: 10px;
-      margin-left: 10px;
-      font-size: 1rem;
+      padding: 8px;
+      font-size: 0.9rem;
       background: #27ae60;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
       transition: background 0.3s ease;
       box-sizing: border-box;
@@ -44,38 +43,39 @@
       background: #219150;
     }
     #playersList {
-      margin-top: 20px;
+      margin-top: 15px;
     }
     .player {
       background: white;
-      padding: 12px 15px;
-      border-radius: 8px;
-      margin-bottom: 12px;
-      box-shadow: 0 2px 8px rgb(0 0 0 / 0.05);
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      box-shadow: 0 1px 5px rgb(0 0 0 / 0.07);
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
       box-sizing: border-box;
+      font-size: 0.9rem;
     }
     .player-name {
       font-weight: 600;
-      font-size: 1.2rem;
+      font-size: 1rem;
       user-select: none;
     }
     .points-display {
-      font-size: 1.1rem;
+      font-size: 1rem;
       font-weight: 700;
       color: #34495e;
       background: #ecf0f1;
-      padding: 6px 10px;
-      border-radius: 6px;
+      padding: 5px 8px;
+      border-radius: 5px;
       width: fit-content;
       user-select: none;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .controls {
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
       align-items: center;
     }
@@ -84,20 +84,22 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       font-weight: 500;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
     input[type=radio] {
       cursor: pointer;
+      width: 14px;
+      height: 14px;
     }
     .pointsInput {
-      flex: 1 1 70px;
-      min-width: 70px;
-      padding: 6px;
-      border-radius: 6px;
+      flex: 1 1 60px;
+      min-width: 60px;
+      padding: 5px;
+      border-radius: 5px;
       border: 1px solid #ccc;
-      font-size: 1rem;
+      font-size: 0.9rem;
       text-align: center;
       box-sizing: border-box;
     }
@@ -105,22 +107,23 @@
       background: #e74c3c;
       border: none;
       color: white;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
-      padding: 8px 12px;
+      padding: 6px 10px;
       font-weight: 600;
       transition: background 0.3s ease;
       flex-shrink: 0;
       margin-left: auto;
+      font-size: 0.85rem;
     }
     .removePlayerBtn:hover {
       background: #c0392b;
     }
     #submitBtn, #clearAllBtn {
       width: 100%;
-      padding: 12px 20px;
-      font-size: 1.1rem;
-      border-radius: 8px;
+      padding: 10px 15px;
+      font-size: 1rem;
+      border-radius: 7px;
       border: none;
       cursor: pointer;
       transition: background 0.3s ease;
@@ -147,11 +150,11 @@
       background: white;
       margin-top: 15px;
       border-radius: 8px;
-      padding: 12px 15px;
+      padding: 10px 12px;
       max-height: 180px;
       overflow-y: auto;
       font-family: monospace;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       color: #34495e;
       box-shadow: inset 0 0 5px #ddd;
     }
