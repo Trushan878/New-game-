@@ -3,38 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Compact One-Line Scoreboard</title>
+  <title>Styled Scoreboard</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       max-width: 480px;
       margin: 0 auto;
       padding: 10px;
-      background: #f5f7fa;
+      background: #f0f4f8;
       color: #333;
       box-sizing: border-box;
     }
     h1, h2 {
       text-align: center;
       color: #2c3e50;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
     }
     #newPlayerName {
-      width: calc(100% - 100px);
-      padding: 8px;
-      font-size: 0.9rem;
-      border-radius: 5px;
-      border: 1px solid #ccc;
+      width: calc(100% - 110px);
+      padding: 8px 12px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
       box-sizing: border-box;
+      transition: border-color 0.3s ease;
+    }
+    #newPlayerName:focus {
+      border-color: #2980b9;
+      outline: none;
     }
     #addPlayerBtn {
-      width: 90px;
+      width: 100px;
       padding: 8px;
-      font-size: 0.9rem;
+      font-size: 1rem;
       background: #27ae60;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 8px;
       cursor: pointer;
       transition: background 0.3s ease;
       box-sizing: border-box;
@@ -47,15 +52,16 @@
     }
     .player {
       background: white;
-      padding: 6px 10px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      box-shadow: 0 1px 5px rgb(0 0 0 / 0.07);
+      padding: 8px 10px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 0.9rem;
+      gap: 10px;
+      font-size: 0.95rem;
       user-select: none;
+      flex-wrap: nowrap;
     }
     .player-name {
       font-weight: 600;
@@ -64,23 +70,24 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      color: #34495e;
     }
     .points-display {
       font-weight: 700;
       color: #34495e;
       background: #ecf0f1;
-      padding: 4px 7px;
-      border-radius: 5px;
-      width: 50px;
+      padding: 5px 10px;
+      border-radius: 8px;
+      width: 55px;
       text-align: center;
       flex-shrink: 0;
       user-select: none;
+      box-shadow: inset 0 1px 3px #d0d7dd;
     }
     .controls {
       display: flex;
-      gap: 6px;
+      gap: 8px;
       align-items: center;
-      flex-wrap: nowrap;
       flex-shrink: 1;
       min-width: 0;
     }
@@ -88,83 +95,107 @@
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 2px;
-      font-weight: 500;
-      font-size: 0.85rem;
+      gap: 4px;
+      font-weight: 600;
+      font-size: 0.9rem;
       user-select: none;
+      color: #34495e;
     }
     input[type=radio] {
       cursor: pointer;
-      width: 14px;
-      height: 14px;
+      width: 16px;
+      height: 16px;
     }
     .pointsInput {
       width: 60px;
-      padding: 4px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 0.85rem;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1.5px solid #ccc;
+      font-size: 0.9rem;
       text-align: center;
       box-sizing: border-box;
-      flex-shrink: 0;
+      transition: border-color 0.3s ease;
     }
-    .removePlayerBtn {
+    .pointsInput:focus {
+      border-color: #2980b9;
+      outline: none;
+    }
+    button.removePlayerBtn {
       background: #e74c3c;
       border: none;
       color: white;
-      border-radius: 5px;
+      border-radius: 50%;
       cursor: pointer;
-      padding: 4px 8px;
-      font-weight: 600;
+      padding: 6px;
+      width: 34px;
+      height: 34px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: background 0.3s ease;
       flex-shrink: 0;
-      font-size: 0.8rem;
     }
-    .removePlayerBtn:hover {
+    button.removePlayerBtn:hover {
       background: #c0392b;
     }
     #submitBtn, #clearAllBtn {
       width: 100%;
-      padding: 10px 15px;
-      font-size: 1rem;
-      border-radius: 7px;
+      padding: 12px 15px;
+      font-size: 1.1rem;
+      border-radius: 10px;
       border: none;
       cursor: pointer;
       transition: background 0.3s ease;
       user-select: none;
       margin-top: 15px;
       box-sizing: border-box;
+      font-weight: 700;
+      color: white;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      letter-spacing: 0.05em;
     }
     #submitBtn {
       background: #2980b9;
-      color: white;
+      box-shadow: 0 4px 8px rgb(41 128 185 / 0.4);
     }
     #submitBtn:hover {
       background: #216994;
+      box-shadow: 0 6px 10px rgb(33 105 148 / 0.6);
     }
     #clearAllBtn {
       background: #e74c3c;
-      color: white;
-      margin-top: 10px;
+      box-shadow: 0 4px 8px rgb(231 76 60 / 0.4);
+      margin-top: 12px;
     }
     #clearAllBtn:hover {
       background: #c0392b;
+      box-shadow: 0 6px 10px rgb(192 57 43 / 0.6);
     }
     #gameHistory {
       background: white;
-      margin-top: 15px;
-      border-radius: 8px;
-      padding: 10px 12px;
+      margin-top: 20px;
+      border-radius: 12px;
+      padding: 15px 20px;
       max-height: 180px;
       overflow-y: auto;
       font-family: monospace;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       color: #34495e;
-      box-shadow: inset 0 0 5px #ddd;
+      box-shadow: inset 0 0 8px #ddd;
+      user-select: none;
+    }
+    #gameHistory > div {
+      margin-bottom: 6px;
+    }
+    /* Icon styles */
+    svg {
+      width: 18px;
+      height: 18px;
+      fill: currentColor;
+      pointer-events: none;
+      user-select: none;
     }
   </style>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body>
 
@@ -183,6 +214,8 @@
 <h2>Game History</h2>
 <div id="gameHistory"></div>
 
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <script>
   const firebaseConfig = {
     apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
@@ -220,6 +253,25 @@
     });
   };
 
+  function getPlusIcon() {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"></path>
+      </svg>`;
+  }
+  function getMinusIcon() {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M19 13H5v-2h14v2z"></path>
+      </svg>`;
+  }
+  function getRemoveIcon() {
+    return `
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"></path>
+      </svg>`;
+  }
+
   function renderPlayers(data) {
     playersList.innerHTML = '';
     for (const name in data) {
@@ -231,10 +283,16 @@
         <div class="player-name">${name}</div>
         <div class="points-display" id="points-${name}">${player.points}</div>
         <div class="controls">
-          <label><input type="radio" name="change-${name}" value="plus" checked> + </label>
-          <label><input type="radio" name="change-${name}" value="minus"> - </label>
-          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}">
-          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">×</button>
+          <label title="Add Points">
+            <input type="radio" name="change-${name}" value="plus" checked>
+            ${getPlusIcon()}
+          </label>
+          <label title="Subtract Points">
+            <input type="radio" name="change-${name}" value="minus">
+            ${getMinusIcon()}
+          </label>
+          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
+          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
         </div>
       `;
 
@@ -287,7 +345,6 @@
       const changeType = changeRadio.value;
       let changeAmount = parseInt(pointsInput.value);
       if (isNaN(changeAmount) || changeAmount < 1 || changeAmount > 250) {
-        // skip if invalid input or empty
         continue;
       }
 
@@ -295,7 +352,7 @@
       if (changeType === 'plus') {
         newPoints += changeAmount;
       } else {
-        newPoints -= changeAmount; // allow negative points
+        newPoints -= changeAmount;
       }
 
       updatedPlayers[name] = { points: newPoints };
@@ -313,6 +370,12 @@
     await historyRef.push({ players: congratNames });
 
     congratsSpeak(congratNames);
+
+    // Clear inputs after submission
+    for (const name in playersData) {
+      const pointsInput = document.getElementById(`input-${name}`);
+      if (pointsInput) pointsInput.value = '';
+    }
   };
 
   clearAllBtn.onclick = async () => {
