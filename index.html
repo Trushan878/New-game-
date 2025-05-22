@@ -1,115 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Game Scoreboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Game Scoreboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 </head>
 <body class="bg-gray-100 p-4 font-sans">
-  <div class="max-w-lg mx-auto bg-white rounded shadow p-4">
-    <h1 class="text-2xl font-bold text-center mb-4">Scoreboard</h1>
+  <div class="max-w-lg mx-auto bg-white rounded shadow p-4">
+    <h1 class="text-2xl font-bold text-center mb-4">Scoreboard</h1>
 
-    <div class="flex gap-2 mb-4">
-      <input id="newPlayer" placeholder="Enter name" class="flex-grow border px-3 py-1 rounded" />
-      <button id="addPlayer" class="bg-green-500 text-white px-4 py-1 rounded">Add</button>
-    </div>
+    <div class="flex gap-2 mb-4">
+      <input id="newPlayer" placeholder="Enter name" class="flex-grow border px-3 py-1 rounded" />
+      <button id="addPlayer" class="bg-green-500 text-white px-4 py-1 rounded">Add</button>
+    </div>
 
-    <div id="playerList" class="space-y-2 text-sm"></div>
+    <div id="playerList" class="space-y-2 text-sm"></div>
 
-    <button id="submitChanges" class="w-full mt-4 bg-blue-600 text-white py-2 rounded">Submit Changes</button>
-    <button id="clearAllBtn" class="w-full mt-2 bg-yellow-500 text-white py-2 rounded">Reset All Points</button>
-  </div>
+    <button id="submitChanges" class="w-full mt-4 bg-blue-600 text-white py-2 rounded">Submit Changes</button>
+    <button id="clearAllBtn" class="w-full mt-2 bg-yellow-500 text-white py-2 rounded">Reset All Points</button>
+  </div>
 
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-      authDomain: "point-system-1bd8a.firebaseapp.com",
-      projectId: "point-system-1bd8a",
-      storageBucket: "point-system-1bd8a.appspot.com",
-      messagingSenderId: "755307639843",
-      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-      measurementId: "G-9ZMSNWJHHH"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const playersRef = db.ref("players");
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+      authDomain: "point-system-1bd8a.firebaseapp.com",
+      projectId: "point-system-1bd8a",
+      storageBucket: "point-system-1bd8a.appspot.com",
+      messagingSenderId: "755307639843",
+      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+      measurementId: "G-9ZMSNWJHHH"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
 
-    const newPlayer = document.getElementById("newPlayer");
-    const addPlayer = document.getElementById("addPlayer");
-    const playerList = document.getElementById("playerList");
-    const submitChanges = document.getElementById("submitChanges");
-    const clearAllBtn = document.getElementById("clearAllBtn");
+    const newPlayer = document.getElementById("newPlayer");
+    const addPlayer = document.getElementById("addPlayer");
+    const playerList = document.getElementById("playerList");
+    const submitChanges = document.getElementById("submitChanges");
+    const clearAllBtn = document.getElementById("clearAllBtn");
 
-    const pendingChanges = {};
+    const pendingChanges = {};
 
-    addPlayer.onclick = () => {
-      const name = newPlayer.value.trim();
-      if (name) {
-        playersRef.child(name).set({ points: 0 });
-        newPlayer.value = "";
-      }
-    };
+    addPlayer.onclick = () => {
+      const name = newPlayer.value.trim();
+      if (name) {
+        playersRef.child(name).set({ points: 0 });
+        newPlayer.value = "";
+      }
+    };
 
-    clearAllBtn.onclick = () => {
-      if (confirm("Reset all points to 0?")) {
-        playersRef.once("value", (snapshot) => {
-          const updates = {};
-          snapshot.forEach((child) => {
-            updates[child.key + "/points"] = 0;
-          });
-          playersRef.update(updates);
-        });
-      }
-    };
+    clearAllBtn.onclick = () => {
+      if (confirm("Reset all points to 0?")) {
+        playersRef.once("value", (snapshot) => {
+          const updates = {};
+          snapshot.forEach((child) => {
+            updates[child.key + "/points"] = 0;
+          });
+          playersRef.update(updates);
+        });
+      }
+    };
 
-    submitChanges.onclick = () => {
-      const updates = {};
-      for (const player in pendingChanges) {
-        const value = document.getElementById(`input-${player}`).value;
-        const point = parseInt(value) || 0;
-        updates[player + "/points"] = point; // ALLOW NEGATIVE POINTS
-      }
-      if (Object.keys(updates).length > 0) {
-        playersRef.update(updates);
-        Object.keys(pendingChanges).forEach(name => delete pendingChanges[name]);
-        alert("Points updated!");
-      }
-    };
+    submitChanges.onclick = () => {
+      const updates = {};
+      for (const player in pendingChanges) {
+        const value = document.getElementById(`input-${player}`).value;
+        const point = parseInt(value);
+        updates[player + "/points"] = isNaN(point) ? 0 : point;
+      }
+      if (Object.keys(updates).length > 0) {
+        playersRef.update(updates);
+        Object.keys(pendingChanges).forEach(name => delete pendingChanges[name]);
+        alert("Points updated!");
+      }
+    };
 
-    playersRef.on("value", (snap) => {
-      const data = snap.val() || {};
-      playerList.innerHTML = "";
-      Object.keys(data).forEach(name => {
-        const row = document.createElement("div");
-        row.className = "flex items-center justify-between bg-gray-50 p-2 rounded border";
+    playersRef.on("value", (snap) => {
+      const data = snap.val() || {};
+      playerList.innerHTML = "";
+      Object.keys(data).forEach(name => {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between bg-gray-50 p-2 rounded border";
 
-        row.innerHTML = `
-          <span class="font-medium w-1/3">${name}</span>
-          <div class="flex gap-1 items-center w-2/3 justify-end">
-            <button class="bg-red-500 text-white px-2 rounded" onclick="changePoints('${name}', -1)">-</button>
-            <input id="input-${name}" type="number" value="${data[name].points}" class="w-16 text-center border rounded px-1 py-0.5" />
-            <button class="bg-green-500 text-white px-2 rounded" onclick="changePoints('${name}', 1)">+</button>
-            <button class="text-xs text-red-600" onclick="removePlayer('${name}')">Remove</button>
-          </div>
-        `;
-        playerList.appendChild(row);
-      });
-    });
+        row.innerHTML = `
+          <span class="font-medium w-1/3 truncate">${name}</span>
+          <div class="flex gap-1 items-center w-2/3 justify-end">
+            <button class="bg-red-500 text-white px-2 rounded" onclick="changePoints('${name}', -1)">-</button>
+            <input id="input-${name}" type="number" value="${data[name].points}" class="w-16 text-center border rounded px-1 py-0.5" />
+            <button class="bg-green-500 text-white px-2 rounded" onclick="changePoints('${name}', 1)">+</button>
+            <button class="text-xs text-red-600" onclick="removePlayer('${name}')">Remove</button>
+          </div>
+        `;
+        playerList.appendChild(row);
+      });
+    });
 
-    function changePoints(player, delta) {
-      const input = document.getElementById(`input-${player}`);
-      input.value = parseInt(input.value || 0) + delta;
-      pendingChanges[player] = true;
-    }
+    function changePoints(player, delta) {
+      const input = document.getElementById(`input-${player}`);
+      const current = parseInt(input.value) || 0;
+      input.value = current + delta;
+      pendingChanges[player] = true;
+    }
 
-    function removePlayer(player) {
-      if (confirm(`Remove ${player}?`)) {
-        playersRef.child(player).remove();
-      }
-    }
-  </script>
+    function removePlayer(player) {
+      if (confirm(`Remove ${player}?`)) {
+        playersRef.child(player).remove();
+      }
+    }
+  </script>
 </body>
 </html>
