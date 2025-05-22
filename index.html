@@ -6,12 +6,7 @@
   <title>Game Scoreboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      font-family: 'Arial', sans-serif;
-      background: #f0f0f0;
-      margin: 0;
-      padding: 1rem;
-    }
+    body { font-family: 'Arial', sans-serif; }
     .welcome-page {
       display: flex;
       justify-content: center;
@@ -65,19 +60,9 @@
       animation: fadeInOut 3s forwards;
     }
     @keyframes fadeInOut {
-      0% {
-        opacity: 0;
-        transform: translate(-50%, -20px);
-      }
-      10%,
-      90% {
-        opacity: 1;
-        transform: translate(-50%, 0);
-      }
-      100% {
-        opacity: 0;
-        transform: translate(-50%, -20px);
-      }
+      0% { opacity: 0; transform: translate(-50%, -20px); }
+      10%, 90% { opacity: 1; transform: translate(-50%, 0); }
+      100% { opacity: 0; transform: translate(-50%, -20px); }
     }
     .animated-button {
       position: relative;
@@ -113,58 +98,50 @@
       background-color: white;
       color: #22c55e;
     }
-    .animated-button:focus {
-      outline: none;
-    }
+    .animated-button:focus { outline: none; }
 
-    /* New styles for compact player list */
+    /* ===== Compact Players List Styles ===== */
     #playersList {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       max-width: 100%;
-      padding: 8px;
+      padding: 4px;
       border: 1px solid #ddd;
       border-radius: 8px;
       background-color: #fafafa;
       margin-bottom: 1rem;
+      overflow: visible; /* no scroll */
     }
+
     .player-card {
       display: flex;
       align-items: center;
       background: #e4e4e4;
       border-radius: 9999px;
-      padding: 4px 8px;
-      gap: 6px;
-      font-size: 0.875rem;
+      padding: 2px 6px;
+      gap: 4px;
+      font-size: 0.85rem;
       user-select: none;
-    }
-    .player-card input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-    }
-    .player-name {
-      font-weight: 600;
       white-space: nowrap;
     }
+
+    .player-card input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    .player-name {
+      font-weight: 600;
+    }
+
     .player-points {
       background: white;
       border: 1px solid #ccc;
       border-radius: 12px;
-      padding: 2px 6px;
-      font-size: 0.75rem;
+      padding: 1px 5px;
+      font-size: 0.7rem;
       color: #555;
-    }
-
-    /* Responsive fixes */
-    @media (max-width: 480px) {
-      .animated-button {
-        font-size: 1rem;
-        padding: 8px 16px;
-      }
-      #newPlayerName {
-        font-size: 1rem;
-      }
     }
   </style>
 </head>
@@ -183,66 +160,32 @@
   <section id="gameBoard" class="game-board">
     <h2 class="text-2xl font-semibold text-center mb-6">Game Scoreboard</h2>
     <div class="mb-4 flex gap-2">
-      <input
-        type="text"
-        id="newPlayerName"
-        placeholder="Add player name"
-        class="flex-grow border rounded px-3 py-2"
-        autocomplete="off"
-      />
-      <button
-        id="addPlayerBtn"
-        class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-      >
-        Add
-      </button>
+      <input type="text" id="newPlayerName" placeholder="Add player name" class="flex-grow border rounded px-3 py-2" />
+      <button id="addPlayerBtn" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">Add</button>
     </div>
 
-    <div id="playersList" aria-label="Players list"></div>
+    <div id="playersList" class="space-y-4 max-h-60 overflow-auto mb-4"></div>
 
     <div class="flex justify-between gap-2 mb-4">
-      <button
-        id="clearPointsBtn"
-        class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400"
-      >
-        Reset All Points & History
-      </button>
-      <button
-        id="submitBtn"
-        class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
-      >
-        Submit
-      </button>
+      <button id="clearBtn" class="flex-1 bg-gray-300 py-2 rounded hover:bg-gray-400">Reset All Points & History</button>
+      <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit</button>
     </div>
 
-    <button
-      id="whatsappBtn"
-      class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600"
-    >
-      Send Points to WhatsApp
-    </button>
+    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700" style="display:none;">Clear All Data</button>
+    <button id="deleteLastGameBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Delete Last Game</button>
+    <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
-    <div
-      id="pointsHistory"
-      class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"
-    ></div>
-    <div
-      id="gameHistory"
-      class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"
-    ></div>
+    <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
+    <div id="gameHistory" class="bg-yellow-100 p-3 rounded text-sm max-h-40 overflow-auto"></div>
   </section>
 
-  <audio
-    id="startSound"
-    src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"
-  ></audio>
+  <audio id="startSound" src="https://github.com/Trushan878/New-game-/raw/main/KGF%20THEME%20SONGKGF%20BGM%20FT%20POWERFUL%20PEOPLE%20MAKE%20PLACES%20POWERFUL%20ROCKY%20Check%20Description%20(mp3cut.net).mp3"></audio>
 
   <script>
-    // Data storage keys
-    const STORAGE_PLAYERS = 'game_scoreboard_players';
-    const STORAGE_HISTORY = 'game_scoreboard_history';
+    // Data storage (localStorage)
+    let players = JSON.parse(localStorage.getItem('players') || '{}');
+    let gameHistoryData = JSON.parse(localStorage.getItem('gameHistory') || '[]');
 
-    // Elements
     const welcomePage = document.getElementById('welcomePage');
     const gameBoard = document.getElementById('gameBoard');
     const startGameBtn = document.getElementById('startGameBtn');
@@ -251,27 +194,89 @@
     const newPlayerInput = document.getElementById('newPlayerName');
     const pointsHistory = document.getElementById('pointsHistory');
     const gameHistory = document.getElementById('gameHistory');
-    const addPlayerBtn = document.getElementById('addPlayerBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const clearPointsBtn = document.getElementById('clearPointsBtn');
-    const whatsappBtn = document.getElementById('whatsappBtn');
+    const clearBtn = document.getElementById('clearBtn');
 
-    let players = {};
-    let games = [];
+    startGameBtn.onclick = () => {
+      welcomePage.style.display = 'none';
+      gameBoard.style.display = 'block';
+      startSound.currentTime = 10;
+      startSound.play();
+      setTimeout(() => startSound.pause(), 4000);
+      renderPlayers();
+      renderHistory();
+    };
 
-    // Load from localStorage on startup
-    function loadFromStorage() {
-      players = JSON.parse(localStorage.getItem(STORAGE_PLAYERS)) || {};
-      games = JSON.parse(localStorage.getItem(STORAGE_HISTORY)) || [];
-    }
+    document.getElementById('addPlayerBtn').onclick = () => {
+      const name = newPlayerInput.value.trim();
+      if (!name || players[name]) return;
+      players[name] = 0;
+      saveData();
+      newPlayerInput.value = '';
+      renderPlayers();
+    };
 
-    // Save to localStorage
-    function saveToStorage() {
-      localStorage.setItem(STORAGE_PLAYERS, JSON.stringify(players));
-      localStorage.setItem(STORAGE_HISTORY, JSON.stringify(games));
-    }
+    clearBtn.onclick = () => {
+      if (confirm('Are you sure you want to reset all points and game history?')) {
+        for (const p in players) {
+          players[p] = 0;
+        }
+        gameHistoryData = [];
+        saveData();
+        renderPlayers();
+        renderHistory();
+        showSuccess('All points and history reset!');
+      }
+    };
 
-    // Render players in compact pills
+    document.getElementById('submitBtn').onclick = () => {
+      const selected = [];
+      document.querySelectorAll('#playersList input[type="checkbox"]:checked').forEach(cb => {
+        const name = cb.value;
+        selected.push(name);
+        players[name] += 1;
+      });
+
+      if (selected.length > 0) {
+        gameHistoryData.push(selected);
+        saveData();
+        renderPlayers();
+        renderHistory();
+        showCongrats(selected);
+      }
+    };
+
+    document.getElementById('deleteLastGameBtn').onclick = () => {
+      if (gameHistoryData.length === 0) {
+        alert('No games to delete.');
+        return;
+      }
+      if (!confirm('Are you sure you want to delete the last game and update points?')) return;
+
+      const lastGame = gameHistoryData.pop();
+      for (const p of lastGame) {
+        players[p] = Math.max(players[p] - 1, 0);
+      }
+      saveData();
+      renderPlayers();
+      renderHistory();
+      showSuccess('Last game deleted and points updated!');
+    };
+
+    document.getElementById('whatsappBtn').onclick = () => {
+      let message = `*Game Scoreboard* - ${new Date().toLocaleString()}\n\n`;
+
+      const sortedPlayers = Object.entries(players).sort((a,b) => b[1] - a[1]);
+      const medals = ['1', '2', '3'];
+
+      sortedPlayers.forEach(([name, pts], i) => {
+        const medal = medals[i] || `${i+1}.`;
+        message += `${medal} *${name}* — ${pts} point(s)\n`;
+      });
+
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    };
+
     function renderPlayers() {
       playersList.innerHTML = '';
       for (const name in players) {
@@ -286,121 +291,46 @@
       }
     }
 
-    // Render points history
-    function renderPointsHistory() {
-      pointsHistory.innerHTML = '';
-      for (const name in players) {
-        const div = document.createElement('div');
-        div.textContent = `${name}: ${players[name]} point${players[name] !== 1 ? 's' : ''}`;
-        pointsHistory.appendChild(div);
-      }
-    }
-
-    // Render game history
     function renderHistory() {
+      pointsHistory.innerHTML = '';
       gameHistory.innerHTML = '';
-      games.forEach((entry, i) => {
-        const div = document.createElement('div');
-        div.textContent = `Game ${i + 1}: ${entry.join(', ')}`;
-        gameHistory.appendChild(div);
+
+      // Points summary
+      for (const p in players) {
+        const pElem = document.createElement('div');
+        pElem.textContent = `${p}: ${players[p]} point(s)`;
+        pointsHistory.appendChild(pElem);
+      }
+
+      // Game history list
+      gameHistoryData.forEach((game, i) => {
+        const gElem = document.createElement('div');
+        gElem.textContent = `Game ${i + 1}: ${game.join(', ')}`;
+        gameHistory.appendChild(gElem);
       });
     }
 
-    // Show congrats popup with sound and speech
-    function showCongrats(names) {
+    function saveData() {
+      localStorage.setItem('players', JSON.stringify(players));
+      localStorage.setItem('gameHistory', JSON.stringify(gameHistoryData));
+    }
+
+    function showCongrats(winners) {
       const popup = document.createElement('div');
       popup.className = 'congrats-popup';
-      popup.textContent = `Congratulations ${names.join(', ')}!`;
+      popup.textContent = `Congrats: ${winners.join(', ')}!`;
       document.body.appendChild(popup);
       setTimeout(() => popup.remove(), 3000);
-
-      const audio = new Audio('https://www.fesliyanstudios.com/play-mp3/387');
-      audio.play();
-
-      if ('speechSynthesis' in window) {
-        const msg = new SpeechSynthesisUtterance(`Congratulations ${names.join(', ')}!`);
-        msg.lang = 'en-US';
-        speechSynthesis.speak(msg);
-      }
     }
 
-    // Start game button
-    startGameBtn.onclick = () => {
-      welcomePage.style.display = 'none';
-      gameBoard.style.display = 'block';
-      startSound.play();
-      loadFromStorage();
-      renderPlayers();
-      renderPointsHistory();
-      renderHistory();
-    };
-
-    // Add player button
-    addPlayerBtn.onclick = () => {
-      const name = newPlayerInput.value.trim();
-      if (!name) {
-        alert('Please enter a player name.');
-        return;
-      }
-      if (players[name]) {
-        alert('Player already exists.');
-        newPlayerInput.value = '';
-        return;
-      }
-      players[name] = 0;
-      saveToStorage();
-      renderPlayers();
-      renderPointsHistory();
-      newPlayerInput.value = '';
-    };
-
-    // Submit points: update player scores by checked checkboxes
-    submitBtn.onclick = () => {
-      const checkboxes = playersList.querySelectorAll('input[type="checkbox"]:checked');
-      if (checkboxes.length === 0) {
-        alert('Please select at least one player.');
-        return;
-      }
-      const selectedPlayers = [];
-      checkboxes.forEach((cb) => {
-        const name = cb.value;
-        players[name]++;
-        selectedPlayers.push(name);
-        cb.checked = false; // uncheck after submit
-      });
-      games.push(selectedPlayers);
-      saveToStorage();
-      renderPlayers();
-      renderPointsHistory();
-      renderHistory();
-
-      showCongrats(selectedPlayers);
-    };
-
-    // Clear points & history button (reset points to zero, clear game history)
-    clearPointsBtn.onclick = () => {
-      for (const name in players) {
-        players[name] = 0;
-      }
-      games = [];
-      saveToStorage();
-      renderPlayers();
-      renderPointsHistory();
-      renderHistory();
-    };
-
-    // WhatsApp sharing button
-    whatsappBtn.onclick = () => {
-      let msg = 'Game Scores:%0A';
-      for (const name in players) {
-        msg += `${name}: ${players[name]} point${players[name] !== 1 ? 's' : ''}%0A`;
-      }
-      const url = `https://wa.me/?text=${msg}`;
-      window.open(url, '_blank');
-    };
-
-    // Initialize page state (hide game board)
-    gameBoard.style.display = 'none';
+    function showSuccess(msg) {
+      const popup = document.createElement('div');
+      popup.className = 'congrats-popup';
+      popup.style.backgroundColor = '#3b82f6'; // blue
+      popup.textContent = msg;
+      document.body.appendChild(popup);
+      setTimeout(() => popup.remove(), 3000);
+    }
   </script>
 </body>
 </html>
