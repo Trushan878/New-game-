@@ -104,6 +104,19 @@
     .animated-button:focus {
       outline: none;
     }
+    .remove-btn {
+      background: #ef4444; /* red-500 */
+      color: white;
+      border: none;
+      padding: 4px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: background-color 0.3s ease;
+    }
+    .remove-btn:hover {
+      background: #dc2626; /* red-600 */
+    }
   </style>
 </head>
 <body>
@@ -133,7 +146,7 @@
       <button id="submitBtn" class="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Submit Points</button>
     </div>
 
-    <button id="clearAllBtn" class="w-full bg-red-600 text-white py-2 rounded mb-4 hover:bg-red-700">Clear All Data</button>
+    <button id="clearAllBtn" class="w-full bg-yellow-500 text-white py-2 rounded mb-4 hover:bg-yellow-600">Reset All Points</button>
     <button id="whatsappBtn" class="w-full bg-green-500 text-white py-2 rounded mb-4 hover:bg-green-600">Send Points to WhatsApp</button>
 
     <div id="pointsHistory" class="bg-gray-100 p-3 rounded mb-4 text-sm max-h-40 overflow-auto"></div>
@@ -189,19 +202,19 @@
   };
 
   document.getElementById('clearAllBtn').onclick = () => {
-    if (confirm('Are you sure you want to clear all players and points?')) {
-      players = {};
+    if (confirm('Are you sure you want to reset all points to zero? This will NOT remove any players.')) {
+      Object.keys(players).forEach(name => players[name] = 0);
       renderPlayers();
       renderPointsHistory();
     }
   };
 
   document.getElementById('whatsappBtn').onclick = () => {
-    let message = '*Game Scoreboard*\n\n';
     if (Object.keys(players).length === 0) {
       alert('No players to send.');
       return;
     }
+    let message = '*Game Scoreboard*\n\n';
     const sortedPlayers = Object.entries(players).sort((a,b) => b[1] - a[1]);
     sortedPlayers.forEach(([name, pts], i) => {
       const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
@@ -210,6 +223,15 @@
     const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
   };
+
+  // Remove player function
+  function removePlayer(name) {
+    if (confirm(`Remove player "${name}"? This action cannot be undone.`)) {
+      delete players[name];
+      renderPlayers();
+      renderPointsHistory();
+    }
+  }
 
   function renderPlayers() {
     playersList.innerHTML = '';
@@ -225,8 +247,13 @@
           <input type="checkbox" value="${name}" />
           <span class="font-semibold">${name}</span>
         </label>
-        <span class="font-bold">${pts}</span>
+        <div class="flex items-center gap-4">
+          <span class="font-bold">${pts}</span>
+          <button class="remove-btn" title="Remove player">Remove</button>
+        </div>
       `;
+      // Remove button handler
+      div.querySelector('button.remove-btn').onclick = () => removePlayer(name);
       playersList.appendChild(div);
     });
   }
