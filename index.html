@@ -403,7 +403,22 @@
               inputEl.value = '';
             }
 
-            
+            // Speech congrats for player(s) with highest points
+            playersRef.once('value').then(snap => {
+              const updatedPlayers = snap.val() || {};
+              let maxPoints = -Infinity;
+              let winners = [];
+              for (const p in updatedPlayers) {
+                if (updatedPlayers[p].points > maxPoints) {
+                  maxPoints = updatedPlayers[p].points;
+                  winners = [p];
+                } else if (updatedPlayers[p].points === maxPoints) {
+                  winners.push(p);
+                }
+              }
+              if ('speechSynthesis' in window && winners.length) {
+                const utterance = new SpeechSynthesisUtterance('Congratulations to ' + winners.join(' and ') + '!');
+                window.speechSynthesis.speak(utterance);
               }
             });
           });
