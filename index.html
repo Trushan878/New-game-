@@ -138,7 +138,7 @@
     button.removePlayerBtn:hover {
       background: #c0392b;
     }
-    #submitBtn, #clearAllBtn, #shareWhatsappBtn {
+    #submitBtn, #clearAllBtn {
       width: 100%;
       padding: 12px 15px;
       font-size: 1.1rem;
@@ -165,18 +165,11 @@
     #clearAllBtn {
       background: #e74c3c;
       box-shadow: 0 4px 8px rgb(231 76 60 / 0.4);
+      margin-top: 12px;
     }
     #clearAllBtn:hover {
       background: #c0392b;
       box-shadow: 0 6px 10px rgb(192 57 43 / 0.6);
-    }
-    #shareWhatsappBtn {
-      background: #25D366;
-      box-shadow: 0 4px 8px rgb(37 211 102 / 0.4);
-    }
-    #shareWhatsappBtn:hover {
-      background: #1DA851;
-      box-shadow: 0 6px 10px rgb(29 168 81 / 0.6);
     }
     #gameHistory {
       background: white;
@@ -216,7 +209,11 @@
 
 <button id="submitBtn">Submit All Changes</button>
 <button id="clearAllBtn">Reset Points & History</button>
-<button id="shareWhatsappBtn">Share to WhatsApp</button>
+
+<!-- WhatsApp Share Button -->
+<button id="shareWhatsAppBtn" style="background:#25D366; margin-top:12px; color:white; font-weight:700; border:none; padding:12px 15px; border-radius:10px; width:100%; cursor:pointer;">
+  Share Scores on WhatsApp
+</button>
 
 <h2>Game History</h2>
 <div id="gameHistory"></div>
@@ -246,7 +243,7 @@
   const addPlayerBtn = document.getElementById('addPlayerBtn');
   const submitBtn = document.getElementById('submitBtn');
   const clearAllBtn = document.getElementById('clearAllBtn');
-  const shareWhatsappBtn = document.getElementById('shareWhatsappBtn');
+  const shareWhatsAppBtn = document.getElementById('shareWhatsAppBtn');
 
   addPlayerBtn.onclick = () => {
     const name = newPlayerNameInput.value.trim();
@@ -297,118 +294,97 @@
         </div>
       `;
       playersList.appendChild(div);
+
+      // Remove player button
+      div.querySelector('button.removePlayerBtn').onclick = e => {
+        const playerName = e.currentTarget.dataset.player;
+        if (confirm(`Remove player ${playerName}?`)) {
+          playersRef.child(playerName).remove();
+        }
+      };
     }
   }
 
-  // Listen for player data changes
   playersRef.on('value', snapshot => {
     const data = snapshot.val() || {};
     renderPlayers(data);
   });
 
-  // Remove player button handler (event delegation)
-  playersList.onclick = e => {
-    if (e.target.closest('button.removePlayerBtn')) {
-      const btn = e.target.closest('button.removePlayerBtn');
-      const player = btn.getAttribute('data-player');
-      if (confirm(`Remove player "${player}"?`)) {
-        playersRef.child(player).remove();
-      }
-    }
-  };
-
-  // Submit all changes handler
   submitBtn.onclick = () => {
     playersRef.once('value').then(snapshot => {
-      const players = snapshot.val() || {};
-      let changesMade = false;
-     
-      for (const player in players) {
-        const radioPlus = document.querySelector(`input[name="change-${player}"][value="plus"]`);
-        const radioMinus = document.querySelector(`input[name="change-${player}"][value="minus"]`);
-        const pointsInput = document.getElementById(`input-${player}`);
-        const deltaStr = pointsInput.value.trim();
-        if (!deltaStr) continue;
-        const delta = parseInt(deltaStr, 10);
-        if (isNaN(delta) || delta <= 0 || delta > 250) {
-          alert(`Invalid points for player "${player}". Enter number 1 to 250.`);
-          return;
+      const data = snapshot.val() || {};
+      const updates = {};
+      for (const name in data) {
+        const radios = document.getElementsByName(`change-${name}`);
+        const selected = Array.from(radios).find(r => r.checked);
+        const input = document.getElementById(`input-${name}`);
+        let changeVal = 0;
+        if (input && input.value.trim() !== '') {
+          const val = parseInt(input.value.trim(), 10);
+          if (isNaN(val) || val < 0 || val > 250) {
+            alert(`Invalid points for ${name}, enter 0-250`);
+            return;
+          }
+          changeVal = selected.value === 'plus' ? val : -val;
         }
-       
-        let newPoints;
-        if (radioPlus.checked) {
-          newPoints = players[player].points + delta;
-        } else if (radioMinus.checked) {
-          newPoints = players[player].points - delta;
-        }
-        if (newPoints !== players[player].points) {
-          players[player].points = newPoints;
-          changesMade = true;
-          pointsInput.value = ''; // reset input after submit
-        }
+        updates[`${name}/points`] = data[name].points + changeVal;
+        if (input) input.value = '';
       }
-      if (!changesMade) {
-        alert("No changes to submit");
-        return;
-      }
-      // Update points in Firebase
-      playersRef.set(players);
+      playersRef.update(updates).then(() => {
+        // Add entry to game history
+        const timestamp = new Date().toLocaleString();
+        let snapshotText = '';
+        for (const player in updates) {
+          const playerName = player.split('/')[0];
+          snapshotText += `${playerName}: ${updates[player]}\n`;
+        }
+        historyRef.push({ timestamp, snapshot: snapshotText });
+      });
+  });
 
-      // Add entry to gameHistory
-      const now = new Date();
-      const timeString = now.toLocaleString();
-      let historyEntry = `${timeString} - Updates:\n`;
-      for (const player in players) {
-        historyEntry += `${player}: ${players[player].points}\n`;
+  clearAllBtn.onclick = () => {
+    if (!confirm("Reset all points to zero and clear history?")) return;
+    playersRef.once('value').then(snapshot => {
+      const data = snapshot.val() || {};
+      const reset = {};
+      for (const name in data) {
+        reset[`${name}/points`] = 0;
       }
-      historyRef.push(historyEntry);
-
-      alert("Points updated successfully");
+      playersRef.update(reset).then(() => {
+        historyRef.remove();
+        gameHistoryDiv.innerHTML = '';
+      });
     });
   };
 
-  // Clear all points and history
-  clearAllBtn.onclick = () => {
-    if (confirm("Reset all points to zero and clear history?")) {
-      playersRef.once('value').then(snapshot => {
-        const players = snapshot.val() || {};
-        for (const player in players) {
-          players[player].points = 0;
-        }
-        playersRef.set(players);
-        historyRef.remove();
-        alert("Reset complete");
-      });
-    }
-  };
-
-  // Show game history updates
   historyRef.on('value', snapshot => {
     const data = snapshot.val() || {};
     gameHistoryDiv.innerHTML = '';
-    for (const key in data) {
+    for (const id in data) {
+      const entry = data[id];
       const div = document.createElement('div');
-      div.textContent = data[key];
-      gameHistoryDiv.prepend(div);
+      div.textContent = `[${entry.timestamp}] \n${entry.snapshot}`;
+      gameHistoryDiv.appendChild(div);
     }
   });
 
-  // Share to WhatsApp button handler
-  shareWhatsappBtn.onclick = () => {
+  // WhatsApp Share button functionality
+  shareWhatsAppBtn.onclick = () => {
     playersRef.once('value').then(snapshot => {
       const players = snapshot.val() || {};
       if (Object.keys(players).length === 0) {
-        alert("No players to share.");
+        alert("No players to share!");
         return;
       }
-     
-      let message = 'Game Scoreboard:\n';
+
+      let message = "Game Scores:\n";
       for (const player in players) {
         message += `${player}: ${players[player].points}\n`;
       }
- 
+
       const encodedMessage = encodeURIComponent(message);
-      const whatsappURL = `https://wa.me/?text=${encodedMessage}`;
+      const whatsappURL = `https://api.whatsapp.com/send?text=${encodedMessage}`;
+
       window.open(whatsappURL, '_blank');
     });
   };
