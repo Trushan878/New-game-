@@ -1,441 +1,164 @@
 <!DOCTYPE html>
-<html lang="en" >
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Styled Scoreboard with Firebase</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 10px;
-      background: #f0f4f8;
-      color: #333;
-      box-sizing: border-box;
-    }
-    h1, h2 {
-      text-align: center;
-      color: #2c3e50;
-      margin-bottom: 10px;
-    }
-    #newPlayerName {
-      width: calc(100% - 110px);
-      padding: 8px 12px;
-      font-size: 1rem;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    #newPlayerName:focus {
-      border-color: #2980b9;
-      outline: none;
-    }
-    #addPlayerBtn {
-      width: 100px;
-      padding: 8px;
-      font-size: 1rem;
-      background: #27ae60;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      box-sizing: border-box;
-    }
-    #addPlayerBtn:hover {
-      background: #219150;
-    }
-    #playersList {
-      margin-top: 15px;
-    }
-    .player {
-      background: white;
-      padding: 8px 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.95rem;
-      user-select: none;
-      flex-wrap: nowrap;
-    }
-    .player-name {
-      font-weight: 600;
-      flex-shrink: 0;
-      min-width: 80px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #34495e;
-    }
-    .points-display {
-      font-weight: 700;
-      color: #34495e;
-      background: #ecf0f1;
-      padding: 5px 10px;
-      border-radius: 8px;
-      width: 55px;
-      text-align: center;
-      flex-shrink: 0;
-      user-select: none;
-      box-shadow: inset 0 1px 3px #d0d7dd;
-    }
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 1;
-      min-width: 0;
-    }
-    label {
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      user-select: none;
-      color: #34495e;
-    }
-    input[type=radio] {
-      cursor: pointer;
-      width: 16px;
-      height: 16px;
-    }
-    .pointsInput {
-      width: 60px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      font-size: 0.9rem;
-      text-align: center;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    .pointsInput:focus {
-      border-color: #2980b9;
-      outline: none;
-    }
-    button.removePlayerBtn {
-      background: #e74c3c;
-      border: none;
-      color: white;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px;
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s ease;
-      flex-shrink: 0;
-    }
-    button.removePlayerBtn:hover {
-      background: #c0392b;
-    }
-    #submitBtn, #clearAllBtn {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      user-select: none;
-      margin-top: 15px;
-      box-sizing: border-box;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-      letter-spacing: 0.05em;
-    }
-    #submitBtn {
-      background: #2980b9;
-      box-shadow: 0 4px 8px rgb(41 128 185 / 0.4);
-    }
-    #submitBtn:hover {
-      background: #216994;
-      box-shadow: 0 6px 10px rgb(33 105 148 / 0.6);
-    }
-    #clearAllBtn {
-      background: #e74c3c;
-      box-shadow: 0 4px 8px rgb(231 76 60 / 0.4);
-      margin-top: 12px;
-    }
-    #clearAllBtn:hover {
-      background: #c0392b;
-      box-shadow: 0 6px 10px rgb(192 57 43 / 0.6);
-    }
-    #gameHistory {
-      background: white;
-      margin-top: 20px;
-      border-radius: 12px;
-      padding: 15px 20px;
-      max-height: 180px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.95rem;
-      color: #34495e;
-      box-shadow: inset 0 0 8px #ddd;
-      user-select: none;
-    }
-    #gameHistory > div {
-      margin-bottom: 6px;
-    }
-    svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      pointer-events: none;
-      user-select: none;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scoreboard App</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@3.4.1/dist/tailwind.min.css" rel="stylesheet">
 </head>
-<body>
+<body class="bg-gray-900 text-white min-h-screen p-4">
+  <div class="max-w-md mx-auto">
+    <h1 class="text-3xl font-bold text-center mb-6">Game Scoreboard</h1>
+    
+    <!-- Add Player -->
+    <div class="flex gap-2 mb-4">
+      <input id="newPlayerName" type="text" placeholder="New player name" class="flex-1 px-3 py-2 rounded text-black" />
+      <button id="addPlayerBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded">Add</button>
+    </div>
+    
+    <!-- Player List -->
+    <ul id="playerList" class="mb-6"></ul>
 
-<h1>Game Scoreboard</h1>
+    <!-- Submit Button -->
+    <button id="submitPoints" class="w-full bg-yellow-500 hover:bg-yellow-600 text-black font-bold py-2 rounded mb-6">
+      Submit Changes
+    </button>
 
-<div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-  <input type="text" id="newPlayerName" placeholder="Enter player name" />
-  <button id="addPlayerBtn">Add Player</button>
-</div>
+    <!-- Game History -->
+    <div>
+      <h2 class="text-xl font-semibold mb-2">Game History</h2>
+      <ul id="historyList" class="text-sm space-y-1"></ul>
+    </div>
+  </div>
 
-<div id="playersList"></div>
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+    import { getDatabase, ref, onValue, set, remove, push } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-database.js';
 
-<button id="submitBtn">Submit All Changes</button>
-<button id="clearAllBtn">Reset Points & History</button>
+    const firebaseConfig = {
+      apiKey: "AIzaSyBpM4GlbdT2fITZF1mcYPFiDFYQmJLDf8k",
+      authDomain: "point-system-1bd8a.firebaseapp.com",
+      databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
+      projectId: "point-system-1bd8a",
+      storageBucket: "point-system-1bd8a.appspot.com",
+      messagingSenderId: "252736290960",
+      appId: "1:252736290960:web:f028f2d1d0e7e48b72315c"
+    };
 
-<h2>Game History</h2>
-<div id="gameHistory"></div>
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-    authDomain: "point-system-1bd8a.firebaseapp.com",
-    databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
-    projectId: "point-system-1bd8a",
-    storageBucket: "point-system-1bd8a.appspot.com",
-    messagingSenderId: "755307639843",
-    appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-    measurementId: "G-9ZMSNWJHHH"
-  };
+    const playersRef = ref(db, 'players');
+    const historyRef = ref(db, 'history');
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
+    const playerList = document.getElementById('playerList');
+    const newPlayerNameInput = document.getElementById('newPlayerName');
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+    const submitBtn = document.getElementById('submitPoints');
+    const historyList = document.getElementById('historyList');
 
-  const playersList = document.getElementById('playersList');
-  const gameHistoryDiv = document.getElementById('gameHistory');
-  const newPlayerNameInput = document.getElementById('newPlayerName');
-  const addPlayerBtn = document.getElementById('addPlayerBtn');
-  const submitBtn = document.getElementById('submitBtn');
-  const clearAllBtn = document.getElementById('clearAllBtn');
-
-  addPlayerBtn.onclick = () => {
-    const name = newPlayerNameInput.value.trim();
-    if (!name) return alert("Enter a player name");
-    playersRef.child(name).once('value').then(snap => {
-      if (snap.exists()) {
-        alert("Player already exists");
-        return;
-      }
-      playersRef.child(name).set({ points: 0 });
-      newPlayerNameInput.value = '';
-    });
-  };
-
-  function getPlusIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"></path>
-      </svg>`;
-  }
-  function getMinusIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M19 13H5v-2h14v2z"></path>
-      </svg>`;
-  }
-  function getRemoveIcon() {
-    return `
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"></path>
-      </svg>`;
-  }
-
-  function renderPlayers(data) {
-    playersList.innerHTML = '';
-    for (const name in data) {
-      const player = data[name];
-      const div = document.createElement('div');
-      div.className = 'player';
-
-      div.innerHTML = `
-        <div class="player-name">${name}</div>
-        <div class="points-display" id="points-${name}">${player.points}</div>
-        <div class="controls">
-          <label title="Add Points">
-            <input type="radio" name="change-${name}" value="plus" checked>
-            ${getPlusIcon()}
-          </label>
-          <label title="Subtract Points">
-            <input type="radio" name="change-${name}" value="minus">
-            ${getMinusIcon()}
-          </label>
-          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
-          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
+    function createPlayerElement(name, points) {
+      const item = document.createElement('li');
+      item.innerHTML = `
+        <div class="flex items-center justify-between p-2 bg-gray-800 rounded-lg mb-2">
+          <span class="text-white text-lg font-semibold">${name}: <span class="text-blue-400" id="points-${name}">${points}</span></span>
+          <div class="flex items-center gap-1">
+            <input type="number" placeholder="Pts" class="pointsInput w-16 px-1 rounded text-black" id="input-${name}" />
+            <button class="btn-decrease bg-red-500 hover:bg-red-600 text-white rounded px-2" data-name="${name}">−</button>
+            <button class="btn-increase bg-green-500 hover:bg-green-600 text-white rounded px-2" data-name="${name}">+</button>
+            <button class="btn-clear bg-gray-500 hover:bg-gray-600 text-white rounded px-2" data-name="${name}">✓</button>
+          </div>
         </div>
       `;
-
-      playersList.appendChild(div);
+      playerList.appendChild(item);
     }
 
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        if (confirm(`Remove player "${playerToRemove}"?`)) {
-          playersRef.child(playerToRemove).remove();
-        }
-      };
+    function updateUI(players) {
+      playerList.innerHTML = '';
+      Object.entries(players || {}).forEach(([name, data]) => {
+        createPlayerElement(name, data.points);
+      });
+    }
+
+    function renderHistory(history) {
+      historyList.innerHTML = '';
+      Object.entries(history || {}).reverse().forEach(([game, data]) => {
+        const item = document.createElement('li');
+        const changes = Object.entries(data.changes || {})
+          .map(([player, value]) => `${player}: ${value >= 0 ? '+' + value : value}`)
+          .join(', ');
+        const time = data.time || '';
+        item.textContent = `${time} — ${game}: ${changes}`;
+        item.className = 'text-sm text-gray-400';
+        historyList.appendChild(item);
+      });
+    }
+
+    onValue(playersRef, snapshot => {
+      const players = snapshot.val();
+      updateUI(players);
     });
-  }
 
-  function renderHistory(data) {
-    gameHistoryDiv.innerHTML = '';
-    if (!data) {
-      gameHistoryDiv.textContent = 'No game history yet.';
-      return;
-    }
-    // data is an object with keys like "game1", "game2"
-    // Show most recent on top
-    const entries = Object.entries(data).sort((a,b) => {
-      // sort by game number descending
-      return parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''));
+    onValue(historyRef, snapshot => {
+      const history = snapshot.val();
+      renderHistory(history);
     });
-    for (const [gameKey, changes] of entries) {
-      const div = document.createElement('div');
-      let lines = [];
-      for (const player in changes) {
-        const change = changes[player];
-        lines.push(`${player}: ${change > 0 ? '+' : ''}${change}`);
+
+    addPlayerBtn.addEventListener('click', () => {
+      const name = newPlayerNameInput.value.trim();
+      if (name) {
+        set(ref(db, `players/${name}`), { points: 0 });
+        newPlayerNameInput.value = '';
       }
-      div.textContent = `${gameKey}: ${lines.join(', ')}`;
-      gameHistoryDiv.appendChild(div);
-    }
-  }
+    });
 
-  // Listen for players data updates
-  playersRef.on('value', snapshot => {
-    const data = snapshot.val() || {};
-    renderPlayers(data);
-  });
+    newPlayerNameInput.addEventListener('keypress', e => {
+      if (e.key === 'Enter') addPlayerBtn.click();
+    });
 
-  // Listen for game history updates
-  historyRef.on('value', snapshot => {
-    const data = snapshot.val();
-    renderHistory(data);
-  });
-
-  // Submit button to update all players points
-  submitBtn.onclick = () => {
-    playersRef.once('value').then(snapshot => {
-      const players = snapshot.val() || {};
-      let updates = {};
-      let gameChanges = {};
-      let validChange = false;
-
-      for (const player in players) {
-        const radios = document.getElementsByName(`change-${player}`);
-        let action = 'plus'; // default
-        for (const r of radios) if (r.checked) action = r.value;
-
-        const inputEl = document.getElementById(`input-${player}`);
-        let val = parseInt(inputEl.value);
-        if (isNaN(val) || val < 1) {
-          val = 0; // treat empty or invalid as zero change
+    submitBtn.addEventListener('click', () => {
+      const updates = {};
+      const gameChanges = {};
+      document.querySelectorAll('.pointsInput').forEach(input => {
+        const name = input.id.replace('input-', '');
+        const value = parseInt(input.value) || 0;
+        const direction = document.querySelector(`[data-name="${name}"].selected`)?.classList.contains('btn-increase') ? 1 :
+                          document.querySelector(`[data-name="${name}"].selected`)?.classList.contains('btn-decrease') ? -1 : 0;
+        if (direction !== 0 && value !== 0) {
+          const change = value * direction;
+          const currentPoints = parseInt(document.getElementById(`points-${name}`).textContent);
+          const newPoints = currentPoints + change;
+          updates[name] = { points: newPoints };
+          gameChanges[name] = change;
+          input.value = '';
         }
+      });
 
-        if (val > 0) {
-          validChange = true;
-          const currentPoints = players[player].points || 0;
-          const newPoints = action === 'plus' ? currentPoints + val : currentPoints - val;
-
-          // prevent negative points - clamp to 0
-          updates[player + '/points'] = newPoints;
-
-
-          // Track changes for history
-          gameChanges[player] = action === 'plus' ? val : -val;
-        }
-      }
-
-      if (!validChange) {
-        alert('Please enter at least one valid point change.');
-        return;
-      }
-
-      // Push changes to Firebase in one update
-      playersRef.update(updates).then(() => {
-        // Add game history entry
-        historyRef.once('value').then(hSnap => {
-          const history = hSnap.val() || {};
-          // Find next game number:
-          let gameNum = 1;
-          while(history['game' + gameNum]) gameNum++;
-          const newGameKey = 'game' + gameNum;
-
-          historyRef.child(newGameKey).set(gameChanges).then(() => {
-            // Clear all input fields and reset radios to plus
-            for (const player in players) {
-              const radios = document.getElementsByName(`change-${player}`);
-              for (const r of radios) r.checked = false;
-              radios[0].checked = true; // first radio plus checked
-
-              const inputEl = document.getElementById(`input-${player}`);
-              inputEl.value = '';
-            }
-
-            // Congratulate player(s) who gained the most points this round
-const maxGain = Math.max(...Object.values(gameChanges).filter(v => v > 0), 0);
-const topGainers = Object.entries(gameChanges)
-  .filter(([_, change]) => change === maxGain && change > 0)
-  .map(([player]) => player);
-
-if ('speechSynthesis' in window && topGainers.length) {
-  const message = 'Round winner' + (topGainers.length > 1 ? 's' : '') + ': ' + topGainers.join(' and ') + '!';
-  const utterance = new SpeechSynthesisUtterance(message);
-  window.speechSynthesis.speak(utterance);
-}
-
-            });
-          });
+      if (Object.keys(updates).length > 0) {
+        Object.entries(updates).forEach(([name, data]) => {
+          set(ref(db, `players/${name}`), data);
         });
-      });
-    });
-  };
 
-  // Reset points and history but keep players
-  clearAllBtn.onclick = () => {
-    if (!confirm('Reset all players\' points to zero and clear game history? This cannot be undone.')) return;
-    playersRef.once('value').then(snap => {
-      const players = snap.val() || {};
-      let resetData = {};
-      for (const p in players) {
-        resetData[p + '/points'] = 0;
+        const newGameKey = push(historyRef).key;
+        const timestamp = new Date().toLocaleString();
+        set(ref(db, `history/${newGameKey}`), { changes: gameChanges, time: timestamp });
+
+        document.querySelectorAll('.selected').forEach(btn => btn.classList.remove('selected'));
       }
-      playersRef.update(resetData).then(() => {
-        historyRef.remove();
-      });
     });
-  };
-</script>
+
+    playerList.addEventListener('click', e => {
+      const btn = e.target;
+      if (btn.classList.contains('btn-increase') || btn.classList.contains('btn-decrease')) {
+        const name = btn.dataset.name;
+        document.querySelectorAll(`[data-name="${name}"]`).forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+      } else if (btn.classList.contains('btn-clear')) {
+        const name = btn.dataset.name;
+        document.getElementById(`input-${name}`).value = '';
+        document.querySelectorAll(`[data-name="${name}"]`).forEach(b => b.classList.remove('selected'));
+      }
+    });
+  </script>
 </body>
 </html>
