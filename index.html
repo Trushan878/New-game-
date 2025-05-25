@@ -246,262 +246,264 @@
 </head>
 <body>
 
-<h1>Game Scoreboard</h1>
+  <h1>Game Scoreboard</h1>
 
-<div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-  <input type="text" id="newPlayerName" placeholder="Enter player name" />
-  <button id="addPlayerBtn">Add Player</button>
-</div>
+  <div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+    <input type="text" id="newPlayerName" placeholder="Enter player name" />
+    <button id="addPlayerBtn">Add Player</button>
+  </div>
 
-<div id="playersList"></div>
+  <div id="playersList"></div>
 
-<button id="submitBtn">Submit All Changes</button>
-<button id="clearAllBtn">Reset Points & History</button>
-<button id="shareBtn">Share Points via WhatsApp</button>
-<button id="voiceBtn">🎤 Voice Commands</button>
-<div id="transcript"></div>
+  <button id="submitBtn">Submit All Changes</button>
+  <button id="clearAllBtn">Reset Points & History</button>
+  <button id="shareBtn">Share Points via WhatsApp</button>
+  <button id="voiceBtn">🎤 Voice Commands</button>
+  <div id="transcript"></div>
 
-<h2>Game History</h2>
-<div id="gameHistory"></div>
+  <h2>Game History</h2>
+  <div id="gameHistory"></div>
 
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script>
-  const firebaseConfig = {
-    apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-    authDomain: "point-system-1bd8a.firebaseapp.com",
-    databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
-    projectId: "point-system-1bd8a",
-    storageBucket: "point-system-1bd8a.appspot.com",
-    messagingSenderId: "755307639843",
-    appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-    measurementId: "G-9ZMSNWJHHH"
-  };
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+      authDomain: "point-system-1bd8a.firebaseapp.com",
+      databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
+      projectId: "point-system-1bd8a",
+      storageBucket: "point-system-1bd8a.appspot.com",
+      messagingSenderId: "755307639843",
+      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+      measurementId: "G-9ZMSNWJHHH"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const playersRef = db.ref("players");
+    const historyRef = db.ref("gameHistory");
 
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-  const playersRef = db.ref("players");
-  const historyRef = db.ref("gameHistory");
+    const playersList = document.getElementById('playersList');
+    const gameHistoryDiv = document.getElementById('gameHistory');
+    const newPlayerNameInput = document.getElementById('newPlayerName');
+    const addPlayerBtn = document.getElementById('addPlayerBtn');
+    const submitBtn = document.getElementById('submitBtn');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const shareBtn = document.getElementById('shareBtn');
+    const voiceBtn = document.getElementById('voiceBtn');
+    const transcriptDiv = document.getElementById('transcript');
 
-  const playersList = document.getElementById('playersList');
-  const gameHistoryDiv = document.getElementById('gameHistory');
-  const newPlayerNameInput = document.getElementById('newPlayerName');
-  const addPlayerBtn = document.getElementById('addPlayerBtn');
-  const submitBtn = document.getElementById('submitBtn');
-  const clearAllBtn = document.getElementById('clearAllBtn');
-  const shareBtn = document.getElementById('shareBtn');
-  const voiceBtn = document.getElementById('voiceBtn');
-  const transcriptDiv = document.getElementById('transcript');
+    addPlayerBtn.onclick = () => {
+      const name = newPlayerNameInput.value.trim();
+      if (!name) return alert("Enter a player name");
+      playersRef.child(name).once('value').then(snap => {
+        if (snap.exists()) {
+          alert("Player already exists");
+          return;
+        }
+        playersRef.child(name).set({ points: 0 });
+        newPlayerNameInput.value = '';
+      });
+    };
 
-  addPlayerBtn.onclick = () => {
-    const name = newPlayerNameInput.value.trim();
-    if (!name) return alert("Enter a player name");
-    playersRef.child(name).once('value').then(snap => {
-      if (snap.exists()) {
-        alert("Player already exists");
+    function getPlusIcon() {
+      return `<svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`;
+    }
+    function getMinusIcon() {
+      return `<svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>`;
+    }
+    function getRemoveIcon() {
+      return `<svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>`;
+    }
+
+    function renderPlayers(data) {
+      playersList.innerHTML = '';
+      for (const name in data) {
+        const player = data[name];
+        const div = document.createElement('div');
+        div.className = 'player';
+        div.innerHTML = `
+          <div class="player-name">${name}</div>
+          <div class="points-display" id="points-${name}">${player.points}</div>
+          <div class="controls">
+            <label title="Add Points">
+              <input type="radio" name="change-${name}" value="plus" checked>
+              ${getPlusIcon()}
+            </label>
+            <label title="Subtract Points">
+              <input type="radio" name="change-${name}" value="minus">
+              ${getMinusIcon()}
+            </label>
+            <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
+            <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
+          </div>
+        `;
+        playersList.appendChild(div);
+      }
+      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
+        btn.onclick = () => {
+          const player = btn.getAttribute('data-player');
+          if (confirm(`Remove player "${player}"?`)) {
+            playersRef.child(player).remove();
+          }
+        };
+      });
+    }
+
+    function renderHistory(data) {
+      gameHistoryDiv.innerHTML = '';
+      if (!data) {
+        gameHistoryDiv.textContent = 'No game history yet.';
         return;
       }
-      playersRef.child(name).set({ points: 0 });
-      newPlayerNameInput.value = '';
-    });
-  };
-
-  function getPlusIcon() {
-    return `<svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`;
-  }
-  function getMinusIcon() {
-    return `<svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>`;
-  }
-  function getRemoveIcon() {
-    return `<svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>`;
-  }
-
-  function renderPlayers(data) {
-    playersList.innerHTML = '';
-    for (const name in data) {
-      const player = data[name];
-      const div = document.createElement('div');
-      div.className = 'player';
-      div.innerHTML = `
-        <div class="player-name">${name}</div>
-        <div class="points-display" id="points-${name}">${player.points}</div>
-        <div class="controls">
-          <label title="Add Points">
-            <input type="radio" name="change-${name}" value="plus" checked>
-            ${getPlusIcon()}
-          </label>
-          <label title="Subtract Points">
-            <input type="radio" name="change-${name}" value="minus">
-            ${getMinusIcon()}
-          </label>
-          <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
-          <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
-        </div>
-      `;
-      playersList.appendChild(div);
-    }
-    document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-      btn.onclick = () => {
-        const player = btn.getAttribute('data-player');
-        if (confirm(`Remove player "${player}"?`)) {
-          playersRef.child(player).remove();
-        }
-      };
-    });
-  }
-
-  function renderHistory(data) {
-    gameHistoryDiv.innerHTML = '';
-    if (!data) {
-      gameHistoryDiv.textContent = 'No game history yet.';
-      return;
-    }
-    const entries = Object.entries(data).sort((a,b) =>
-      parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''))
-    );
-    for (const [key, changes] of entries) {
-      const div = document.createElement('div');
-      const lines = Object.entries(changes).map(([p, c]) =>
-        `${p}: ${c > 0 ? '+' : ''}${c}`
+      const entries = Object.entries(data).sort((a,b) =>
+        parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''))
       );
-      div.textContent = `${key}: ${lines.join(', ')}`;
-      gameHistoryDiv.appendChild(div);
-    }
-  }
-
-  playersRef.on('value', snap => renderPlayers(snap.val() || {}));
-  historyRef.on('value', snap => renderHistory(snap.val()));
-
-  submitBtn.onclick = () => {
-    playersRef.once('value').then(snap => {
-      const players = snap.val() || {};
-      let updates = {}, gameChanges = {}, valid = false;
-      for (const name in players) {
-        const action = document.querySelector(`input[name="change-${name}"]:checked`).value;
-        const val = parseInt(document.getElementById(`input-${name}`).value) || 0;
-        if (val > 0) {
-          valid = true;
-          const cur = players[name].points || 0;
-          updates[`${name}/points`] = action==='plus'? cur+val: cur-val;
-          gameChanges[name] = action==='plus'? val: -val;
-        }
+      for (const [key, changes] of entries) {
+        const div = document.createElement('div');
+        const lines = Object.entries(changes).map(([p, c]) =>
+          `${p}: ${c > 0 ? '+' : ''}${c}`
+        );
+        div.textContent = `${key}: ${lines.join(', ')}`;
+        gameHistoryDiv.appendChild(div);
       }
-      if (!valid) return alert('Enter at least one valid point change.');
-      playersRef.update(updates).then(() =>
-        historyRef.once('value').then(hSnap => {
-          const hist = hSnap.val() || {}, idx = Object.keys(hist).length + 1;
-          historyRef.child('game'+idx).set(gameChanges);
-          for (const name in players) {
-            document.querySelector(`input[name="change-${name}"][value="plus"]`).checked = true;
-            document.getElementById(`input-${name}`).value = '';
+    }
+
+    playersRef.on('value', snap => renderPlayers(snap.val() || {}));
+    historyRef.on('value', snap => renderHistory(snap.val()));
+
+    submitBtn.onclick = () => {
+      playersRef.once('value').then(snap => {
+        const players = snap.val() || {};
+        let updates = {}, gameChanges = {}, valid = false;
+        for (const name in players) {
+          const action = document.querySelector(`input[name="change-${name}"]:checked`).value;
+          const val = parseInt(document.getElementById(`input-${name}`).value) || 0;
+          if (val > 0) {
+            valid = true;
+            const cur = players[name].points || 0;
+            updates[`${name}/points`] = action==='plus'? cur+val: cur-val;
+            gameChanges[name] = action==='plus'? val: -val;
           }
-        })
-      );
-    });
-  };
-
-  clearAllBtn.onclick = () => {
-    if (!confirm('Reset all points & clear history?')) return;
-    playersRef.once('value').then(snap => {
-      const pts = snap.val() || {}, reset = {};
-      for (const n in pts) reset[`${n}/points`] = 0;
-      playersRef.update(reset).then(() => historyRef.remove());
-    });
-  };
-
-  shareBtn.onclick = () => {
-    playersRef.once('value').then(snap => {
-      let msg = '🎯 Game Points:\n\n';
-      Object.entries(snap.val()||{}).forEach(([n,v]) => {
-        msg += `• ${n}: ${v.points} pts\n`;
-      });
-      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-    });
-  };
-
-  // 🎤 Enhanced Voice Commands
-  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if (SpeechRec) {
-    const recog = new SpeechRec();
-    recog.continuous = true;
-    recog.interimResults = true;
-    recog.lang = 'en-US';
-
-    recog.onstart = () => {
-      voiceBtn.textContent = '🎙️ Listening…';
-      transcriptDiv.textContent = '';
-    };
-    recog.onend = () => {
-      voiceBtn.textContent = '🎤 Voice Commands';
-    };
-    recog.onerror = e => {
-      transcriptDiv.textContent = '⚠️ Speech error, try again.';
-    };
-    recog.onresult = e => {
-      let interim = '', final = '';
-      for (let i = e.resultIndex; i < e.results.length; i++) {
-        const txt = e.results[i][0].transcript;
-        if (e.results[i].isFinal) {
-          final += txt;
-          handleCommand(txt.trim().toLowerCase());
-        } else {
-          interim += txt;
         }
+        if (!valid) return alert('Enter at least one valid point change.');
+        playersRef.update(updates).then(() =>
+          historyRef.once('value').then(hSnap => {
+            const hist = hSnap.val() || {}, idx = Object.keys(hist).length + 1;
+            historyRef.child('game'+idx).set(gameChanges);
+            for (const name in players) {
+              document.querySelector(`input[name="change-${name}"][value="plus"]`).checked = true;
+              document.getElementById(`input-${name}`).value = '';
+            }
+          })
+        );
+      });
+    };
+
+    clearAllBtn.onclick = () => {
+      if (!confirm('Reset all points & clear history?')) return;
+      playersRef.once('value').then(snap => {
+        const pts = snap.val() || {}, reset = {};
+        for (const n in pts) reset[`${n}/points`] = 0;
+        playersRef.update(reset).then(() => historyRef.remove());
+      });
+    };
+
+    shareBtn.onclick = () => {
+      playersRef.once('value').then(snap => {
+        let msg = '🎯 Game Points:\n\n';
+        Object.entries(snap.val()||{}).forEach(([n,v]) => {
+          msg += `• ${n}: ${v.points} pts\n`;
+        });
+        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+      });
+    };
+
+    // 🎤 Fixed Voice Commands (supports multi-player point changes)
+    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRec) {
+      const recog = new SpeechRec();
+      recog.continuous = true;
+      recog.interimResults = true;
+      recog.lang = 'en-US';
+
+      recog.onstart = () => {
+        voiceBtn.textContent = '🎙️ Listening…';
+        transcriptDiv.textContent = '';
+      };
+      recog.onend = () => {
+        voiceBtn.textContent = '🎤 Voice Commands';
+      };
+      recog.onerror = e => {
+        transcriptDiv.textContent = '⚠️ Speech error, try again.';
+      };
+      recog.onresult = e => {
+        let interim = '', final = '';
+        for (let i = e.resultIndex; i < e.results.length; i++) {
+          const txt = e.results[i][0].transcript;
+          if (e.results[i].isFinal) {
+            final += txt;
+            handleCommand(txt.trim().toLowerCase());
+          } else {
+            interim += txt;
+          }
+        }
+        transcriptDiv.textContent = interim || final;
+      };
+
+      voiceBtn.onclick = () => {
+        try { recog.start(); }
+        catch { /* already running */ }
+      };
+    } else {
+      voiceBtn.disabled = true;
+      transcriptDiv.textContent = 'Speech not supported.';
+    }
+
+    function handleCommand(txt) {
+      // ADD MULTIPLE PLAYERS
+      let m = txt.match(/^add players? (.+)$/);
+      if (m) {
+        const names = m[1]
+          .split(/\s*(?:,|and)\s*/i)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(capitalize);
+        names.forEach(n => playersRef.child(n).set({ points: 0 }));
+        return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
       }
-      transcriptDiv.textContent = interim || final;
-    };
+      // INCREASE/DECREASE POINTS (optional "player(s)")
+      m = txt.match(/^(increase|add|subtract|minus)\s+(?:players?\s+)?(.+?)\s+by\s+(\d+)$/);
+      if (m) {
+        const action = m[1];
+        const list = m[2];
+        const value = parseInt(m[3], 10);
+        const delta = (action === 'subtract' || action === 'minus') ? -value : value;
 
-    voiceBtn.onclick = () => {
-      try { recog.start(); }
-      catch { /* already running */ }
-    };
-  } else {
-    voiceBtn.disabled = true;
-    transcriptDiv.textContent = 'Speech not supported.';
-  }
+        const names = list
+          .split(/\s*(?:,|and)\s*/i)
+          .map(s => s.trim())
+          .filter(Boolean)
+          .map(capitalize);
 
-  function handleCommand(txt) {
-    // ADD MULTIPLE PLAYERS
-    let m = txt.match(/^add players? (.+)$/);
-    if (m) {
-      const names = m[1]
-        .split(/\s*(?:,|and)\s*/i)
-        .map(s => s.trim())
-        .filter(Boolean)
-        .map(capitalize);
-      names.forEach(n => playersRef.child(n).set({ points: 0 }));
-      return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
+        names.forEach(n => {
+          playersRef.child(`${n}/points`).once('value').then(snap => {
+            const cur = snap.val() || 0;
+            playersRef.child(`${n}/points`).set(cur + delta);
+          });
+        });
+
+        const verb = delta > 0 ? 'Increased' : 'Decreased';
+        return transcriptDiv.textContent =
+          `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
+      }
+      transcriptDiv.textContent = `❓ Unrecognized: "${txt}"`;
     }
-    // INCREASE/DECREASE MULTIPLE PLAYERS
-    m = txt.match(/^(increase|add|subtract|minus)\s+players?\s+(.+?)\s+by\s+(\d+)$/);
-    if (m) {
-      const action = m[1],
-            list = m[2],
-            value = parseInt(m[3],10),
-            delta = (action==='subtract'||action==='minus')? -value: value;
-      const names = list
-        .split(/\s*(?:,|and)\s*/i)
-        .map(s => s.trim())
-        .filter(Boolean)
-        .map(capitalize);
-      names.forEach(n =>
-        playersRef.child(`${n}/points`).once('value').then(snap => {
-          const cur = snap.val()||0;
-          playersRef.child(`${n}/points`).set(cur + delta);
-        })
-      );
-      const verb = delta>0? 'Increased':'Decreased';
-      return transcriptDiv.textContent =
-        `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
-    }
-    transcriptDiv.textContent = `❓ Unrecognized: "${txt}"`;
-  }
 
-  function capitalize(str) {
-    return str.split(/\s+/)
-      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-      .join(' ');
-  }
-</script>
+    function capitalize(str) {
+      return str.split(/\s+/)
+        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+        .join(' ');
+    }
+  </script>
 </body>
 </html>
