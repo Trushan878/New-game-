@@ -418,7 +418,7 @@
       });
     };
 
-    // 🎤 Fixed Voice Commands (supports multi-player point changes)
+    // 🎤 Fixed Voice Commands (points first, then add players)
     const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (SpeechRec) {
       const recog = new SpeechRec();
@@ -433,7 +433,7 @@
       recog.onend = () => {
         voiceBtn.textContent = '🎤 Voice Commands';
       };
-      recog.onerror = e => {
+      recog.onerror = () => {
         transcriptDiv.textContent = '⚠️ Speech error, try again.';
       };
       recog.onresult = e => {
@@ -452,7 +452,7 @@
 
       voiceBtn.onclick = () => {
         try { recog.start(); }
-        catch { /* already running */ }
+        catch { /* already listening */ }
       };
     } else {
       voiceBtn.disabled = true;
@@ -460,41 +460,35 @@
     }
 
     function handleCommand(txt) {
-      // ADD MULTIPLE PLAYERS
-      let m = txt.match(/^add players? (.+)$/);
-      if (m) {
-        const names = m[1]
-          .split(/\s*(?:,|and)\s*/i)
-          .map(s => s.trim())
-          .filter(Boolean)
-          .map(capitalize);
-        names.forEach(n => playersRef.child(n).set({ points: 0 }));
-        return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
-      }
-      // INCREASE/DECREASE POINTS (optional "player(s)")
+      let m;
+      // 1️⃣ Adjust points (requires “by N”)
       m = txt.match(/^(increase|add|subtract|minus)\s+(?:players?\s+)?(.+?)\s+by\s+(\d+)$/);
       if (m) {
         const action = m[1];
-        const list = m[2];
-        const value = parseInt(m[3], 10);
-        const delta = (action === 'subtract' || action === 'minus') ? -value : value;
+        const list   = m[2];
+        const value  = parseInt(m[3], 10);
+        const delta  = (action==='subtract'||action==='minus')? -value: value;
 
-        const names = list
-          .split(/\s*(?:,|and)\s*/i)
-          .map(s => s.trim())
-          .filter(Boolean)
-          .map(capitalize);
+        const names = list.split(/\s*(?:,|and)\s*/i)
+          .map(s => s.trim()).filter(Boolean).map(capitalize);
 
-        names.forEach(n => {
-          playersRef.child(`${n}/points`).once('value').then(snap => {
-            const cur = snap.val() || 0;
-            playersRef.child(`${n}/points`).set(cur + delta);
+        names.forEach(name => {
+          const ref = playersRef.child(`${name}/points`);
+          ref.once('value').then(snap => {
+            ref.set((snap.val()||0) + delta);
           });
         });
 
-        const verb = delta > 0 ? 'Increased' : 'Decreased';
-        return transcriptDiv.textContent =
-          `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
+        const verb = delta>0? 'Increased':'Decreased';
+        return transcriptDiv.textContent = `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
+      }
+      // 2️⃣ Add players
+      m = txt.match(/^add players? (.+)$/);
+      if (m) {
+        const names = m[1].split(/\s*(?:,|and)\s*/i)
+          .map(s => s.trim()).filter(Boolean).map(capitalize);
+        names.forEach(n => playersRef.child(n).set({points:0}));
+        return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
       }
       transcriptDiv.textContent = `❓ Unrecognized: "${txt}"`;
     }
