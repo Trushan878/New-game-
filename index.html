@@ -6,171 +6,68 @@
   <title>Styled Scoreboard with Firebase</title>
   <style>
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 480px;
-      margin: 0 auto;
-      padding: 10px;
-      background: #f0f4f8;
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 20px;
       color: #333;
-      box-sizing: border-box;
     }
+
     h1, h2 {
       text-align: center;
-      color: #2c3e50;
-      margin-bottom: 10px;
+      color: #222;
     }
-    #newPlayerName {
-      width: calc(100% - 110px);
-      padding: 8px 12px;
+
+    input[type="text"] {
+      padding: 10px;
       font-size: 1rem;
+      border: 1px solid #ccc;
       border-radius: 8px;
-      border: 1.5px solid #ccc;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    #newPlayerName:focus {
-      border-color: #2980b9;
       outline: none;
     }
+
+    button {
+      padding: 10px 15px;
+      font-size: 1rem;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
     #addPlayerBtn {
-      width: 100px;
-      padding: 8px;
-      font-size: 1rem;
-      background: #27ae60;
+      background-color: #007bff;
       color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      box-sizing: border-box;
     }
+
     #addPlayerBtn:hover {
-      background: #219150;
+      background-color: #0056b3;
     }
-    #playersList {
-      margin-top: 15px;
-    }
-    .player {
-      background: white;
-      padding: 8px 10px;
-      border-radius: 10px;
-      margin-bottom: 10px;
-      box-shadow: 0 2px 6px rgb(0 0 0 / 0.08);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 0.95rem;
-      user-select: none;
-      flex-wrap: nowrap;
-    }
-    .player-name {
-      font-weight: 600;
-      flex-shrink: 0;
-      min-width: 80px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      color: #34495e;
-    }
-    .points-display {
-      font-weight: 700;
-      color: #34495e;
-      background: #ecf0f1;
-      padding: 5px 10px;
-      border-radius: 8px;
-      width: 55px;
-      text-align: center;
-      flex-shrink: 0;
-      user-select: none;
-      box-shadow: inset 0 1px 3px #d0d7dd;
-    }
-    .controls {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-      flex-shrink: 1;
-      min-width: 0;
-    }
-    label {
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      user-select: none;
-      color: #34495e;
-    }
-    input[type=radio] {
-      cursor: pointer;
-      width: 16px;
-      height: 16px;
-    }
-    .pointsInput {
-      width: 60px;
-      padding: 6px 8px;
-      border-radius: 8px;
-      border: 1.5px solid #ccc;
-      font-size: 0.9rem;
-      text-align: center;
-      box-sizing: border-box;
-      transition: border-color 0.3s ease;
-    }
-    .pointsInput:focus {
-      border-color: #2980b9;
-      outline: none;
-    }
-    button.removePlayerBtn {
-      background: #e74c3c;
-      border: none;
-      color: white;
-      border-radius: 50%;
-      cursor: pointer;
-      padding: 6px;
-      width: 34px;
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.3s ease;
-      flex-shrink: 0;
-    }
-    button.removePlayerBtn:hover {
-      background: #c0392b;
-    }
+
     #submitBtn, #clearAllBtn {
-      width: 100%;
-      padding: 12px 15px;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      user-select: none;
       margin-top: 15px;
-      box-sizing: border-box;
-      font-weight: 700;
-      color: white;
-      text-shadow: 0 1px 2px rgba(0,0,0,0.15);
-      letter-spacing: 0.05em;
+      width: 100%;
+      font-weight: bold;
     }
+
     #submitBtn {
-      background: #2980b9;
-      box-shadow: 0 4px 8px rgb(41 128 185 / 0.4);
+      background-color: #28a745;
+      color: white;
     }
-    #submitBtn:hover {
-      background: #216994;
-      box-shadow: 0 6px 10px rgb(33 105 148 / 0.6);
-    }
+
     #clearAllBtn {
-      background: #e74c3c;
-      box-shadow: 0 4px 8px rgb(231 76 60 / 0.4);
-      margin-top: 12px;
+      background-color: #dc3545;
+      color: white;
     }
+
+    #submitBtn:hover {
+      background-color: #218838;
+    }
+
     #clearAllBtn:hover {
-      background: #c0392b;
-      box-shadow: 0 6px 10px rgb(192 57 43 / 0.6);
+      background-color: #c82333;
     }
+
     #shareBtn {
       width: 100%;
       padding: 12px 15px;
@@ -189,315 +86,221 @@
       background: #25D366;
       box-shadow: 0 4px 8px rgb(37 211 102 / 0.4);
     }
+
     #shareBtn:hover {
       background: #1ebd59;
       box-shadow: 0 6px 10px rgb(30 189 89 / 0.6);
     }
-    #voiceBtn {
-      width: 100%;
-      padding: 10px 15px;
-      font-size: 1.1rem;
-      border-radius: 10px;
-      border: none;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      user-select: none;
-      margin-top: 12px;
-      box-sizing: border-box;
-      font-weight: 700;
-      color: white;
-      background: #3498db;
-      box-shadow: 0 4px 8px rgba(52,152,219,0.4);
-    }
-    #voiceBtn:hover {
-      background: #2980b9;
-      box-shadow: 0 6px 10px rgba(41,105,185,0.6);
-    }
-    #transcript {
-      margin: 8px 0;
-      font-style: italic;
-      color: #555;
-      text-align: center;
-    }
-    #gameHistory {
+
+    .player {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
       background: white;
-      margin-top: 20px;
-      border-radius: 12px;
-      padding: 15px 20px;
-      max-height: 180px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.95rem;
-      color: #34495e;
-      box-shadow: inset 0 0 8px #ddd;
-      user-select: none;
+      padding: 10px;
+      margin: 8px 0;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    #gameHistory > div {
-      margin-bottom: 6px;
+
+    .player-name {
+      flex: 2;
     }
+
+    .controls {
+      flex: 3;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .controls label {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .points-display {
+      font-weight: bold;
+      font-size: 1.2rem;
+    }
+
     svg {
       width: 18px;
       height: 18px;
-      fill: currentColor;
-      pointer-events: none;
-      user-select: none;
+    }
+
+    #gameHistory {
+      margin-top: 20px;
+      background: #fff;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    @media (max-width: 600px) {
+      .player {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .controls {
+        flex-wrap: wrap;
+      }
     }
   </style>
 </head>
 <body>
 
-  <h1>Game Scoreboard</h1>
+<h1>Game Scoreboard</h1>
 
-  <div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
-    <input type="text" id="newPlayerName" placeholder="Enter player name" />
-    <button id="addPlayerBtn">Add Player</button>
-  </div>
+<div style="display:flex; margin-bottom: 10px; flex-wrap: wrap; gap: 10px;">
+  <input type="text" id="newPlayerName" placeholder="Enter player name" />
+  <button id="addPlayerBtn">Add Player</button>
+</div>
 
-  <div id="playersList"></div>
+<div id="playersList"></div>
 
-  <button id="submitBtn">Submit All Changes</button>
-  <button id="clearAllBtn">Reset Points & History</button>
-  <button id="shareBtn">Share Points via WhatsApp</button>
-  <button id="voiceBtn">🎤 Voice Commands</button>
-  <div id="transcript"></div>
+<button id="submitBtn">Submit All Changes</button>
+<button id="clearAllBtn">Reset Points & History</button>
+<button id="shareBtn">Share Points via WhatsApp</button>
 
-  <h2>Game History</h2>
-  <div id="gameHistory"></div>
+<h2>Game History</h2>
+<div id="gameHistory"></div>
 
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-  <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
-      authDomain: "point-system-1bd8a.firebaseapp.com",
-      databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
-      projectId: "point-system-1bd8a",
-      storageBucket: "point-system-1bd8a.appspot.com",
-      messagingSenderId: "755307639843",
-      appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
-      measurementId: "G-9ZMSNWJHHH"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
-    const playersRef = db.ref("players");
-    const historyRef = db.ref("gameHistory");
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD6QJcL3I3yHApVn0DcMfJWgHLwOREB5VU",
+    authDomain: "point-system-1bd8a.firebaseapp.com",
+    databaseURL: "https://point-system-1bd8a-default-rtdb.firebaseio.com",
+    projectId: "point-system-1bd8a",
+    storageBucket: "point-system-1bd8a.appspot.com",
+    messagingSenderId: "755307639843",
+    appId: "1:755307639843:web:6d5393d99cbe70a7c0ed96",
+    measurementId: "G-9ZMSNWJHHH"
+  };
 
-    const playersList = document.getElementById('playersList');
-    const gameHistoryDiv = document.getElementById('gameHistory');
-    const newPlayerNameInput = document.getElementById('newPlayerName');
-    const addPlayerBtn = document.getElementById('addPlayerBtn');
-    const submitBtn = document.getElementById('submitBtn');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const shareBtn = document.getElementById('shareBtn');
-    const voiceBtn = document.getElementById('voiceBtn');
-    const transcriptDiv = document.getElementById('transcript');
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+  const playersRef = db.ref("players");
+  const historyRef = db.ref("gameHistory");
 
-    addPlayerBtn.onclick = () => {
-      const name = newPlayerNameInput.value.trim();
-      if (!name) return alert("Enter a player name");
-      playersRef.child(name).once('value').then(snap => {
-        if (snap.exists()) {
-          alert("Player already exists");
-          return;
-        }
-        playersRef.child(name).set({ points: 0 });
-        newPlayerNameInput.value = '';
-      });
-    };
+  const playersList = document.getElementById('playersList');
+  const gameHistoryDiv = document.getElementById('gameHistory');
+  const newPlayerNameInput = document.getElementById('newPlayerName');
+  const addPlayerBtn = document.getElementById('addPlayerBtn');
+  const submitBtn = document.getElementById('submitBtn');
+  const clearAllBtn = document.getElementById('clearAllBtn');
+  const shareBtn = document.getElementById('shareBtn');
 
-    function getPlusIcon() {
-      return `<svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`;
-    }
-    function getMinusIcon() {
-      return `<svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>`;
-    }
-    function getRemoveIcon() {
-      return `<svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>`;
-    }
-
-    function renderPlayers(data) {
-      playersList.innerHTML = '';
-      for (const name in data) {
-        const player = data[name];
-        const div = document.createElement('div');
-        div.className = 'player';
-        div.innerHTML = `
-          <div class="player-name">${name}</div>
-          <div class="points-display" id="points-${name}">${player.points}</div>
-          <div class="controls">
-            <label title="Add Points">
-              <input type="radio" name="change-${name}" value="plus" checked>
-              ${getPlusIcon()}
-            </label>
-            <label title="Subtract Points">
-              <input type="radio" name="change-${name}" value="minus">
-              ${getMinusIcon()}
-            </label>
-            <input type="number" min="1" max="250" placeholder="Pts" class="pointsInput" id="input-${name}" />
-            <button data-player="${name}" class="removePlayerBtn" title="Remove Player">${getRemoveIcon()}</button>
-          </div>
-        `;
-        playersList.appendChild(div);
-      }
-      document.querySelectorAll('.removePlayerBtn').forEach(btn => {
-        btn.onclick = () => {
-          const player = btn.getAttribute('data-player');
-          if (confirm(`Remove player "${player}"?`)) {
-            playersRef.child(player).remove();
-          }
-        };
-      });
-    }
-
-    function renderHistory(data) {
-      gameHistoryDiv.innerHTML = '';
-      if (!data) {
-        gameHistoryDiv.textContent = 'No game history yet.';
+  addPlayerBtn.onclick = () => {
+    const name = newPlayerNameInput.value.trim();
+    if (!name) return alert("Enter a player name");
+    playersRef.child(name).once('value').then(snap => {
+      if (snap.exists()) {
+        alert("Player already exists");
         return;
       }
-      const entries = Object.entries(data).sort((a,b) =>
-        parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''))
-      );
-      for (const [key, changes] of entries) {
-        const div = document.createElement('div');
-        const lines = Object.entries(changes).map(([p, c]) =>
-          `${p}: ${c > 0 ? '+' : ''}${c}`
-        );
-        div.textContent = `${key}: ${lines.join(', ')}`;
-        gameHistoryDiv.appendChild(div);
-      }
+      playersRef.child(name).set({ points: 0 });
+      newPlayerNameInput.value = '';
+    });
+  };
+
+  function getPlusIcon() {
+    return `<svg viewBox="0 0 24 24"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>`;
+  }
+
+  function getMinusIcon() {
+    return `<svg viewBox="0 0 24 24"><path d="M19 13H5v-2h14v2z"/></svg>`;
+  }
+
+  function getRemoveIcon() {
+    return `<svg viewBox="0 0 24 24"><path d="M16 9v10H8V9h8m-1.5-6h-5l-1 1H5v2h14V4h-4.5l-1-1z"/></svg>`;
+  }
+
+  function renderPlayers(data) {
+    playersList.innerHTML = '';
+    for (const name in data) {
+      const player = data[name];
+      const div = document.createElement('div');
+      div.className = 'player';
+
+      div.innerHTML = `
+        <div class="player-name">${name}</div>
+        <div class="points-display" id="points-${name}">${player.points}</div>
+        <div class="controls">
+          <label><input type="radio" name="change-${name}" value="plus" checked />${getPlusIcon()}</label>
+          <label><input type="radio" name="change-${name}" value="minus" />${getMinusIcon()}</label>
+          <input type="number" id="input-${name}" placeholder="Points" />
+          <button onclick="removePlayer('${name}')">${getRemoveIcon()}</button>
+        </div>
+      `;
+
+      playersList.appendChild(div);
     }
+  }
 
-    playersRef.on('value', snap => renderPlayers(snap.val() || {}));
-    historyRef.on('value', snap => renderHistory(snap.val()));
+  function removePlayer(name) {
+    playersRef.child(name).remove();
+  }
 
-    submitBtn.onclick = () => {
-      playersRef.once('value').then(snap => {
-        const players = snap.val() || {};
-        let updates = {}, gameChanges = {}, valid = false;
-        for (const name in players) {
-          const action = document.querySelector(`input[name="change-${name}"]:checked`).value;
-          const val = parseInt(document.getElementById(`input-${name}`).value) || 0;
-          if (val > 0) {
-            valid = true;
-            const cur = players[name].points || 0;
-            updates[`${name}/points`] = action==='plus'? cur+val: cur-val;
-            gameChanges[name] = action==='plus'? val: -val;
-          }
+  playersRef.on('value', (snapshot) => {
+    const data = snapshot.val() || {};
+    renderPlayers(data);
+  });
+
+  submitBtn.onclick = () => {
+    playersRef.once('value', snapshot => {
+      const updates = {};
+      const data = snapshot.val() || {};
+      for (const name in data) {
+        const input = document.getElementById(`input-${name}`);
+        const radio = document.querySelector(`input[name="change-${name}"]:checked`);
+        const value = parseInt(input.value);
+        if (!isNaN(value)) {
+          const current = data[name].points || 0;
+          const newPoints = radio.value === 'plus' ? current + value : current - value;
+          updates[name] = { points: newPoints };
+
+          const action = radio.value === 'plus' ? 'added' : 'subtracted';
+          const logEntry = `${value} points ${action} for ${name}`;
+          historyRef.push(logEntry);
         }
-        if (!valid) return alert('Enter at least one valid point change.');
-        playersRef.update(updates).then(() =>
-          historyRef.once('value').then(hSnap => {
-            const hist = hSnap.val() || {}, idx = Object.keys(hist).length + 1;
-            historyRef.child('game'+idx).set(gameChanges);
-            for (const name in players) {
-              document.querySelector(`input[name="change-${name}"][value="plus"]`).checked = true;
-              document.getElementById(`input-${name}`).value = '';
-            }
-          })
-        );
-      });
-    };
-
-    clearAllBtn.onclick = () => {
-      if (!confirm('Reset all points & clear history?')) return;
-      playersRef.once('value').then(snap => {
-        const pts = snap.val() || {}, reset = {};
-        for (const n in pts) reset[`${n}/points`] = 0;
-        playersRef.update(reset).then(() => historyRef.remove());
-      });
-    };
-
-    shareBtn.onclick = () => {
-      playersRef.once('value').then(snap => {
-        let msg = '🎯 Game Points:\n\n';
-        Object.entries(snap.val()||{}).forEach(([n,v]) => {
-          msg += `• ${n}: ${v.points} pts\n`;
-        });
-        window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
-      });
-    };
-
-    // 🎤 Fixed Voice Commands (points first, then add players)
-    const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRec) {
-      const recog = new SpeechRec();
-      recog.continuous = true;
-      recog.interimResults = true;
-      recog.lang = 'en-US';
-
-      recog.onstart = () => {
-        voiceBtn.textContent = '🎙️ Listening…';
-        transcriptDiv.textContent = '';
-      };
-      recog.onend = () => {
-        voiceBtn.textContent = '🎤 Voice Commands';
-      };
-      recog.onerror = () => {
-        transcriptDiv.textContent = '⚠️ Speech error, try again.';
-      };
-      recog.onresult = e => {
-        let interim = '', final = '';
-        for (let i = e.resultIndex; i < e.results.length; i++) {
-          const txt = e.results[i][0].transcript;
-          if (e.results[i].isFinal) {
-            final += txt;
-            handleCommand(txt.trim().toLowerCase());
-          } else {
-            interim += txt;
-          }
-        }
-        transcriptDiv.textContent = interim || final;
-      };
-
-      voiceBtn.onclick = () => {
-        try { recog.start(); }
-        catch { /* already listening */ }
-      };
-    } else {
-      voiceBtn.disabled = true;
-      transcriptDiv.textContent = 'Speech not supported.';
-    }
-
-    function handleCommand(txt) {
-      let m;
-      // 1️⃣ Adjust points (requires “by N”)
-      m = txt.match(/^(increase|add|subtract|minus)\s+(?:players?\s+)?(.+?)\s+by\s+(\d+)$/);
-      if (m) {
-        const action = m[1];
-        const list   = m[2];
-        const value  = parseInt(m[3], 10);
-        const delta  = (action==='subtract'||action==='minus')? -value: value;
-
-        const names = list.split(/\s*(?:,|and)\s*/i)
-          .map(s => s.trim()).filter(Boolean).map(capitalize);
-
-        names.forEach(name => {
-          const ref = playersRef.child(`${name}/points`);
-          ref.once('value').then(snap => {
-            ref.set((snap.val()||0) + delta);
-          });
-        });
-
-        const verb = delta>0? 'Increased':'Decreased';
-        return transcriptDiv.textContent = `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
       }
-      // 2️⃣ Add players
-      m = txt.match(/^add players? (.+)$/);
-      if (m) {
-        const names = m[1].split(/\s*(?:,|and)\s*/i)
-          .map(s => s.trim()).filter(Boolean).map(capitalize);
-        names.forEach(n => playersRef.child(n).set({points:0}));
-        return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
-      }
-      transcriptDiv.textContent = `❓ Unrecognized: "${txt}"`;
-    }
+      playersRef.update(updates);
+    });
+  };
 
-    function capitalize(str) {
-      return str.split(/\s+/)
-        .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-        .join(' ');
-    }
-  </script>
+  clearAllBtn.onclick = () => {
+    playersRef.once('value', snapshot => {
+      const data = snapshot.val() || {};
+      const reset = {};
+      for (const name in data) {
+        reset[name] = { points: 0 };
+      }
+      playersRef.set(reset);
+      historyRef.set({});
+    });
+  };
+
+  historyRef.on('value', snapshot => {
+    const data = snapshot.val() || {};
+    gameHistoryDiv.innerHTML = Object.values(data).reverse().map(entry => `<div>${entry}</div>`).join('');
+  });
+
+  // ✅ Share to WhatsApp
+  shareBtn.onclick = () => {
+    playersRef.once('value', snapshot => {
+      const data = snapshot.val() || {};
+      let message = '🎯 Game Points Summary:\n\n';
+      for (const name in data) {
+        message += `• ${name}: ${data[name].points} points\n`;
+      }
+      const encoded = encodeURIComponent(message);
+      window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    });
+  };
+</script>
 </body>
 </html>
