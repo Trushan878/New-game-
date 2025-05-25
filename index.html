@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Styled Scoreboard with Firebase</title>
   <style>
-     body {
+    body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       max-width: 480px;
       margin: 0 auto;
@@ -193,7 +193,6 @@
       background: #1ebd59;
       box-shadow: 0 6px 10px rgb(30 189 89 / 0.6);
     }
-    /* 🎤 Voice button styling */
     #voiceBtn {
       width: 100%;
       padding: 10px 15px;
@@ -213,6 +212,12 @@
     #voiceBtn:hover {
       background: #2980b9;
       box-shadow: 0 6px 10px rgba(41,105,185,0.6);
+    }
+    #transcript {
+      margin: 8px 0;
+      font-style: italic;
+      color: #555;
+      text-align: center;
     }
     #gameHistory {
       background: white;
@@ -254,6 +259,7 @@
 <button id="clearAllBtn">Reset Points & History</button>
 <button id="shareBtn">Share Points via WhatsApp</button>
 <button id="voiceBtn">🎤 Voice Commands</button>
+<div id="transcript"></div>
 
 <h2>Game History</h2>
 <div id="gameHistory"></div>
@@ -284,7 +290,8 @@
   const submitBtn = document.getElementById('submitBtn');
   const clearAllBtn = document.getElementById('clearAllBtn');
   const shareBtn = document.getElementById('shareBtn');
-  const voiceBtn = document.getElementById('voiceBtn'); // 🎤
+  const voiceBtn = document.getElementById('voiceBtn');
+  const transcriptDiv = document.getElementById('transcript');
 
   addPlayerBtn.onclick = () => {
     const name = newPlayerNameInput.value.trim();
@@ -315,7 +322,6 @@
       const player = data[name];
       const div = document.createElement('div');
       div.className = 'player';
-
       div.innerHTML = `
         <div class="player-name">${name}</div>
         <div class="points-display" id="points-${name}">${player.points}</div>
@@ -334,12 +340,11 @@
       `;
       playersList.appendChild(div);
     }
-
     document.querySelectorAll('.removePlayerBtn').forEach(btn => {
       btn.onclick = () => {
-        const playerToRemove = btn.getAttribute('data-player');
-        if (confirm(`Remove player "${playerToRemove}"?`)) {
-          playersRef.child(playerToRemove).remove();
+        const player = btn.getAttribute('data-player');
+        if (confirm(`Remove player "${player}"?`)) {
+          playersRef.child(player).remove();
         }
       };
     });
@@ -351,17 +356,15 @@
       gameHistoryDiv.textContent = 'No game history yet.';
       return;
     }
-    const entries = Object.entries(data).sort((a,b) => {
-      return parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''));
-    });
-    for (const [gameKey, changes] of entries) {
+    const entries = Object.entries(data).sort((a,b) =>
+      parseInt(b[0].replace('game','')) - parseInt(a[0].replace('game',''))
+    );
+    for (const [key, changes] of entries) {
       const div = document.createElement('div');
-      let lines = [];
-      for (const player in changes) {
-        const change = changes[player];
-        lines.push(`${player}: ${change > 0 ? '+' : ''}${change}`);
-      }
-      div.textContent = `${gameKey}: ${lines.join(', ')}`;
+      const lines = Object.entries(changes).map(([p, c]) =>
+        `${p}: ${c > 0 ? '+' : ''}${c}`
+      );
+      div.textContent = `${key}: ${lines.join(', ')}`;
       gameHistoryDiv.appendChild(div);
     }
   }
@@ -372,93 +375,132 @@
   submitBtn.onclick = () => {
     playersRef.once('value').then(snap => {
       const players = snap.val() || {};
-      let updates = {};
-      let gameChanges = {};
-      let valid = false;
-
+      let updates = {}, gameChanges = {}, valid = false;
       for (const name in players) {
         const action = document.querySelector(`input[name="change-${name}"]:checked`).value;
         const val = parseInt(document.getElementById(`input-${name}`).value) || 0;
         if (val > 0) {
           valid = true;
           const cur = players[name].points || 0;
-          updates[`${name}/points`] = action === 'plus' ? cur + val : cur - val;
-          gameChanges[name] = action === 'plus' ? val : -val;
+          updates[`${name}/points`] = action==='plus'? cur+val: cur-val;
+          gameChanges[name] = action==='plus'? val: -val;
         }
       }
-      if (!valid) return alert('Please enter at least one valid point change.');
-
-      playersRef.update(updates).then(() => {
+      if (!valid) return alert('Enter at least one valid point change.');
+      playersRef.update(updates).then(() =>
         historyRef.once('value').then(hSnap => {
-          const history = hSnap.val() || {};
-          let idx = 1;
-          while (history['game'+idx]) idx++;
+          const hist = hSnap.val() || {}, idx = Object.keys(hist).length + 1;
           historyRef.child('game'+idx).set(gameChanges);
-          // reset inputs
           for (const name in players) {
             document.querySelector(`input[name="change-${name}"][value="plus"]`).checked = true;
             document.getElementById(`input-${name}`).value = '';
           }
-        });
-      });
+        })
+      );
     });
   };
 
   clearAllBtn.onclick = () => {
-    if (!confirm('Reset all players\' points to zero and clear game history? This cannot be undone.')) return;
+    if (!confirm('Reset all points & clear history?')) return;
     playersRef.once('value').then(snap => {
-      const players = snap.val() || {};
-      const reset = {};
-      for (const p in players) reset[`${p}/points`] = 0;
+      const pts = snap.val() || {}, reset = {};
+      for (const n in pts) reset[`${n}/points`] = 0;
       playersRef.update(reset).then(() => historyRef.remove());
     });
   };
 
   shareBtn.onclick = () => {
     playersRef.once('value').then(snap => {
-      const data = snap.val() || {};
-      let msg = '🎯 Game Points Summary:\n\n';
-      for (const n in data) msg += `• ${n}: ${data[n].points} pts\n`;
+      let msg = '🎯 Game Points:\n\n';
+      Object.entries(snap.val()||{}).forEach(([n,v]) => {
+        msg += `• ${n}: ${v.points} pts\n`;
+      });
       window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
     });
   };
 
-  // 🎤 Voice Commands
+  // 🎤 Enhanced Voice Commands
   const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (SpeechRec) {
     const recog = new SpeechRec();
-    recog.continuous = false;
+    recog.continuous = true;
+    recog.interimResults = true;
     recog.lang = 'en-US';
-    recog.interimResults = false;
 
-    voiceBtn.onclick = () => recog.start();
-    recog.onstart = () => voiceBtn.textContent = '🎙️ Listening…';
-    recog.onend   = () => voiceBtn.textContent = '🎤 Voice Commands';
-
+    recog.onstart = () => {
+      voiceBtn.textContent = '🎙️ Listening…';
+      transcriptDiv.textContent = '';
+    };
+    recog.onend = () => {
+      voiceBtn.textContent = '🎤 Voice Commands';
+    };
+    recog.onerror = e => {
+      transcriptDiv.textContent = '⚠️ Speech error, try again.';
+    };
     recog.onresult = e => {
-      const txt = e.results[0][0].transcript.trim().toLowerCase();
-      // add player <name>
-      let m = txt.match(/add player (\w+)/);
-      if (m) {
-        const nm = m[1][0].toUpperCase() + m[1].slice(1);
-        return playersRef.child(nm).set({ points: 0 });
+      let interim = '', final = '';
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const txt = e.results[i][0].transcript;
+        if (e.results[i].isFinal) {
+          final += txt;
+          handleCommand(txt.trim().toLowerCase());
+        } else {
+          interim += txt;
+        }
       }
-      // increase/subtract <name> by <num>
-      m = txt.match(/(increase|add|subtract|minus) (\w+) by (\d+)/);
-      if (m) {
-        const [_, act, who, num] = m;
-        const cap = who[0].toUpperCase() + who.slice(1);
-        return playersRef.child(cap).once('value').then(s => {
-          const cur = (s.val() && s.val().points) || 0;
-          const delta = parseInt(num)*(['subtract','minus'].includes(act)?-1:1);
-          return playersRef.child(`${cap}/points`).set(cur+delta);
-        });
-      }
-      alert(`Command not recognized:\n"${txt}"`);
+      transcriptDiv.textContent = interim || final;
+    };
+
+    voiceBtn.onclick = () => {
+      try { recog.start(); }
+      catch { /* already running */ }
     };
   } else {
     voiceBtn.disabled = true;
-    voiceBtn.title = 'Voice not supported in this browser';
+    transcriptDiv.textContent = 'Speech not supported.';
+  }
+
+  function handleCommand(txt) {
+    // ADD MULTIPLE PLAYERS
+    let m = txt.match(/^add players? (.+)$/);
+    if (m) {
+      const names = m[1]
+        .split(/\s*(?:,|and)\s*/i)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(capitalize);
+      names.forEach(n => playersRef.child(n).set({ points: 0 }));
+      return transcriptDiv.textContent = `✅ Added: ${names.join(', ')}`;
+    }
+    // INCREASE/DECREASE MULTIPLE PLAYERS
+    m = txt.match(/^(increase|add|subtract|minus)\s+players?\s+(.+?)\s+by\s+(\d+)$/);
+    if (m) {
+      const action = m[1],
+            list = m[2],
+            value = parseInt(m[3],10),
+            delta = (action==='subtract'||action==='minus')? -value: value;
+      const names = list
+        .split(/\s*(?:,|and)\s*/i)
+        .map(s => s.trim())
+        .filter(Boolean)
+        .map(capitalize);
+      names.forEach(n =>
+        playersRef.child(`${n}/points`).once('value').then(snap => {
+          const cur = snap.val()||0;
+          playersRef.child(`${n}/points`).set(cur + delta);
+        })
+      );
+      const verb = delta>0? 'Increased':'Decreased';
+      return transcriptDiv.textContent =
+        `✅ ${verb} ${names.join(', ')} by ${Math.abs(delta)} pts`;
+    }
+    transcriptDiv.textContent = `❓ Unrecognized: "${txt}"`;
+  }
+
+  function capitalize(str) {
+    return str.split(/\s+/)
+      .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+      .join(' ');
   }
 </script>
 </body>
